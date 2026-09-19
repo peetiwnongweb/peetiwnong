@@ -299,17 +299,17 @@ function renderAdminNotifications(items, lastSeen) {
     });
 }
 
+// ใช้ข้อมูลที่ loadActivityLogs('admin')/loadActivityLogs('user') โหลดมาอยู่แล้ว (เรียงจากใหม่สุดก่อนเสมอ) แทนการยิง /api/activity-logs แยกอีกรอบซ้ำซ้อน
+// รายการล่าสุดของ 2 scope นี้รวมกัน = รายการล่าสุดจริงของทั้งระบบเสมอ (ฝั่ง backend ก็แบ่งแค่ 2 scope นี้เหมือนกัน)
 function checkAdminNotificationBadge() {
-    fetch('/api/activity-logs')
-        .then((res) => (res.ok ? res.json() : []))
-        .then((items) => {
-            if (items.length === 0) return;
-            const lastSeen = Number(localStorage.getItem('webmanagerNotifLastSeen') || 0);
-            const latest = new Date(items[0].createdAt).getTime();
-            const dot = document.getElementById('admin-notif-dot');
-            if (dot) dot.classList.toggle('hidden', lastSeen >= latest);
-        })
-        .catch(() => {});
+    const latestAdmin = activityLogItemsCache.admin?.[0]?.createdAt;
+    const latestUser = activityLogItemsCache.user?.[0]?.createdAt;
+    const timestamps = [latestAdmin, latestUser].filter(Boolean).map((d) => new Date(d).getTime());
+    if (timestamps.length === 0) return;
+    const latest = Math.max(...timestamps);
+    const lastSeen = Number(localStorage.getItem('webmanagerNotifLastSeen') || 0);
+    const dot = document.getElementById('admin-notif-dot');
+    if (dot) dot.classList.toggle('hidden', lastSeen >= latest);
 }
 
 function markAdminNotificationsSeen(items) {
@@ -2278,7 +2278,6 @@ async function endCurrentCamp() {
             loadCamps();
             loadUsers('STAFF');
             loadUsers('PARTICIPANT');
-            loadApprovalQueue('PARTICIPANT');
             loadCampBackups();
         })
         .catch((error) => {
@@ -2525,6 +2524,7 @@ let newsSortDirection = 'desc';
 
 function loadNews() {
     Loader.renderSkeletonTableRows(document.getElementById('news-table-body'), 5, 4);
+    Loader.renderSkeletonTableRows(document.getElementById('news-approval-table-body'), 5, 3);
     fetch('/api/news')
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2537,6 +2537,11 @@ function loadNews() {
             newsSelectedIds.clear();
             renderNewsTable();
             updateNewsSectionToggleAvailability();
+
+            // ใช้ผลจาก fetch เดียวกันนี้อัปเดตตาราง "การอนุมัติ" ไปด้วยเลย (เดิมยิง /api/news แยกอีกรอบซ้ำซ้อนใน loadNewsApprovalQueue())
+            newsApprovalItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
+            newsApprovalCurrentPage = 1;
+            renderNewsApprovalTable();
         })
         .catch((error) => {
             console.error('โหลดข่าวสารไม่สำเร็จ:', error);
@@ -3015,9 +3020,8 @@ async function deleteNewsItem(item) {
         .then((res) => {
             if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
             showToast('ลบประชาสัมพันธ์สำเร็จ');
+            // ลบได้ทั้งจากตาราง "จัดการประชาสัมพันธ์" และตาราง "การอนุมัติ" - loadNews() อัปเดตทั้งสองตารางในตัว (ดูคอมเมนต์ในฟังก์ชัน)
             loadNews();
-            // ลบได้ทั้งจากตาราง "จัดการประชาสัมพันธ์" และตาราง "การอนุมัติ" - รีเฟรชคิวอนุมัติด้วยเผื่อแถวที่เพิ่งลบอยู่ในนั้น (ไม่มีผลถ้าไม่ได้เปิดแท็บนี้อยู่)
-            loadNewsApprovalQueue();
         })
         .catch((error) => {
             console.error(error);
@@ -3676,24 +3680,6 @@ const APPROVAL_STATUS_BADGE = {
     REJECTED: '<span class="admin-badge admin-badge-delete">ถูกปฏิเสธ</span>',
 };
 
-function loadApprovalQueue(role) {
-    Loader.renderSkeletonTableRows(document.getElementById(`approval-table-body-${role}`), 5, 3);
-    fetch(`/api/users?role=${role}`)
-        .then((res) => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-        .then((items) => {
-            // แสดงทั้งที่รออนุมัติและที่เคยถูกปฏิเสธ (เผื่อกลับมาอนุมัติซ้ำภายหลัง) ไม่แสดงบัญชีที่อนุมัติแล้ว
-            const pendingItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
-            renderApprovalTable(role, pendingItems);
-        })
-        .catch((error) => {
-            console.error(`โหลดคำขอลงทะเบียน (${role}) ไม่สำเร็จ:`, error);
-            showToast('โหลดคำขอลงทะเบียนไม่สำเร็จ', true);
-        });
-}
-
 function renderApprovalTable(role, items) {
     const tbody = document.getElementById(`approval-table-body-${role}`);
     const empty = document.getElementById(`approval-empty-${role}`);
@@ -3851,7 +3837,7 @@ async function setApprovalStatus(item, role, approvalStatus) {
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             showToast(`${label}คำขอลงทะเบียนสำเร็จ`);
-            loadApprovalQueue(role);
+            loadUsers(role);
         })
         .catch((error) => {
             console.error(error);
@@ -3871,7 +3857,7 @@ async function deleteApprovalItem(item, role) {
                 throw new Error(body.error || `HTTP ${res.status}`);
             }
             showToast('ลบคำขอลงทะเบียนสำเร็จ');
-            loadApprovalQueue(role);
+            loadUsers(role);
         })
         .catch((error) => {
             console.error(error);
@@ -3897,25 +3883,6 @@ function formatNewsAuthorName(item) {
 const NEWS_APPROVAL_PAGE_SIZE = 10;
 let newsApprovalItems = [];
 let newsApprovalCurrentPage = 1;
-
-function loadNewsApprovalQueue() {
-    Loader.renderSkeletonTableRows(document.getElementById('news-approval-table-body'), 5, 3);
-    fetch('/api/news')
-        .then((res) => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-        .then((items) => {
-            // แสดงทั้งที่กำลังพิจารณาและที่เคยถูกปฏิเสธ (เผื่อกลับมาอนุมัติซ้ำภายหลัง) ไม่แสดงข่าวที่อนุมัติแล้ว
-            newsApprovalItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
-            newsApprovalCurrentPage = 1;
-            renderNewsApprovalTable();
-        })
-        .catch((error) => {
-            console.error('โหลดคิวอนุมัติข่าวไม่สำเร็จ:', error);
-            showToast('โหลดคิวอนุมัติประชาสัมพันธ์ไม่สำเร็จ', true);
-        });
-}
 
 function renderNewsApprovalTable() {
     const tbody = document.getElementById('news-approval-table-body');
@@ -4104,7 +4071,6 @@ async function setNewsApprovalStatus(item, approvalStatus) {
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             showToast(`${label}ประชาสัมพันธ์สำเร็จ`);
-            loadNewsApprovalQueue();
             loadNews();
         })
         .catch((error) => {
@@ -4127,6 +4093,7 @@ const userSortDirection = { STAFF: 'desc', PARTICIPANT: 'desc' };
 
 function loadUsers(role) {
     Loader.renderSkeletonTableRows(document.getElementById(`user-table-body-${role}`), 5, 4);
+    Loader.renderSkeletonTableRows(document.getElementById(`approval-table-body-${role}`), 5, 3);
     fetch(`/api/users?role=${role}`)
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -4137,6 +4104,10 @@ function loadUsers(role) {
             userCurrentPage[role] = 1;
             userSelectedIds[role].clear();
             renderUserTable(role);
+
+            // ใช้ผลจาก fetch เดียวกันนี้อัปเดตตาราง "คำขอลงทะเบียน" ไปด้วยเลย (เดิมยิง /api/users?role= แยกอีกรอบซ้ำซ้อนใน loadApprovalQueue())
+            const pendingItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
+            renderApprovalTable(role, pendingItems);
         })
         .catch((error) => {
             console.error(`โหลดข้อมูลผู้ใช้งาน (${role}) ไม่สำเร็จ:`, error);
@@ -5190,7 +5161,7 @@ const activityLogSearchQuery = {};
 
 function loadActivityLogs(scope) {
     Loader.renderSkeletonTableRows(document.getElementById(`log-${scope}-table-body`), 4, 4);
-    fetch(`/api/activity-logs?scope=${scope}`)
+    return fetch(`/api/activity-logs?scope=${scope}`)
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.json();
@@ -5375,10 +5346,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCommittees();
     loadGalleryPhotos();
     loadNews();
-    loadNewsApprovalQueue();
     loadSchedules();
-    loadApprovalQueue('STAFF');
-    loadApprovalQueue('PARTICIPANT');
     loadUsers('STAFF');
     loadUsers('PARTICIPANT');
     loadOwners();
@@ -5386,9 +5354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCampBackups();
     loadLookupOptions();
     const dashboardLoaded = initDashboard();
-    checkAdminNotificationBadge();
-    loadActivityLogs('admin');
-    loadActivityLogs('user');
+    Promise.all([loadActivityLogs('admin'), loadActivityLogs('user')]).then(checkAdminNotificationBadge);
 
     const committeeSearchInput = document.getElementById('committee-search');
     if (committeeSearchInput) {

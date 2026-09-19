@@ -117,6 +117,11 @@
   list-style: disc;
 }
 
+.admin-richtext a {
+  color: var(--brand-600);
+  text-decoration: underline;
+}
+
 .news-write-mode-label.show {
   display: block;
 }
@@ -305,4 +310,11 @@ textarea.form-input {
   font-size: 0.95rem;
   line-height: 1.75;
   white-space: pre-line;
+}
+
+.news-detail-body a {
+  color: var(--brand-600);
+  text-decoration: underline;
+  font-weight: 600;
+  word-break: break-word;
 }

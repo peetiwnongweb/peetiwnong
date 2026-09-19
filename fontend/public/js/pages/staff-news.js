@@ -2,6 +2,12 @@
 // เขียนข่าว / เช็คข่าว: พี่ค่ายทุกคนไม่ว่าฝ่ายไหนเขียนข่าวส่งเข้ามาได้ ต้องรอ Owner อนุมัติก่อนเผยแพร่จริง
 // ==========================================
 
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str ?? '');
+    return div.innerHTML;
+}
+
 const NEWS_TAG_LABELS = {
     ANNOUNCE: 'ประกาศค่าย',
     ACTIVITY: 'ประชาสัมพันธ์การรับสมัคร',
@@ -105,12 +111,45 @@ function removeNewsWriteImage() {
     document.getElementById('news-write-image-preview').src = '';
 }
 
-// ผูกปุ่ม B/I/หัวข้อย่อย ของ rich text editor เข้ากับช่อง news-write-detail (ก๊อปพฤติกรรมจาก initRichTextToolbar() ใน webmanager.js เป๊ะ)
+// ใส่ url ให้ execCommand('createLink') เอง เพราะปุ่มอื่น ๆ (bold/italic/insertUnorderedList) ไม่ต้องการ argument (ส่ง null พอ) มีแค่คำสั่งนี้ที่ต้องถามผู้ใช้ก่อน
+// ไม่ได้เลือกข้อความไว้ (selection ว่าง) ก็แทรกตัว url เองเป็นเนื้อลิงก์ให้เลย กันกดแล้วไม่เกิดอะไรขึ้นเพราะไม่รู้ว่าต้องลากเลือกก่อน
+function insertNewsWriteRichTextLink(editorEl) {
+    editorEl.focus();
+    const rawUrl = prompt('ใส่ลิงก์ (เช่น https://...)');
+    if (!rawUrl || !rawUrl.trim()) return;
+    const url = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `https://${rawUrl.trim()}`;
+
+    const hasSelection = !!window.getSelection()?.toString();
+    if (hasSelection) {
+        document.execCommand('createLink', false, url);
+    } else {
+        document.execCommand('insertHTML', false, `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`);
+    }
+    editorEl.querySelectorAll('a:not([target])').forEach((a) => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+    });
+}
+
+// วางลิงก์ (คัดลอกมาทั้งดุ้น ไม่ได้เลือกคำอื่นมาแปะด้วย) ให้กลายเป็นลิงก์คลิกได้ทันทีโดยไม่ต้องกดปุ่ม "แทรกลิงก์" เอง
+// เช็คเฉพาะกรณีที่วางแล้วทั้งข้อความเป็น URL ล้วน ๆ เท่านั้น ถ้าวางเป็นย่อหน้ายาวที่มีลิงก์ปนอยู่ ปล่อยเป็นข้อความธรรมดาไปตามปกติ ไม่พยายามเดา
+function handleNewsWriteRichTextPaste(event) {
+    const text = (event.clipboardData || window.clipboardData)?.getData('text/plain')?.trim();
+    if (!text || !/^https?:\/\/\S+$/i.test(text)) return;
+    event.preventDefault();
+    document.execCommand('insertHTML', false, `<a href="${escapeHtml(text)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`);
+}
+
+// ผูกปุ่ม B/I/หัวข้อย่อย/ลิงก์ ของ rich text editor เข้ากับช่อง news-write-detail (ก๊อปพฤติกรรมจาก initRichTextToolbar() ใน webmanager.js เป๊ะ)
 function initNewsWriteRichTextToolbar() {
     document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
         btn.addEventListener('mousedown', (event) => event.preventDefault());
         btn.addEventListener('click', () => {
-            document.execCommand(btn.dataset.richtextCmd, false, null);
+            if (btn.dataset.richtextCmd === 'createLink') {
+                insertNewsWriteRichTextLink(document.getElementById('news-write-detail'));
+            } else {
+                document.execCommand(btn.dataset.richtextCmd, false, null);
+            }
             updateNewsWriteRichTextToolbarState();
         });
     });
@@ -124,6 +163,7 @@ function initNewsWriteRichTextToolbar() {
             event.preventDefault();
             document.execCommand('insertLineBreak');
         });
+        detailEl.addEventListener('paste', handleNewsWriteRichTextPaste);
     }
 }
 

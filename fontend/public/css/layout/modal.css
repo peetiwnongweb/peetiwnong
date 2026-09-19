@@ -558,6 +558,18 @@
   transition: transform 3s linear;
 }
 
+/* ลิงก์ในเนื้อหาประชาสัมพันธ์ที่แสดงผลจริง (หน้าเว็บสาธารณะ + ตัวอย่างก่อนอนุมัติใน WebManager) ให้เห็นชัดว่ากดได้ */
+.news-detail-content a {
+  color: var(--brand-600);
+  text-decoration: underline;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.news-detail-content a:hover {
+  color: var(--brand-700);
+}
+
 /* ==========================================
    Modal: ดูรูปเต็มจอ (เช่น คลิกรูปในตัวอย่างประชาสัมพันธ์) - แสดงรูปเต็ม ไม่ครอบตัด (object-fit: contain) กึ่งกลางจอเสมอ
    ========================================== */

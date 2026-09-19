@@ -1772,6 +1772,11 @@ body {
   list-style: disc;
 }
 
+.admin-richtext a {
+  color: var(--brand-600);
+  text-decoration: underline;
+}
+
 /* พื้นที่อัปโหลด/แสดงตัวอย่างรูปภาพประกอบประชาสัมพันธ์ */
 .news-image-upload {
   display: flex;

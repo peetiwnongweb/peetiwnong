@@ -249,7 +249,7 @@ function viewNewsDetail(newsId) {
                 </button>
             </div>` : ''}
             <hr class="border-slate-100">
-            <div class="text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2" style="white-space: pre-line;">
+            <div class="news-detail-content text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2" style="white-space: pre-line;">
                 ${news.detail}
             </div>
             <div class="pt-4 border-t border-slate-100 flex justify-end">

@@ -1256,11 +1256,36 @@ function toDateInputValue(isoDate) {
 
 // เอดิเตอร์รายละเอียดข่าวเป็น contenteditable แทน textarea ธรรมดา ให้พี่ค่ายกดปุ่มจัดรูปแบบ (ตัวหนา/ตัวเอียง/รายการ) และกด Enter ขึ้นบรรทัดใหม่ได้เลย
 // โดยไม่ต้องพิมพ์แท็ก HTML เอง แต่ยังคงเก็บ/แสดงผลเป็น HTML เหมือนเดิม (ใช้ execCommand ซึ่งรองรับใน Chrome/Edge ที่ทีมงานใช้งานจริง)
+// ใส่ url ให้ execCommand('createLink') เอง เพราะปุ่มอื่น ๆ (bold/italic/insertUnorderedList) ไม่ต้องการ argument (ส่ง null พอ) มีแค่คำสั่งนี้ที่ต้องถามผู้ใช้ก่อน
+// ไม่ได้เลือกข้อความไว้ (selection ว่าง) ก็แทรกตัว url เองเป็นเนื้อลิงก์ให้เลย กันกดแล้วไม่เกิดอะไรขึ้นเพราะไม่รู้ว่าต้องลากเลือกก่อน
+function insertRichTextLink(editorEl) {
+    editorEl.focus();
+    const rawUrl = prompt('ใส่ลิงก์ (เช่น https://...)');
+    if (!rawUrl || !rawUrl.trim()) return;
+    const url = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `https://${rawUrl.trim()}`;
+
+    const hasSelection = !!window.getSelection()?.toString();
+    if (hasSelection) {
+        document.execCommand('createLink', false, url);
+    } else {
+        document.execCommand('insertHTML', false, `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`);
+    }
+    // เปิดแท็บใหม่เสมอตอนอ่านจริง (ระหว่างพิมพ์ในนี้คลิกธรรมดาไม่ตามลิงก์อยู่แล้วเพราะอยู่ใน contenteditable ไม่กระทบการแก้ไขต่อ)
+    editorEl.querySelectorAll('a:not([target])').forEach((a) => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+    });
+}
+
 function initRichTextToolbar() {
     document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
         btn.addEventListener('mousedown', (event) => event.preventDefault());
         btn.addEventListener('click', () => {
-            document.execCommand(btn.dataset.richtextCmd, false, null);
+            if (btn.dataset.richtextCmd === 'createLink') {
+                insertRichTextLink(document.getElementById('news-detail'));
+            } else {
+                document.execCommand(btn.dataset.richtextCmd, false, null);
+            }
             updateRichTextToolbarState();
         });
     });
@@ -1275,7 +1300,17 @@ function initRichTextToolbar() {
             event.preventDefault();
             document.execCommand('insertLineBreak');
         });
+        detailEl.addEventListener('paste', handleRichTextPaste);
     }
+}
+
+// วางลิงก์ (คัดลอกมาทั้งดุ้น ไม่ได้เลือกคำอื่นมาแปะด้วย) ให้กลายเป็นลิงก์คลิกได้ทันทีโดยไม่ต้องกดปุ่ม "แทรกลิงก์" เอง
+// เช็คเฉพาะกรณีที่วางแล้วทั้งข้อความเป็น URL ล้วน ๆ เท่านั้น (ตรงกับเคสที่พบบ่อยสุดคือก๊อปลิงก์มาวางเดี่ยว ๆ) ถ้าวางเป็นย่อหน้ายาวที่มีลิงก์ปนอยู่ ปล่อยเป็นข้อความธรรมดาไปตามปกติ ไม่พยายามเดา
+function handleRichTextPaste(event) {
+    const text = (event.clipboardData || window.clipboardData)?.getData('text/plain')?.trim();
+    if (!text || !/^https?:\/\/\S+$/i.test(text)) return;
+    event.preventDefault();
+    document.execCommand('insertHTML', false, `<a href="${escapeHtml(text)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`);
 }
 
 function updateRichTextToolbarState() {

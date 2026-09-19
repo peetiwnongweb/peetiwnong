@@ -357,6 +357,55 @@ const ADMIN_NAV_GROUPS = {
     camps: 'camps-subnav',
 };
 
+// โหลดข้อมูลของแท็บ/หน้าแบบ lazy (ครั้งแรกที่สลับไปเปิดดูเท่านั้น) แทนที่จะยิงทุก endpoint พร้อมกันตอนเปิดหน้า WebManager
+// (เดิมยิงพร้อมกัน ~18 เส้นตอน DOMContentLoaded ล้น connection pool ของ Supabase แผนฟรี (จำกัด 15 client) ได้ง่าย ๆ)
+// key เดียวกันแปลว่าข้อมูลชุดเดียวกัน ใช้ร่วมกันได้หลายแท็บโดยยิงแค่ครั้งเดียว (เช่น approve-staff/staff-users คือ /api/users?role=STAFF ตัวเดียวกัน หลัง merge ไปแล้ว)
+// สิ่งที่ยังคง eager ไว้ (ไม่อยู่ในระบบนี้): loadAdminUser/loadHeroCardSetting (ใช้ร่วมหลายแท็บพร้อมกัน เบาพอไม่คุ้มแยก lazy) initDashboard (lazy ในตัวอยู่แล้วต่อแท็บย่อย)
+// loadActivityLogs ทั้ง 2 scope (ต้องรู้ผลไวสำหรับจุดแดงแจ้งเตือนที่เห็นได้จากทุกหน้าไม่ต้องเปิดแท็บ log)
+const loadedAdminKeys = new Set();
+
+const ADMIN_LAZY_LOADERS = {
+    committee: () => loadCommittees(),
+    gallery: () => loadGalleryPhotos(),
+    news: () => loadNews(),
+    schedule: () => loadSchedules(),
+    'approve-staff': () => loadUsers('STAFF'),
+    'approve-participant': () => loadUsers('PARTICIPANT'),
+    owners: () => loadOwners(),
+    camps: () => loadCamps(),
+    'camp-backup': () => loadCampBackups(),
+    lookups: () => loadLookupOptions(),
+};
+
+// แท็บ (switchAdminTab) -> รายการ key ที่ต้องโหลด แท็บที่ไม่มีในนี้ไม่ต้องโหลดอะไรเพิ่ม (ข้อมูลมากับของที่ eager อยู่แล้ว เช่น home/history-intro มากับ loadHeroCardSetting)
+const ADMIN_TAB_LOAD_KEYS = {
+    'approve-news': ['news'],
+    news: ['news'],
+    schedule: ['schedule'],
+    gallery: ['gallery'],
+    committee: ['committee'],
+    'camp-lifecycle': ['camps'],
+    'camp-backup': ['camp-backup'],
+    'approve-staff': ['approve-staff', 'lookups'],
+    'approve-participant': ['approve-participant', 'lookups'],
+    'staff-users': ['approve-staff', 'lookups'],
+    'participant-users': ['approve-participant', 'lookups'],
+};
+
+// section ที่ไม่มีแท็บย่อย (switchAdminSection เข้าตรง ไม่ผ่าน switchAdminTab) -> รายการ key ที่ต้องโหลด
+const ADMIN_SECTION_LOAD_KEYS = {
+    'camp-history': ['camps'],
+    'create-owner': ['owners'],
+};
+
+function loadAdminLazyKeys(keys) {
+    keys.forEach((key) => {
+        if (loadedAdminKeys.has(key)) return;
+        loadedAdminKeys.add(key);
+        ADMIN_LAZY_LOADERS[key]();
+    });
+}
+
 // จำตำแหน่งที่เปิดอยู่ล่าสุด (section เฉย ๆ สำหรับหน้าที่ไม่มีแท็บย่อย เช่น dashboard/participant, หรือ tab เจาะจงสำหรับหน้าที่มีแท็บย่อย)
 // ไว้ใน sessionStorage กันรีเฟรชแล้วเด้งกลับไป dashboard ทุกครั้ง ค่าล่าสุดชนะเสมอไม่ว่าจะเป็น section หรือ tab
 const WEBMANAGER_NAV_STORAGE_KEY = 'ptn-webmanager-nav';
@@ -441,6 +490,8 @@ function switchAdminSection(section) {
     } else {
         // หน้าที่ไม่มีแท็บย่อย (dashboard, participant, create-owner) - บันทึกตัว section เองเลย
         saveWebManagerNav('section', section);
+        const loadKeys = ADMIN_SECTION_LOAD_KEYS[section];
+        if (loadKeys) loadAdminLazyKeys(loadKeys);
         // ทั้งหน้าเลื่อนตามเอกสาร (ไม่มี scroll container แยก) สลับ section แล้วไม่เลื่อนกลับขึ้นบน เนื้อหาสั้น ๆ จะโผล่พ้นจอถ้าเลื่อนค้างไว้จากหน้าก่อน
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -466,6 +517,8 @@ function switchAdminTab(tab) {
     document.getElementById(`admin-panel-${tab}`).classList.add('active');
     document.getElementById(`admin-tab-${tab}`).classList.add('active');
     expandNestedSubnavForTab(tab);
+    const loadKeys = ADMIN_TAB_LOAD_KEYS[tab];
+    if (loadKeys) loadAdminLazyKeys(loadKeys);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -687,7 +740,8 @@ function loadHeroCardSetting() {
             applyAutoApproveToggleState('staff', !!settings.staffAutoApprove);
             applyAutoApproveToggleState('participant', !!settings.participantAutoApprove);
             applyAutoApproveToggleState('news', !!settings.newsAutoApprove);
-            updateCampLifecycleSteps();
+            // loadCamps() เป็น lazy แล้ว (โหลดตอนเปิดแท็บ "ขั้นตอนดำเนินการค่าย"/"ประวัติค่าย" เท่านั้น) ถ้ายังไม่เคยโหลดอย่าเรียก ไม่งั้นจะคิดว่ายังไม่มีค่ายทั้งที่แค่ยังไม่รู้ผล (loadCamps เองก็เรียกซ้ำอีกทีตอนโหลดเสร็จจริงอยู่แล้ว)
+            if (campsLoaded) updateCampLifecycleSteps();
 
             applyCheckRegistrationToggleState('staff', settings.checkRegistrationVisibleStaff !== false);
             applyCheckRegistrationToggleState('participant', settings.checkRegistrationVisibleParticipant !== false);
@@ -830,7 +884,7 @@ function submitRegistrationOpen(role, checked) {
         })
         .then(() => {
             applyRegistrationToggleState(role, checked);
-            updateCampLifecycleSteps();
+            if (campsLoaded) updateCampLifecycleSteps();
             showToast(checked ? `เปิดรับ${label}แล้ว` : `ปิดรับ${label}แล้ว`);
         })
         .catch((error) => {
@@ -1550,6 +1604,8 @@ let campSecretarySelect = null;
 let campVicePresidentAddSelect = null;
 let campDepartmentHeadSelects = {}; // departmentId -> staff-select handle
 let campItemsCache = []; // เก็บผลลัพธ์ /api/camps ล่าสุดไว้ ให้ตัวบอกขั้นตอนดำเนินการค่ายอ่านสถานะได้โดยไม่ต้อง fetch ซ้ำ
+// แยกจาก campItemsCache.length===0 เพราะ "ยังไม่เคยโหลด" กับ "โหลดแล้วแต่ไม่มีค่ายจริง ๆ" ต้องแยกออกจากกัน (loadCamps() เป็น lazy แล้ว อาจยังไม่เคยรันตอนที่ loadHeroCardSetting() เรียก updateCampLifecycleSteps() ก็ได้)
+let campsLoaded = false;
 
 function loadCamps() {
     Loader.renderSkeletonTableRows(document.getElementById('camps-table-body'), 5, 4);
@@ -1608,6 +1664,7 @@ function renderCampsTable(items) {
     if (endBtn) endBtn.disabled = items.length === 0 || items[0].isEnded;
 
     campItemsCache = items;
+    campsLoaded = true;
     updateCampLifecycleSteps();
 }
 
@@ -5343,16 +5400,8 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreWebManagerNav();
     loadHeroCardSetting();
     initImageCropHandlers();
-    loadCommittees();
-    loadGalleryPhotos();
-    loadNews();
-    loadSchedules();
-    loadUsers('STAFF');
-    loadUsers('PARTICIPANT');
-    loadOwners();
-    loadCamps();
-    loadCampBackups();
-    loadLookupOptions();
+    // ข้อมูลของแท็บอื่น ๆ (ข่าว/กำหนดการ/ผู้ใช้/เจ้าของระบบ/ค่าย/สำรองข้อมูล/lookup) โหลดแบบ lazy ตอนเปิดแท็บนั้นจริง ๆ แทน (ดู ADMIN_TAB_LOAD_KEYS/ADMIN_SECTION_LOAD_KEYS ด้านบน)
+    // restoreWebManagerNav() ด้านบนได้ trigger การโหลดของแท็บที่จำไว้ล่าสุดไปแล้วถ้ามี ผ่าน switchAdminTab/switchAdminSection
     const dashboardLoaded = initDashboard();
     Promise.all([loadActivityLogs('admin'), loadActivityLogs('user')]).then(checkAdminNotificationBadge);
 

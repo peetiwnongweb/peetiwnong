@@ -1,0 +1,176 @@
+/* ==========================================
+   Loader กลาง: ใช้ร่วมทุกหน้า (public/staff/webmanager/admin/participant)
+   - Skeleton: คอนเทนต์แบบมีโครง (list/card/table) ระหว่างรอ fetch
+   - Spinner: การกระทำเดี่ยว (ปุ่ม submit) หรือค่าเดี่ยว (ตัวเลขสรุป)
+   ตัวแปรสี --slate-100/--slate-200 มาจาก base/variables.css ซึ่งถูกสลับค่าใหม่ใต้ [data-theme="dark"]
+   อยู่แล้ว (ดู admin.css/webmanager.css) จึงรองรับ dark mode ให้อัตโนมัติโดยไม่ต้องเขียนซ้ำ
+   ========================================== */
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--slate-100) 25%, var(--slate-200) 37%, var(--slate-100) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: 0.375rem;
+}
+
+.skeleton-line {
+  display: block;
+  height: 0.85rem;
+  margin: 0.4rem 0;
+  width: 100%;
+}
+
+.skeleton-line.skeleton-title { height: 1.1rem; width: 55%; }
+.skeleton-line.skeleton-w-30 { width: 30%; }
+.skeleton-line.skeleton-w-40 { width: 40%; }
+.skeleton-line.skeleton-w-60 { width: 60%; }
+.skeleton-line.skeleton-w-70 { width: 70%; }
+
+.skeleton-circle { border-radius: 50%; }
+.skeleton-block { border-radius: 0.5rem; }
+
+/* การ์ดโครง ขนาด/ระยะห่างอิงจาก .activity-card / .group-card ที่มีอยู่แล้ว */
+.skeleton-card {
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.skeleton-card + .skeleton-card { margin-top: 1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--slate-100);
+  }
+}
+
+/* Spinner: ปุ่ม submit / ค่าเดี่ยวที่กำลังโหลด */
+@keyframes spinner-spin { to { transform: rotate(360deg); } }
+
+.spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2.5px solid var(--slate-200);
+  border-top-color: var(--brand-600);
+  border-radius: 50%;
+  animation: spinner-spin 0.7s linear infinite;
+  vertical-align: -0.2rem;
+}
+
+.spinner-sm {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-width: 2px;
+  margin-right: 0.45rem;
+  vertical-align: -0.13rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner, .spinner-sm { animation-duration: 1.6s; }
+}
+
+/* โหลดเดอร์เต็มหน้าจอ: คลุมทั้งจอตอนหน้าเว็บกำลังโหลดข้อมูลก้อนแรกตั้งแต่เปิดหน้ามา (ดู showFullPageLoader/hideFullPageLoader ใน loader.js)
+   ต่างจาก skeleton/spinner ด้านบนที่ใช้กับข้อมูลย่อยระหว่างอยู่ในหน้าแล้ว - ตัวนี้บังทั้งหน้าไว้ก่อนเห็น layout ว่าง ๆ ตอนเพิ่งเข้าหน้า */
+.full-page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background-color: var(--slate-50);
+  transition: opacity 0.25s ease;
+}
+
+.full-page-loader.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.full-page-loader-visual {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+}
+
+/* วงแหวนหมุนรอบโลโก้ */
+.full-page-loader-ring {
+  position: absolute;
+  inset: 0;
+  border: 4px solid var(--slate-200);
+  border-top-color: var(--brand-500);
+  border-radius: 50%;
+  animation: spinner-spin 1s linear infinite;
+}
+
+.full-page-loader-logo {
+  position: absolute;
+  inset: 1.15rem;
+  width: calc(100% - 2.3rem);
+  height: calc(100% - 2.3rem);
+  object-fit: contain;
+  animation: full-page-loader-fade 1.8s ease-in-out infinite;
+}
+
+@keyframes full-page-loader-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ข้อความสลับ 5 คำ ค่ายวิชาการ/พี่ติวน้อง/PEETIWNONG/Academics/Camp เลื่อนขึ้นทีละคำวนซ้ำไม่รู้จบ กึ่งกลางจอ (จากตัวอย่าง Uiverse.io by kennyotsu) - คำที่ 6 คือคำแรกซ้ำ เพื่อให้ลูปกลับไปคำแรกไร้รอยต่อ */
+.full-page-loader-words {
+  position: relative;
+  overflow: hidden;
+  height: 1.6rem;
+  max-width: 90vw;
+}
+
+.full-page-loader-words::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(var(--slate-50) 4%, transparent 22%, transparent 78%, var(--slate-50) 96%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.full-page-loader-word {
+  display: block;
+  height: 1.6rem;
+  line-height: 1.6rem;
+  font-size: 1.05rem;
+  color: var(--brand-600);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-align: center;
+  animation: full-page-loader-word-spin 4s infinite;
+}
+
+@keyframes full-page-loader-word-spin {
+  0%, 10% { transform: translateY(0%); }
+  20% { transform: translateY(-103%); }
+  25%, 35% { transform: translateY(-100%); }
+  45% { transform: translateY(-203%); }
+  50%, 60% { transform: translateY(-200%); }
+  70% { transform: translateY(-303%); }
+  75%, 85% { transform: translateY(-300%); }
+  95% { transform: translateY(-403%); }
+  100% { transform: translateY(-400%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .full-page-loader-ring { animation-duration: 1.6s; }
+  .full-page-loader-logo { animation-duration: 3.5s; }
+  .full-page-loader-word { animation-duration: 7s; }
+}

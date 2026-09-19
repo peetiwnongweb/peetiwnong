@@ -1,0 +1,726 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url ถูกกำหนดผ่าน prisma.config.ts (env DATABASE_URL)
+}
+
+enum UserRole {
+  WEBMANAGER // สิทธิ์สูงสุดในการจัดการเว็บ แยกออกจาก Admin โดยสิ้นเชิง มีหน้า login และแผงควบคุมของตัวเอง (/webmanager)
+  STAFF // พี่ค่าย (อาจได้รับสิทธิ์ผู้ดูแลระบบ (isAdmin) เพิ่มเติมผ่าน StaffProfile.isAdmin เพื่อเข้าหลังบ้าน /admin)
+  PARTICIPANT // น้องค่าย
+}
+
+// สถานะการอนุมัติบัญชี: บัญชีที่ WebManager สร้างเอง (หรือ seed) เริ่มเป็น APPROVED ทันที
+// มีเฉพาะบัญชีที่สมัครเองผ่านฟอร์มสาธารณะเท่านั้นที่เริ่มเป็น PENDING แล้วรอ WebManager อนุมัติ/ปฏิเสธ
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                    Int                       @id @default(autoincrement())
+  email                 String                    @unique
+  passwordHash          String                    @map("password_hash")
+  role                  UserRole
+  avatarUrl             String?                   @map("avatar_url")
+  otpCode               String?                   @map("otp_code")
+  otpExpiresAt          DateTime?                 @map("otp_expires_at")
+  approvalStatus        ApprovalStatus            @default(APPROVED) @map("approval_status")
+  createdAt             DateTime                  @default(now()) @map("created_at")
+  updatedAt             DateTime                  @updatedAt @map("updated_at")
+  participantProfile    ParticipantProfile?
+  staffProfile          StaffProfile?
+  taughtSubjects        SubjectInstructor[]
+  taughtScheduleEntries ClassScheduleInstructor[]
+  oralExamSessionsOpened     OralExamSession[]  @relation("OralExamSessionOpenedBy")
+  oralExamAttemptsEvaluated  OralExamAttempt[]  @relation("OralExamAttemptEvaluatedBy")
+  campsAsPresident      Camp[]                    @relation("CampPresident")
+  campsAsSecretary      Camp[]                    @relation("CampSecretary")
+  campVicePresidentOf   CampVicePresident[]       @relation("CampVicePresidentUser")
+  campDepartmentHeadOf  CampDepartmentHead[]      @relation("CampDepartmentHeadUser")
+  newsArticles          News[]                    @relation("NewsAuthor")
+
+  @@map("users")
+}
+
+// ทำเนียบประธานค่าย (หน้าแรก: Tracks Section + การ์ดเด่นใน Hero)
+model Committee {
+  id                Int      @id @default(autoincrement())
+  generationNos     Int[]    @default([]) @map("generation_nos")
+  fullName          String   @map("full_name")
+  nickname          String
+  imageUrl          String?  @map("image_url")
+  university        String?  @map("university")
+  universityLogoUrl String?  @map("university_logo_url")
+  faculty           String?  @map("faculty")
+  major             String?  @map("major")
+  isVisible         Boolean  @default(true) @map("is_visible")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("committees")
+}
+
+// ตั้งค่าเว็บไซต์ภาพรวม (แถวเดียวตายตัว id=1)
+model SiteSetting {
+  id                          Int      @id @default(1)
+  heroCardVisible             Boolean  @default(true) @map("hero_card_visible") // สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดในส่วน Hero หน้าแรก
+  staffRegistrationOpen       Boolean  @default(true) @map("staff_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนพี่ค่าย" ในส่วน Hero หน้าแรก
+  participantRegistrationOpen Boolean  @default(true) @map("participant_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนน้องค่าย" ในส่วน Hero หน้าแรก
+  staffAutoApprove            Boolean  @default(false) @map("staff_auto_approve") // เปิดไว้ = บัญชีพี่ค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
+  participantAutoApprove      Boolean  @default(false) @map("participant_auto_approve") // เปิดไว้ = บัญชีน้องค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
+  newsAutoApprove             Boolean  @default(false) @map("news_auto_approve") // เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายทั่วไปส่งเข้ามา (submitNews) เผยแพร่ขึ้นเว็บทันทีโดยไม่ต้องรอ Admin/Owner อนุมัติ (ข่าวที่ WebManager/แอดมินเขียนเองอนุมัติทันทีอยู่แล้วเสมอไม่เกี่ยวกับสวิตช์นี้)
+  checkRegistrationVisibleStaff       Boolean @default(true) @map("check_registration_visible_staff") // สวิตช์เปิด/ปิดแท็บ "พี่ค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
+  checkRegistrationVisibleParticipant Boolean @default(true) @map("check_registration_visible_participant") // สวิตช์เปิด/ปิดแท็บ "น้องค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
+  committeeSectionVisible              Boolean @default(true) @map("committee_section_visible") // สวิตช์เปิด/ปิดส่วนทำเนียบประธานค่ายในหน้าแรก
+  newsSectionVisible                   Boolean @default(true) @map("news_section_visible") // สวิตช์เปิด/ปิดส่วนข่าวสารล่าสุดในหน้าแรก
+  historyTitle                String?  @map("history_title") // หัวข้อการ์ด "ความเป็นมา" ในหน้า ประวัติความเป็นมา
+  historyBody                 String?  @map("history_body") // เนื้อหาการ์ด "ความเป็นมา" (แบ่งย่อหน้าด้วยบรรทัดว่าง)
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
+// ประมวลภาพบรรยากาศค่าย (หน้า "ประวัติความเป็นมา")
+model GalleryPhoto {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String   @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("gallery_photos")
+}
+
+enum ActivityAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+// ประวัติการดำเนินการของแอดมิน (audit log)
+// actorRole เก็บเป็น String (ไม่ผูกกับ enum UserRole) เพราะเป็นข้อมูลย้อนหลัง ต้องไม่พังเวลามีการปรับ role/สิทธิ์ในอนาคต
+model ActivityLog {
+  id         Int            @id @default(autoincrement())
+  actorEmail String         @map("actor_email")
+  actorRole  String         @map("actor_role")
+  action     ActivityAction
+  entityType String         @map("entity_type")
+  entityId   Int?           @map("entity_id")
+  summary    String
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+enum NewsTag {
+  ANNOUNCE // ประกาศค่าย
+  ACTIVITY // ข่าวการรับสมัคร
+  SCHOLAR // กิจกรรม / ทุนการศึกษา
+  OTHER // อื่น ๆ
+}
+
+// ข่าวสารประกาศ (หน้าแรก: News Summary + หน้าข่าวทั้งหมด)
+model News {
+  id             Int            @id @default(autoincrement())
+  tag            NewsTag        @default(OTHER)
+  title          String
+  summary        String
+  detail         String
+  imageUrl       String?        @map("image_url")
+  isHot          Boolean        @default(false) @map("is_hot")
+  isVisible      Boolean        @default(true) @map("is_visible")
+  authorId       Int?           @map("author_user_id")
+  author         User?          @relation("NewsAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  approvalStatus ApprovalStatus @default(APPROVED) @map("approval_status") // ข่าวที่ WebManager/แอดมินเขียนเองอนุมัติทันที ส่วนที่พี่ค่ายทั่วไปส่งเข้ามาจะถูกบังคับเป็น PENDING เสมอ (ดู submitNews ใน newsController.js)
+  publishedAt    DateTime       @default(now()) @map("published_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@index([publishedAt])
+  @@map("news")
+}
+
+enum ScheduleBadgeColor {
+  EMERALD // เขียว
+  ROSE // แดง
+  BRAND // ส้ม
+  INDIGO // น้ำเงิน
+}
+
+// กำหนดการของค่าย (หน้า "กำหนดการ": Timeline)
+model Schedule {
+  id          Int                @id @default(autoincrement())
+  eventDate   DateTime           @map("event_date")
+  dateText    String             @map("date_text")
+  mobileDate  String             @map("mobile_date")
+  badgeLabel  String             @map("badge_label")
+  badgeColor  ScheduleBadgeColor @default(BRAND) @map("badge_color")
+  title       String
+  description String
+  isVisible   Boolean            @default(true) @map("is_visible")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  @@index([eventDate])
+  @@map("schedules")
+}
+
+enum StudyPlan {
+  SCIENCE_MATH // วิทย์-คณิต
+  ARTS_MATH // ศิลป์-คำนวณ
+  ARTS_LANGUAGE // ศิลป์-ภาษา
+  ARTS_SOCIAL // ศิลป์-สังคม
+  OTHER // อื่น ๆ (ข้อความที่ระบุเพิ่มเติมเก็บแยกไว้ที่ ParticipantProfile.studyPlanOther)
+}
+
+enum InterestSubjectGroup {
+  ENGINEERING_TECH // วิศวกรรมศาสตร์
+  SCIENCE // วิทยาศาสตร์
+  HEALTH // สุขภาพ
+  EDUCATION // ศึกษาศาสตร์
+  HUMANITIES_SOCIAL // มนุษยศาสตร์และสังคม
+  ART_DESIGN // ศิลปกรรมศาสตร์
+  MEDIA_DIGITAL_TECH // สื่อและเทคโนโลยีดิจิทัล
+  BUSINESS // บริหารธุรกิจ
+  OTHER // อื่น ๆ (ข้อความที่ระบุเพิ่มเติมเก็บแยกไว้ที่ ParticipantProfile.interestSubjectGroupOther)
+}
+
+// กลุ่มน้องค่าย (แอดมินเป็นผู้สร้างและกำหนดจำนวนกลุ่ม)
+model Group {
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  participantProfiles ParticipantProfile[]
+  scores              ActivityScore[]
+
+  @@map("groups")
+}
+
+// กิจกรรมสันทนาการในค่าย (ฝ่ายกิจกรรมและสันทนาการเป็นผู้สร้าง)
+model CampActivity {
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  scores      ActivityScore[]
+
+  @@map("camp_activities")
+}
+
+// คะแนนของแต่ละกลุ่มในแต่ละกิจกรรม (1 กลุ่มมีได้ 1 คะแนนต่อกิจกรรม)
+model ActivityScore {
+  id         Int          @id @default(autoincrement())
+  activityId Int          @map("activity_id")
+  activity   CampActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  groupId    Int          @map("group_id")
+  group      Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  score      Int          @default(0)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  @@unique([activityId, groupId])
+  @@map("activity_scores")
+}
+
+// รูปแบบคอร์สเรียนในค่าย (แอดมินจัดการได้)
+model CourseFormat {
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  participantProfiles ParticipantProfile[]
+  scheduleEntries     ClassSchedule[]
+  studyDocuments      StudyDocument[]
+  subjects            Subject[]
+
+  @@map("course_formats")
+}
+
+// รายวิชา (ฝ่ายวิชาการจัดการได้)
+// requiresScoring = false สำหรับวิชาที่ไม่ต้องเก็บ/คิดคะแนน (ไม่มีช่องกรอกคะแนนในตารางคะแนน ไม่ถูกนำไปคิดคะแนนรวม)
+// explanationMaxScore/achievementMaxScore = คะแนนเต็มของแต่ละวิชา (แต่ละวิชากำหนดเองได้ไม่เท่ากัน เช่น สอบเต็ม 50 อธิบายเต็ม 100) ใช้แปลงคะแนนดิบที่กรอกเป็นสัดส่วน % - ใช้เฉพาะวิชาที่ requiresScoring เท่านั้น
+// สัดส่วนคะแนนอธิบาย:คะแนนสอบ (เช่น 70:30) ไม่ได้ตั้งแยกรายวิชาอีกต่อไป ย้ายไปเป็นค่ากลางที่ ScoreWeightSetting (ตั้งที่แท็บ "จัดการคะแนน") แล้วแบ่งเฉลี่ยตาม credits ของวิชาที่ requiresScoring ทั้งหมด (ดูสูตรที่ subjectScoreController.js)
+// credits = น้ำหนักของวิชานี้เทียบกับวิชาที่ requiresScoring วิชาอื่น ตอนแบ่งสัดส่วนคะแนนกลางและตอนรวมเป็นคะแนนภาพรวม (วิชาหน่วยกิตเยอะได้สัดส่วน/มีผลต่อคะแนนรวมมากกว่า)
+model Subject {
+  id                  Int                       @id @default(autoincrement())
+  name                String
+  requiresScoring     Boolean                   @default(true) @map("requires_scoring")
+  explanationMaxScore Int                       @default(100) @map("explanation_max_score")
+  achievementMaxScore Int                       @default(100) @map("achievement_max_score")
+  credits             Float                     @default(1) @map("credits")
+  sortOrder           Int                       @default(0) @map("sort_order")
+  // null = "ทั้งคู่" (ใช้ร่วมกันทุกคอร์ส) ไม่ใช่วิชาที่ยังไม่กำหนดคอร์ส
+  courseFormatId      Int?                      @map("course_format_id")
+  courseFormat        CourseFormat?             @relation(fields: [courseFormatId], references: [id], onDelete: Cascade)
+  createdAt           DateTime                  @default(now()) @map("created_at")
+  updatedAt           DateTime                  @updatedAt @map("updated_at")
+  scores              ParticipantSubjectScore[]
+  scheduleEntries     ClassSchedule[]
+  instructors         SubjectInstructor[]
+  oralExamSessions    OralExamSession[]
+  oralExamAttempts    OralExamAttempt[]
+
+  @@map("subjects")
+}
+
+// ผู้สอนประจำวิชา (many-to-many เพราะ 1 วิชามีผู้สอนได้หลายคน และ 1 คนสอนได้หลายวิชา)
+model SubjectInstructor {
+  id        Int      @id @default(autoincrement())
+  subjectId Int      @map("subject_id")
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([subjectId, userId])
+  @@map("subject_instructors")
+}
+
+// คะแนนของน้องค่ายแต่ละคนในแต่ละวิชา เป็นสัดส่วน 0-100 โดยตรง (ไม่มีคะแนนเต็มแยกต่อวิชาอีกต่อไป) ยังไม่ถ่วงน้ำหนักของวิชา
+model ParticipantSubjectScore {
+  id                   Int                @id @default(autoincrement())
+  participantProfileId Int                @map("participant_profile_id")
+  participantProfile   ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  subjectId            Int                @map("subject_id")
+  subject              Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  explanationScore     Int?               @map("explanation_score")
+  achievementScore     Int?               @map("achievement_score")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@unique([participantProfileId, subjectId])
+  @@map("participant_subject_scores")
+}
+
+// ช่วงคะแนนรวม (0-100) แต่ละช่วงมีผลการประเมินเป็นคำที่กำหนดเองได้ (ฝ่ายวิชาการเพิ่ม/ลบ/แก้ช่วงได้ที่แท็บ "จัดการคะแนน")
+// ช่วงทั้งหมดต้องต่อกันครบ 0-100 พอดี ไม่เว้นช่วง/ทับกัน (เช็คตอนบันทึกใน gradeBandController.js) เพื่อให้ทุกคะแนนมีผลการประเมินเสมอ
+// sortOrder เรียงจากคะแนนสูงไปต่ำ ใช้แสดงผล - colorKey เลือกเองได้ต่อช่วง (ต้องเป็นค่าใน GRADE_BADGE_PALETTE เท่านั้น - ดู backend/lib/gradeBands.js)
+model GradeBand {
+  id        Int      @id @default(autoincrement())
+  minScore  Int      @map("min_score")
+  maxScore  Int      @map("max_score")
+  label     String
+  colorKey  String   @default("slate") @map("color_key")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("grade_bands")
+}
+
+// สัดส่วนคะแนนอธิบาย:คะแนนสอบโดยรวม (แถวเดียวตายตัว id=1) ใช้ร่วมกันทุกวิชาที่ requiresScoring แทนการตั้งแยกรายวิชา
+// ตั้งได้ที่แท็บ "จัดการคะแนน" (ฝ่ายวิชาการ) รวมกันต้องเท่ากับ 100 เสมอ (เช็คตอนบันทึกใน scoreWeightSettingController.js)
+model ScoreWeightSetting {
+  id                Int      @id @default(1)
+  explanationWeight Int      @default(70) @map("explanation_weight")
+  achievementWeight Int      @default(30) @map("achievement_weight")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("score_weight_settings")
+}
+
+// OPEN = กำลังรับเช็คอิน (โชว์ QR), STARTED = ปิดรับเช็คอินแล้วแต่ยังอยู่ระหว่างประเมิน (กด "เริ่ม"), CLOSED = ยกเลิก/จบรอบแล้วจริง (กด "ยกเลิกรอบสอบ") - แยก STARTED ออกจาก CLOSED เพื่อให้ /active แยกแยะได้ว่ารอบนี้ยัง "อยู่ระหว่างทำงาน" (รีเฟรชหน้าแล้วต้องกลับมาเห็น) กับ "จบ/ถูกยกเลิกแล้วจริง" (ไม่ต้องกลับมาโชว์อีก)
+enum OralExamSessionStatus {
+  OPEN
+  STARTED
+  CLOSED
+}
+
+enum OralExamAttemptStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+// รอบสอบอธิบาย (สแกน QR) ของ 1 วิชา เปิดได้ทีละ 1 รอบต่อวิชาเท่านั้น (เช็คใน oralExamSessionController.js ไม่ใช้ partial unique index)
+// token ฝังใน URL ของ QR ให้น้องค่ายสแกนเข้าคิว ใช้เช็คอินได้เฉพาะตอน status=OPEN เท่านั้น ปิดรอบแล้วสแกนซ้ำใช้ไม่ได้ทันที
+model OralExamSession {
+  id             Int                    @id @default(autoincrement())
+  subjectId      Int                    @map("subject_id")
+  subject        Subject                @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  openedByUserId Int                    @map("opened_by_user_id")
+  openedBy       User                   @relation("OralExamSessionOpenedBy", fields: [openedByUserId], references: [id], onDelete: Cascade)
+  token          String                 @unique
+  status         OralExamSessionStatus  @default(OPEN)
+  // null = ไม่จำกัดจำนวน (ค่าเริ่มต้น) - ถ้ากำหนดไว้ เช็คอินเข้าคิวได้สูงสุดตามนี้ (นับจากจำนวน attempt ทั้งหมดที่เคยเกิดในรอบนี้ ไม่ว่าผลจะเป็นอะไร ดู checkIn ใน oralExamSessionController.js)
+  maxParticipants Int?                  @map("max_participants")
+  openedAt       DateTime               @default(now()) @map("opened_at")
+  // เวลาที่กด "เริ่มการสอบอธิบาย" ครั้งแรก (OPEN -> STARTED) - null แปลว่ายังไม่เคยกดเริ่มเลย (เปิดรอบไว้เฉย ๆ แล้วปิดทิ้งโดยไม่มีใครสอบจริง) ใช้กรองประวัติไม่ให้ปนรอบที่ไม่ได้ใช้งานจริงเข้ามา (ดู getSessionHistory)
+  startedAt      DateTime?              @map("started_at")
+  closedAt       DateTime?              @map("closed_at")
+  attempts       OralExamAttempt[]
+
+  @@index([subjectId, status])
+  @@map("oral_exam_sessions")
+}
+
+// การเข้าสอบอธิบาย 1 ครั้งของน้องค่าย 1 คน ผูกกับรอบ (session) ที่เช็คอินเข้ามา
+// attemptNumber คำนวณครั้งเดียวตอนเช็คอิน (COUNT ของครั้งก่อนหน้าในวิชาเดียวกัน + 1) แล้วบันทึกไว้ตายตัว ไม่คำนวณใหม่ตอนอ่าน
+// เหตุผล: กันคะแนน/ประวัติที่ให้ไปแล้วเปลี่ยนความหมายย้อนหลังถ้ามีการลบ/แก้ไขข้อมูลอื่นภายหลัง
+model OralExamAttempt {
+  id                   Int                    @id @default(autoincrement())
+  sessionId            Int                    @map("session_id")
+  session              OralExamSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participantProfileId Int                    @map("participant_profile_id")
+  participantProfile   ParticipantProfile     @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  subjectId            Int                    @map("subject_id")
+  subject              Subject                @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  attemptNumber        Int                    @map("attempt_number")
+  status               OralExamAttemptStatus  @default(PENDING)
+  checkedInAt          DateTime               @default(now()) @map("checked_in_at")
+  evaluatedAt          DateTime?              @map("evaluated_at")
+  evaluatedByUserId    Int?                   @map("evaluated_by_user_id")
+  evaluatedBy          User?                  @relation("OralExamAttemptEvaluatedBy", fields: [evaluatedByUserId], references: [id], onDelete: SetNull)
+  awardedScore         Int?                   @map("awarded_score")
+
+  @@unique([sessionId, participantProfileId])
+  @@index([participantProfileId, subjectId])
+  @@map("oral_exam_attempts")
+}
+
+// ตารางคะแนนตามลำดับครั้งที่สอบอธิบาย (ค่ากลาง ใช้ร่วมกันทุกวิชา ไม่ตั้งแยกรายวิชา) ตั้งได้ที่แท็บ "จัดการคะแนน" (หัวหน้าฝ่ายวิชาการ)
+// แถวที่ attemptNumber สูงสุดทำหน้าที่เป็นคะแนนของ "ครั้งที่ N ขึ้นไป" แบบปลายเปิด (ดู resolveAttemptScorePercent ใน backend/lib/oralExam.js)
+// scorePercent เป็นสัดส่วน 0-100 ไม่ใช่คะแนนดิบตายตัว เพราะแต่ละวิชากำหนด explanationMaxScore ไม่เท่ากันได้ - ตอนให้คะแนนจริงคูณกับคะแนนเต็มของวิชานั้น
+// attemptNumber ถูกกำหนดจากตำแหน่งแถวเสมอ (index+1) ตอนบันทึก ไม่รับค่าจาก client ตรง ๆ - รับประกันว่าเรียงต่อกัน 1,2,3,... ไม่มีช่องว่าง (ดู updateOralExamScoreBands)
+model OralExamScoreBand {
+  id            Int      @id @default(autoincrement())
+  attemptNumber Int      @unique @map("attempt_number")
+  scorePercent  Int      @map("score_percent")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("oral_exam_score_bands")
+}
+
+// ค่าย (สร้างโดย WebManager เท่านั้น) 1 แถว = 1 รุ่นของค่าย ครั้งที่ต้องไม่ซ้ำกัน
+// สร้างค่ายใหม่จะ (1) มอบตำแหน่ง/ฝ่ายให้ผู้ถูกเลือกใน StaffProfile จริง (2) ลบน้องค่ายทั้งหมดถาวร (ดู campController.js)
+// presidentUserId/secretaryUserId เป็น nullable + onDelete SetNull เพราะบัญชีอาจถูกลบทีหลัง ไม่ต้องการให้ลบแถว Camp ทั้งแถวไปด้วย
+// ครั้งที่จัดค่ายล่าสุด (MAX generationNo) ใช้สร้างรหัสประจำตัวน้องค่ายด้วย เช่น 281001 = ครั้งที่ 28 + รหัสรูปแบบคอร์ส (1=เตรียมสอบ, 0=ปรับพื้นฐาน) + เลขลำดับผู้เข้าร่วม (คีย์หลัก เติม 0 ให้ครบ 3 หลัก) - ดู backend/lib/camp.js
+model Camp {
+  id              Int                  @id @default(autoincrement())
+  generationNo    Int                  @unique @map("generation_no")
+  presidentUserId Int?                 @map("president_user_id")
+  president       User?                @relation("CampPresident", fields: [presidentUserId], references: [id], onDelete: SetNull)
+  secretaryUserId Int?                 @map("secretary_user_id")
+  secretary       User?                @relation("CampSecretary", fields: [secretaryUserId], references: [id], onDelete: SetNull)
+  // true เมื่อกดปุ่ม "จบค่าย" (รีเซ็ตตำแหน่งพี่ค่ายทั้งหมดกลับเป็น "ทีมงานค่าย") ทำได้ครั้งเดียวต่อค่าย
+  isEnded         Boolean              @default(false) @map("is_ended")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  vicePresidents  CampVicePresident[]
+  departmentHeads CampDepartmentHead[]
+  // id โฟลเดอร์ Google Drive ของค่ายรุ่นนี้ (สร้างครั้งแรกตอนสำรองข้อมูล) ใช้ cache กันค้นหาซ้ำทุกรอบ
+  driveFolderId   String?              @map("drive_folder_id")
+  backupRuns      CampBackupRun[]
+
+  @@map("camps")
+}
+
+enum BackupTrigger {
+  SCHEDULED
+  MANUAL
+  CAMP_CREATE
+  CAMP_END // ตอนกด "จบค่าย" - สำรอง snapshot เต็ม + เก็บไฟล์น้องค่ายของค่ายนั้นก่อนลบน้องค่ายออกจากฐานข้อมูล (ดู endCamp ใน campController.js)
+}
+
+enum BackupStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ประวัติการสำรองข้อมูลขึ้น Google Drive แต่ละรอบ (ดู backend/lib/campBackup.js)
+// campId เป็น SetNull เพราะไม่ต้องการให้ลบ Camp พาประวัติ backup หายไปด้วย generationNo จึง denormalise ไว้ให้ประวัติอ่านได้แม้ campId เป็น null
+model CampBackupRun {
+  id               Int           @id @default(autoincrement())
+  campId           Int?          @map("camp_id")
+  camp             Camp?         @relation(fields: [campId], references: [id], onDelete: SetNull)
+  generationNo     Int?          @map("generation_no")
+  trigger          BackupTrigger
+  status           BackupStatus  @default(PENDING)
+  driveFolderId    String?       @map("drive_folder_id")
+  snapshotFileId   String?       @map("snapshot_file_id")
+  snapshotFileName String?       @map("snapshot_file_name")
+  fileCount        Int           @default(0) @map("file_count")
+  // ขนาดรวมเป็นไบต์ ใช้ Float ไม่ใช่ BigInt เพราะ BigInt ทำให้ JSON.stringify/res.json() พังตอนส่งกลับ frontend
+  totalBytes       Float         @default(0) @map("total_bytes")
+  errorMessage     String?       @map("error_message")
+  startedAt        DateTime      @default(now()) @map("started_at")
+  finishedAt       DateTime?     @map("finished_at")
+
+  @@index([startedAt])
+  @@index([campId, status])
+  @@map("camp_backup_runs")
+}
+
+// รองประธานค่าย (0+ คนต่อค่าย) แยกตารางลูกเพราะจำนวนไม่คงที่ ต่างจากประธาน/เลขาที่มีคนเดียวตายตัว
+model CampVicePresident {
+  id        Int      @id @default(autoincrement())
+  campId    Int      @map("camp_id")
+  camp      Camp     @relation(fields: [campId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  user      User     @relation("CampVicePresidentUser", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([campId, userId])
+  @@map("camp_vice_presidents")
+}
+
+// หัวหน้าฝ่ายของค่ายนี้ 1 แถวต่อฝ่าย ครอบคลุมทุก CampDepartment ที่มีอยู่ ณ ตอนสร้างค่าย (บังคับครบทุกฝ่ายตอนสร้าง)
+model CampDepartmentHead {
+  id           Int            @id @default(autoincrement())
+  campId       Int            @map("camp_id")
+  camp         Camp           @relation(fields: [campId], references: [id], onDelete: Cascade)
+  departmentId Int            @map("department_id")
+  department   CampDepartment @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  userId       Int            @map("user_id")
+  user         User           @relation("CampDepartmentHeadUser", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  @@unique([campId, departmentId])
+  @@map("camp_department_heads")
+}
+
+// ตารางเรียนของแต่ละคอร์ส (แต่ละแถวคือ 1 คาบ) subjectId ว่างได้ (เช่น "พักเที่ยง")
+model ClassSchedule {
+  id             Int                       @id @default(autoincrement())
+  courseFormatId Int                       @map("course_format_id")
+  courseFormat   CourseFormat              @relation(fields: [courseFormatId], references: [id], onDelete: Cascade)
+  subjectId      Int?                      @map("subject_id")
+  subject        Subject?                  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  classDate      DateTime                  @map("class_date") @db.Date
+  startTime      String                    @map("start_time")
+  endTime        String                    @map("end_time")
+  // ชื่อกิจกรรม ใช้แทนวิชาตอนคาบนี้ไม่ใช่คาบเรียนวิชา (เลือกได้อย่างใดอย่างหนึ่งกับ subjectId ไม่ใช้พร้อมกัน)
+  activityName   String?                   @map("activity_name")
+  // หมายเหตุ แยกอิสระจากกิจกรรม/วิชา ใส่เพิ่มเติมได้เสมอไม่ว่าจะเลือกวิชาหรือกิจกรรม
+  note           String?
+  sortOrder      Int                       @default(0) @map("sort_order")
+  createdAt      DateTime                  @default(now()) @map("created_at")
+  updatedAt      DateTime                  @updatedAt @map("updated_at")
+  instructors    ClassScheduleInstructor[]
+
+  @@map("class_schedules")
+}
+
+// ผู้สอนของคาบเรียนนี้โดยเฉพาะ (many-to-many เพราะ 1 คาบอาจสอนร่วมกันหลายคน) แยกจาก SubjectInstructor ซึ่งเป็นผู้รับผิดชอบวิชาโดยรวม
+model ClassScheduleInstructor {
+  id              Int           @id @default(autoincrement())
+  classScheduleId Int           @map("class_schedule_id")
+  classSchedule   ClassSchedule @relation(fields: [classScheduleId], references: [id], onDelete: Cascade)
+  userId          Int           @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@unique([classScheduleId, userId])
+  @@map("class_schedule_instructors")
+}
+
+// เอกสารประกอบการเรียน (ฝ่ายวิชาการอัปโหลด) courseFormatId ว่าง = เอกสารทั่วไป มองเห็นได้ทุกคอร์ส
+model StudyDocument {
+  id             Int           @id @default(autoincrement())
+  title          String
+  description    String?
+  fileUrl        String        @map("file_url")
+  // id ไฟล์บน Google Drive (เอกสารเก็บบน Drive อย่างเดียว ไม่มีสำเนาในดิสก์/Supabase Storage) ใช้ตอนลบไฟล์จริง
+  driveFileId    String?       @map("drive_file_id")
+  courseFormatId Int?          @map("course_format_id")
+  courseFormat   CourseFormat? @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
+  sortOrder      Int           @default(0) @map("sort_order")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@map("study_documents")
+}
+
+// ข้อมูลโปรไฟล์น้องค่าย (แบบฟอร์มสมัครเข้าค่าย)
+model ParticipantProfile {
+  id                   Int                       @id @default(autoincrement())
+  userId               Int                       @unique @map("user_id")
+  user                 User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prefix               String?
+  firstName            String?                   @map("first_name")
+  lastName             String?                   @map("last_name")
+  nickname             String?
+  birthDate            DateTime?                 @map("birth_date")
+  phone                String?
+  parentPhone          String?                   @map("parent_phone")
+  courseFormatId       Int?                      @map("course_format_id")
+  courseFormat         CourseFormat?             @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
+  studyPlan            StudyPlan?                @map("study_plan")
+  studyPlanOther       String?                   @map("study_plan_other")
+  interestSubjectGroup InterestSubjectGroup[]    @map("interest_subject_group")
+  interestSubjectGroupOther String?              @map("interest_subject_group_other")
+  dreamInstitution     String?                   @map("dream_institution")
+  groupId              Int?                      @map("group_id")
+  group                Group?                    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdAt            DateTime                  @default(now()) @map("created_at")
+  updatedAt            DateTime                  @updatedAt @map("updated_at")
+  subjectScores        ParticipantSubjectScore[]
+  oralExamAttempts     OralExamAttempt[]
+  // ครั้งที่จัดค่ายล่าสุด ณ ตอนบัญชีนี้ถูกสร้าง/ลงทะเบียน (audit trail เท่านั้น) เก็บไว้แม้จะถูกลบทิ้งตอนสร้างค่ายรุ่นถัดไป (ดู campController.js)
+  campGenerationNo     Int?                      @map("camp_generation_no")
+
+  @@map("participant_profiles")
+}
+
+// ฝ่ายงานในค่าย (แอดมินจัดการได้)
+model CampDepartment {
+  id            Int                  @id @default(autoincrement())
+  name          String
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  staffProfiles StaffProfile[]
+  campHeads     CampDepartmentHead[]
+
+  @@map("camp_departments")
+}
+
+// ตำแหน่งในค่าย (แอดมินจัดการได้)
+model StaffPosition {
+  id            Int            @id @default(autoincrement())
+  name          String
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  staffProfiles StaffProfile[]
+
+  @@map("staff_positions")
+}
+
+// ข้อมูลโปรไฟล์พี่ค่าย
+model StaffProfile {
+  id               Int             @id @default(autoincrement())
+  userId           Int             @unique @map("user_id")
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prefix           String?
+  academicTitle    String?         @map("academic_title")
+  firstName        String?         @map("first_name")
+  lastName         String?         @map("last_name")
+  nickname         String?
+  birthDate        DateTime?       @map("birth_date")
+  phone            String?
+  departmentId     Int?            @map("department_id")
+  department       CampDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  positionId       Int?            @map("position_id")
+  position         StaffPosition?  @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  affiliation      String?
+  // 2 ฟิลด์นี้กรอกเฉพาะกรณีเลือกสถานะ "กำลังศึกษา" ในฟอร์ม (ไม่ได้บังคับคู่กับ occupation ในระดับ schema
+  // เพราะตัวเลือก "ประกอบอาชีพ"/"กำลังศึกษา" เป็นแค่ UI toggle ไม่ได้เก็บ status แยกเป็นคอลัมน์ ดูว่าฝั่งไหนถูกกรอกก็รู้แล้วว่าเลือกอะไรไว้)
+  faculty          String?
+  major            String?
+  occupation       String?
+  // สิทธิ์ผู้ดูแลระบบที่มอบให้พี่ค่ายคนนี้ (แทนที่ role ADMIN แบบเดิม) มีเฉพาะ Host เท่านั้นที่ให้/ถอดสิทธิ์นี้ได้
+  isAdmin          Boolean         @default(false) @map("is_admin")
+  // ครั้งที่จัดค่ายล่าสุด ณ ตอนบัญชีนี้ถูกสร้าง/ลงทะเบียน (audit trail เท่านั้น ไม่ผูกกับตำแหน่งจริงซึ่งถูกรีเซ็ตอิสระผ่าน "จบค่าย" - ดู campController.js)
+  campGenerationNo Int?            @map("camp_generation_no")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@map("staff_profiles")
+}
+
+// ตาราง session ของ express-session + connect-pg-simple (server.js ตั้ง createTableIfMissing ให้สร้างเองครั้งแรก)
+// ประกาศไว้ที่นี่ให้ Prisma รู้จัก ไม่งั้น prisma migrate dev จะมองว่าฐานข้อมูลมีตารางเกินจาก migration (drift) แล้วขอ reset ทั้งก้อน
+// โครงต้องตรงกับ node_modules/connect-pg-simple/table.sql เป๊ะ - ห้ามอ่าน/เขียนผ่าน Prisma client เอง ให้ express-session จัดการเท่านั้น
+model Session {
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], map: "IDX_session_expire")
+  @@map("session")
+}
+
+// ==========================================
+// สถิติการใช้งานเว็บไซต์ (ดู backend/middleware/usageTracker.js, backend/lib/usageSnapshot.js)
+// เก็บระยะยาวข้ามค่าย ไว้ใช้ตัดสินใจเรื่องฐานข้อมูล/โฮสติ้ง/ฟีเจอร์ - ไม่อยู่ในรายการล้างตอนสร้างค่ายใหม่ (campWipe.js) โดยตั้งใจ
+// ทุกตารางเป็น "ยอดรวม" (aggregate) ไม่ใช่ log รายคำขอ - middleware นับใน memory แล้วเขียนลง DB ทุก ๆ 1 นาที ไม่เขียนทุก request
+// ไม่เก็บ IP / body / URL ที่มี id จริง (route เก็บเป็นแม่แบบ เช่น /api/users/:id) จึงไม่ใช่ข้อมูลส่วนบุคคล
+// ==========================================
+
+// ยอดคำขอรายชั่วโมง (bucketStart = ต้นชั่วโมงแบบ UTC แปลงเป็นเวลาไทยตอนแสดงผล) 1 แถว/ชั่วโมง = ~8.8k แถว/ปี
+model UsageHourlyStat {
+  id                  Int      @id @default(autoincrement())
+  bucketStart         DateTime @unique @map("bucket_start")
+  apiRequests         Int      @default(0) @map("api_requests")
+  pageViews           Int      @default(0) @map("page_views")
+  // นับเฉพาะคำขอ API (หน้า static ไม่นับ) 5xx = errorCount, 4xx = clientErrorCount
+  errorCount          Int      @default(0) @map("error_count")
+  clientErrorCount    Int      @default(0) @map("client_error_count")
+  // เวลาตอบสนองของ API รวมทุกคำขอในชั่วโมงนี้ (เฉลี่ย = totalDurationMs / apiRequests) ใช้ Float กัน overflow ของ Int ตอนยอดสะสมสูง
+  totalDurationMs     Float    @default(0) @map("total_duration_ms")
+  maxDurationMs       Int      @default(0) @map("max_duration_ms")
+  // จำนวนผู้ใช้ (ที่ล็อกอิน) ไม่ซ้ำกันในชั่วโมงนี้ - ผู้เยี่ยมชมไม่มี session จึงนับไม่ได้ (ตั้งใจไม่ใช้ IP มานับแทน)
+  activeUsers         Int      @default(0) @map("active_users")
+  // แยกตามผู้ใช้/อุปกรณ์/เบราว์เซอร์ (นับรวมทั้ง API และหน้าเว็บ) เดาจาก User-Agent แบบหยาบ ๆ พอให้เห็นสัดส่วน
+  guestRequests       Int      @default(0) @map("guest_requests")
+  participantRequests Int      @default(0) @map("participant_requests")
+  staffRequests       Int      @default(0) @map("staff_requests")
+  webmanagerRequests  Int      @default(0) @map("webmanager_requests")
+  mobileRequests      Int      @default(0) @map("mobile_requests")
+  desktopRequests     Int      @default(0) @map("desktop_requests")
+  chromeRequests      Int      @default(0) @map("chrome_requests")
+  safariRequests      Int      @default(0) @map("safari_requests")
+  lineRequests        Int      @default(0) @map("line_requests")
+  otherBrowserRequests Int     @default(0) @map("other_browser_requests")
+
+  @@map("usage_hourly_stats")
+}
+
+// ยอดคำขอรายวัน แยกตาม endpoint (route เป็นแม่แบบจาก express ไม่มี id จริง) ไว้ดูว่าฟีเจอร์ไหนถูกใช้มาก/ช้า/พังบ่อย
+model UsageEndpointDailyStat {
+  id               Int      @id @default(autoincrement())
+  day              DateTime @db.Date
+  method           String
+  route            String
+  requestCount     Int      @default(0) @map("request_count")
+  totalDurationMs  Float    @default(0) @map("total_duration_ms")
+  maxDurationMs    Int      @default(0) @map("max_duration_ms")
+  errorCount       Int      @default(0) @map("error_count")
+  clientErrorCount Int      @default(0) @map("client_error_count")
+
+  @@unique([day, method, route])
+  @@map("usage_endpoint_daily_stats")
+}
+
+// ผู้ใช้ที่เข้าใช้งานในแต่ละวัน (1 แถวต่อคนต่อวัน) ไว้นับ DAU/WAU/MAU แบบแม่นยำ
+// ตั้งใจไม่ผูก FK กับ User เพราะน้องค่ายถูกลบทั้งหมดทุกครั้งที่สร้างค่ายใหม่ แต่สถิติต้องอยู่ต่อ (role เก็บเป็น String ด้วยเหตุผลเดียวกับ ActivityLog.actorRole)
+model UsageDailyActiveUser {
+  id     Int      @id @default(autoincrement())
+  day    DateTime @db.Date
+  userId Int      @map("user_id")
+  role   String
+
+  @@unique([day, userId])
+  @@index([day])
+  @@map("usage_daily_active_users")
+}
+
+// ภาพถ่ายขนาดฐานข้อมูล/พื้นที่เก็บไฟล์ วันละ 1 แถว (ดู backend/lib/usageSnapshot.js) ไว้ดูอัตราการโตระยะยาว
+// totalRows เป็นค่าประมาณจาก pg_stat_user_tables (n_live_tup) ไม่ใช่ COUNT(*) จริง เพื่อไม่ให้ต้องอ่านทุกตารางทุกวัน
+model UsageDbSnapshot {
+  id               Int      @id @default(autoincrement())
+  day              DateTime @unique @db.Date
+  generationNo     Int?     @map("generation_no")
+  databaseBytes    Float    @default(0) @map("database_bytes")
+  totalRows        Float    @default(0) @map("total_rows")
+  sessionCount     Int      @default(0) @map("session_count")
+  storageFileCount Int      @default(0) @map("storage_file_count")
+  storageBytes     Float    @default(0) @map("storage_bytes")
+  // ตารางที่ใหญ่สุด 10 อันดับ [{ table, bytes, rows }] เก็บเป็น JSON เพราะเป็นข้อมูลประกอบ ไม่ต้อง query ข้ามแถว
+  tableSizes       Json     @default("[]") @map("table_sizes")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("usage_db_snapshots")
+}

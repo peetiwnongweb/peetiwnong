@@ -1,0 +1,60 @@
+/* ==========================================
+   Scroll to Top Button
+   ========================================== */
+.scroll-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 999;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(to bottom right, var(--brand-600), var(--indigo-600));
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.9);
+  padding: 0;
+}
+
+.scroll-to-top.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.scroll-to-top:hover {
+  background: linear-gradient(to bottom right, var(--brand-700), var(--indigo-700));
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 15px rgba(255, 114, 32, 0.3);
+}
+
+.scroll-to-top svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2.5;
+}
+
+/* ==========================================
+   Scroll to Top: Mobile-specific overrides (max-width: 480px)
+   ========================================== */
+@media (max-width: 480px) {
+  .scroll-to-top {
+    bottom: 1rem;
+    right: 1rem;
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .scroll-to-top svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}

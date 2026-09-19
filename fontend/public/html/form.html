@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ลงทะเบียนเข้าร่วมค่ายวิชาการ Academy Camp ครั้งที่ 28">
+    <title>ลงทะเบียนเข้าร่วมค่าย - PTN Camp | Participant</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/favicon/favicon.png">
+
+    <!-- Link CSS -->
+    <link rel="stylesheet" href="../scr/output.css">
+    <link rel="stylesheet" href="../css/base/variables.css?v=20260914-2">
+    <link rel="stylesheet" href="../css/base/utilities.css">
+    <link rel="stylesheet" href="../css/base/loader.css">
+    <link rel="stylesheet" href="../css/layout/footer.css?v=20260911-1">
+    <link rel="stylesheet" href="../css/layout/modal.css">
+    <link rel="stylesheet" href="../css/pages/form.css?v=20260914-45">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="bg-slate-50 min-h-screen flex flex-col form-wizard-page">
+    <!-- Notice: Top Navigation is removed as requested -->
+
+    <!-- Main Layout: 2 Columns on Desktop -->
+    <main class="form-page-layout">
+
+        <!-- Left Column: Sidebar -->
+        <aside class="form-sidebar">
+
+            <div class="sidebar-brand">
+                <img src="../../assets/images/logo/logo1.png" alt="PTN logo" class="sidebar-brand-icon">
+                <div class="sidebar-brand-text">
+                    <span class="sidebar-brand-title">PEETIWNONG</span>
+                    <span class="sidebar-brand-subtitle">Academics Camp</span>
+                </div>
+            </div>
+
+            <h1 class="sidebar-title">ลงทะเบียนเข้าร่วมค่ายวิชาการ "พี่ติวน้อง"</h1>
+            <p class="sidebar-desc">พบกับกิจกรรมที่จะได้ติวเข้ม แนะนำแนวทางและเตรียมความพร้อมสู่รั้วมหาวิทยาลัยในฝันไปกับพี่ ๆ ค่าย พร้อมรับเกียรติบัตรและทุนการศึกษาอีกมากมาย</p>
+
+            <!-- Step Indicators -->
+            <div class="steps-container" id="steps-indicator">
+                <div class="step-item active" id="indicator-step-1">
+                    <div class="step-icon">1</div>
+                    <div class="step-text">
+                        <span class="step-title"><span class="step-title-full">ข้อมูลส่วนตัวและผู้ติดต่อ</span><span class="step-title-short">ข้อมูลส่วนตัว</span></span>
+                        <span class="step-subtitle">กรอกข้อมูลพื้นฐานของผู้สมัคร</span>
+                    </div>
+                </div>
+                <div class="step-item pending" id="indicator-step-2">
+                    <div class="step-icon">2</div>
+                    <div class="step-text">
+                        <span class="step-title"><span class="step-title-full">ข้อมูลการเรียน & สายวิชาที่สนใจ</span><span class="step-title-short">เลือกวิชา</span></span>
+                        <span class="step-subtitle">เลือกวิชาและสาขาที่ต้องการร่วมกิจกรรม</span>
+                    </div>
+                </div>
+                <div class="step-item pending" id="indicator-step-3">
+                    <div class="step-icon">3</div>
+                    <div class="step-text">
+                        <span class="step-title"><span class="step-title-full">ยืนยันอีเมลและการยอมรับ</span><span class="step-title-short">ยืนยัน</span></span>
+                        <span class="step-subtitle">ยืนยันตัวตนผ่านอีเมลและเงื่อนไข</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="sidebar-contact-wrap">
+                    <button type="button" class="sidebar-contact-trigger" onclick="openHelpModal()">
+                        <svg class="sidebar-contact-trigger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Help
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Column: Form Content -->
+        <section class="form-content-area">
+            <form id="multi-step-form">
+
+                <!-- แจ้งเตือน/ข้อผิดพลาด: เด้งลงมาจากขอบบนตรงกลางจอ พร้อมแถบโหลดนับถอยหลังก่อนหาย เห็นได้ทุกสเต็ปไม่ว่าจะเลื่อนอยู่ตรงไหน -->
+                <div id="form-toast" class="form-toast">
+                    <span id="form-toast-message" class="form-toast-message"></span>
+                    <div class="form-toast-bar"></div>
+                </div>
+
+
+                <!-- STEP 1: ข้อมูลส่วนตัว -->
+                <div class="form-step-content active" id="step-content-1">
+                    <div class="form-step-header">
+                        <div class="form-step-header-text">
+                            <h2 class="form-step-title">ข้อมูลส่วนตัวและผู้ติดต่อ</h2>
+                            <p class="form-step-desc">กรุณากรอกข้อมูลส่วนตัวของคุณให้ครบถ้วนและถูกต้อง</p>
+                        </div>
+                        <button type="button" class="btn-outline draft-clear-btn" onclick="handleClearDraftClick()">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span class="draft-clear-label">ล้างฟอร์ม</span>
+                        </button>
+                    </div>
+
+                    <div class="form-grid mb-4">
+                        <div class="form-group">
+                            <label for="reg-prefix" class="form-label">คำนำหน้า <span class="required-mark">*</span></label>
+                            <select id="reg-prefix" class="form-input bg-white" required>
+                                <option value="" disabled selected>-- เลือกคำนำหน้า --</option>
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                                <option value="เด็กชาย">เด็กชาย</option>
+                                <option value="เด็กหญิง">เด็กหญิง</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-firstname" class="form-label">ชื่อ <span class="required-mark">*</span></label>
+                            <input type="text" id="reg-firstname" required class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-grid mb-4">
+                        <div class="form-group">
+                            <label for="reg-lastname" class="form-label">นามสกุล <span class="required-mark">*</span></label>
+                            <input type="text" id="reg-lastname" required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-nickname" class="form-label">ชื่อเล่น</label>
+                            <input type="text" id="reg-nickname" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-grid mb-4">
+                        <div class="form-group">
+                            <label class="form-label">วัน/เดือน/ปีเกิด <span class="required-mark">*</span></label>
+                            <div class="dob-select-row">
+                                <select id="reg-dob-day" class="form-input dob-select" required>
+                                    <option value="">วัน</option>
+                                </select>
+                                <select id="reg-dob-month" class="form-input dob-select" required>
+                                    <option value="">เดือน</option>
+                                    <option value="1">ม.ค.</option>
+                                    <option value="2">ก.พ.</option>
+                                    <option value="3">มี.ค.</option>
+                                    <option value="4">เม.ย.</option>
+                                    <option value="5">พ.ค.</option>
+                                    <option value="6">มิ.ย.</option>
+                                    <option value="7">ก.ค.</option>
+                                    <option value="8">ส.ค.</option>
+                                    <option value="9">ก.ย.</option>
+                                    <option value="10">ต.ค.</option>
+                                    <option value="11">พ.ย.</option>
+                                    <option value="12">ธ.ค.</option>
+                                </select>
+                                <select id="reg-dob-year" class="form-input dob-select" required>
+                                    <option value="">ปี</option>
+                                </select>
+                            </div>
+                            <input type="hidden" id="reg-dob">
+                        </div>
+                    </div>
+
+                    <div class="form-grid mb-4">
+                        <div class="form-group">
+                            <label for="reg-phone" class="form-label">เบอร์โทรศัพท์ <span class="required-mark">*</span></label>
+                            <input type="tel" id="reg-phone" required placeholder="0XX-XXX-XXXX" class="form-input" oninput="handleRegPhoneInput(event)">
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-parent-phone" class="form-label">เบอร์โทรผู้ปกครอง <span class="required-mark">*</span></label>
+                            <input type="tel" id="reg-parent-phone" required placeholder="0XX-XXX-XXXX" class="form-input" oninput="handleRegPhoneInput(event)">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-outline" onclick="window.location.href='../index.html'">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            กลับหน้าหลัก
+                        </button>
+                        <button type="button" class="btn-primary" onclick="nextStep(2)">
+                            ถัดไป
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: ข้อมูลการเรียน -->
+                <div class="form-step-content" id="step-content-2">
+                    <div class="form-step-header">
+                        <div class="form-step-header-text">
+                            <h2 class="form-step-title">ข้อมูลการเรียนและสายวิชาที่สนใจ</h2>
+                            <p class="form-step-desc">เลือกกลุ่มสาระวิชาและหัวข้อที่คุณสนใจเป็นพิเศษ</p>
+                        </div>
+                        <button type="button" class="btn-outline draft-clear-btn" onclick="handleClearDraftClick()">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span class="draft-clear-label">ล้างฟอร์ม</span>
+                        </button>
+                    </div>
+
+                    <div class="form-grid mb-6">
+                        <div class="form-group">
+                            <label for="reg-course" class="form-label">รูปแบบคอร์สเรียนในค่าย <span class="required-mark">*</span></label>
+                            <select id="reg-course" class="form-input bg-white" required>
+                                <option value="" disabled selected>-- เลือกคอร์ส --</option>
+                                <option value="ปรับพื้นฐาน">คอร์สปรับพื้นฐาน</option>
+                                <option value="เตรียมสอบ">คอร์สเตรียมสอบ</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-plan" class="form-label">แผนการเรียนปัจจุบัน <span class="required-mark">*</span></label>
+                            <select id="reg-plan" class="form-input bg-white" required onchange="handleStudyPlanChange()">
+                                <option value="" disabled selected>-- เลือกแผนการเรียน --</option>
+                                <option value="SCIENCE_MATH">วิทย์ - คณิต</option>
+                                <option value="ARTS_MATH">ศิลป์ - คำนวณ</option>
+                                <option value="ARTS_LANGUAGE">ศิลป์ - ภาษา</option>
+                                <option value="ARTS_SOCIAL">ศิลป์ - สังคม</option>
+                                <option value="OTHER">อื่น ๆ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-6 hidden" id="study-plan-other-group">
+                        <label for="reg-plan-other" class="form-label">ระบุแผนการเรียน <span class="required-mark">*</span></label>
+                        <input type="text" id="reg-plan-other" placeholder="เช่น ศิลป์ - กีฬา" class="form-input">
+                    </div>
+
+                    <div class="form-group mb-6">
+                        <label class="form-label">กลุ่มวิชาที่สนใจเป็นพิเศษ (เลือกได้มากกว่า 1 ข้อ)</label>
+                        <div class="checkbox-card-grid">
+                            <!-- Card 1 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="ENGINEERING_TECH">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">วิศวกรรมศาสตร์</span>
+                                    <span class="checkbox-card-desc">เทคโนโลยี, คอมพิวเตอร์ และการคำนวณ</span>
+                                </div>
+                            </label>
+                            <!-- Card 2 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="SCIENCE">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">วิทยาศาสตร์</span>
+                                    <span class="checkbox-card-desc">ฟิสิกส์, เคมี, ชีววิทยา และวิทยาศาสตร์ทั่วไป</span>
+                                </div>
+                            </label>
+                            <!-- Card 3 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="HEALTH">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">สุขภาพ</span>
+                                    <span class="checkbox-card-desc">แพทยศาสตร์, พยาบาล, เภสัช และสาธารณสุข</span>
+                                </div>
+                            </label>
+                            <!-- Card 4 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="EDUCATION">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">ศึกษาศาสตร์</span>
+                                    <span class="checkbox-card-desc">ครุศาสตร์และการสอน</span>
+                                </div>
+                            </label>
+                            <!-- Card 5 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="HUMANITIES_SOCIAL">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">มนุษยศาสตร์และสังคม</span>
+                                    <span class="checkbox-card-desc">ภาษาอังกฤษ, ประวัติศาสตร์, สังคมศาสตร์</span>
+                                </div>
+                            </label>
+                            <!-- Card 6 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="ART_DESIGN">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">ศิลปกรรมศาสตร์</span>
+                                    <span class="checkbox-card-desc">การคิดเชิงสร้างสรรค์, การออกแบบ, ทัศนศิลป์</span>
+                                </div>
+                            </label>
+                            <!-- Card 7 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="MEDIA_DIGITAL_TECH">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">สื่อและเทคโนโลยีดิจิทัล</span>
+                                    <span class="checkbox-card-desc">สื่อสารมวลชนและดิจิทัลคอนเทนต์</span>
+                                </div>
+                            </label>
+                            <!-- Card 8 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="BUSINESS">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">บริหารธุรกิจ</span>
+                                    <span class="checkbox-card-desc">การจัดการ, การตลาด, การเงินและการบัญชี</span>
+                                </div>
+                            </label>
+                            <!-- Card 9 -->
+                            <label class="checkbox-card" onclick="toggleCard(this)">
+                                <input type="checkbox" name="subject_track" value="OTHER" onchange="handleInterestOtherChange()">
+                                <div class="checkbox-card-content">
+                                    <span class="checkbox-card-title">อื่น ๆ</span>
+                                    <span class="checkbox-card-desc">สาขาอื่นที่ไม่ได้ระบุไว้ข้างต้น</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-6 hidden" id="interest-other-group">
+                        <label for="reg-interest-other" class="form-label">ระบุกลุ่มวิชาที่สนใจ <span class="required-mark">*</span></label>
+                        <input type="text" id="reg-interest-other" placeholder="เช่น นิติศาสตร์" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-dream" class="form-label">คุณมีสาขาวิชา คณะและสถาบันในฝันไว้แล้วหรือยัง?
+                            (ระบุได้หากมี)</label>
+                        <input type="text" id="reg-dream" placeholder="เช่น สาขาวิศวกรรมคอมพิวเตอร์ คณะวิศวกรรมศาสตร์ มหาวิทยาลัยเชียงใหม่"
+                            class="form-input">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-outline" onclick="prevStep(1)">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            ย้อนกลับ
+                        </button>
+                        <button type="button" class="btn-primary" onclick="nextStep(3)">
+                            ถัดไป
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: อัปโหลดเอกสาร -->
+                <div class="form-step-content" id="step-content-3">
+                    <div class="form-step-header">
+                        <div class="form-step-header-text">
+                            <h2 class="form-step-title">ยืนยันอีเมลและการยอมรับ</h2>
+                            <p class="form-step-desc">ขั้นตอนสุดท้าย กรุณายืนยันตัวตนผ่านอีเมลและยอมรับข้อตกลง</p>
+                        </div>
+                        <button type="button" class="btn-outline draft-clear-btn" onclick="handleClearDraftClick()">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span class="draft-clear-label">ล้างฟอร์ม</span>
+                        </button>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label for="reg-email" class="form-label">อีเมล <span class="required-mark">*</span></label>
+                        <input type="email" id="reg-email" required placeholder="name@example.com" class="form-input" style="max-width: 400px;">
+                    </div>
+
+                    <div class="form-group mb-6">
+                        <label class="form-label">รหัส OTP ยืนยันอีเมล (6 หลัก) <span class="required-mark">*</span></label>
+                        <p style="font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.5rem;">เราจะส่งรหัสผ่านไปยังอีเมลที่คุณระบุไว้</p>
+                        <div class="reg-otp-row">
+                            <div id="reg-otp-boxes" class="otp-input-group">
+                                <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                                <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                                <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                                <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                                <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                                <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                            </div>
+                            <button type="button" id="btn-request-otp" onclick="requestOTP()" class="btn-outline"
+                                style="padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem;">ขอรับ OTP</button>
+                        </div>
+                    </div>
+
+                    <div class="form-grid mb-6">
+                        <div class="form-group">
+                            <label for="reg-password" class="form-label">รหัสผ่านใหม่ <span class="required-mark">*</span></label>
+                            <div class="password-field-wrap">
+                                <input type="password" id="reg-password" required placeholder="อย่างน้อย 8 ตัวอักษร" class="form-input" oninput="updatePasswordChecklist()">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('reg-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <ul class="password-checklist" id="password-checklist">
+                                <li data-rule="length">อย่างน้อย 8 ตัวอักษร</li>
+                            </ul>
+                            <p class="password-checklist-hint">และผ่านอย่างน้อย 3 ใน 4 ข้อต่อไปนี้</p>
+                            <ul class="password-checklist" id="password-checklist-categories">
+                                <li data-rule="lower">ตัวพิมพ์เล็ก (a-z)</li>
+                                <li data-rule="upper">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                                <li data-rule="number">ตัวเลข (0-9)</li>
+                                <li data-rule="special">อักขระพิเศษ (เช่น ! @ # $)</li>
+                            </ul>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-confirm-password" class="form-label">ยืนยันรหัสผ่านใหม่ <span class="required-mark">*</span></label>
+                            <div class="password-field-wrap">
+                                <input type="password" id="reg-confirm-password" required placeholder="พิมพ์รหัสผ่านอีกครั้ง" class="form-input">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('reg-confirm-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group pdpa-consent-row mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label class="ios-checkbox">
+                            <input type="checkbox" id="reg-terms" required>
+                            <div class="checkbox-wrapper">
+                                <div class="checkbox-bg"></div>
+                                <svg class="checkbox-icon" viewBox="0 0 24 24" fill="none">
+                                    <path class="check-path" d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </label>
+                        <label for="reg-terms" class="checkbox-label text-sm text-slate-700">
+                            ฉันยืนยันข้อมูลความจริงทั้งหมด และตกลงรับเงื่อนไขคุ้มครองข้อมูลส่วนบุคคล (PDPA)
+                            ของค่ายพี่ติวน้อง
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-outline" onclick="prevStep(2)">
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            ย้อนกลับ
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            ยืนยันการลงทะเบียน
+                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </section>
+    </main>
+
+    <!-- ================= MODAL: Help (คู่มือกรอกฟอร์ม) ================= -->
+    <div id="help-modal" class="modal hidden" aria-labelledby="help-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="closeHelpModal()" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box modal-box-lg help-modal-box">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeHelpModal()" aria-label="ปิด">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-content-wide">
+                    <span class="help-modal-tag">คู่มือการกรอกฟอร์ม</span>
+                    <h2 id="help-modal-title" class="help-modal-title">วิธีกรอกฟอร์มลงทะเบียนเข้าร่วมค่าย</h2>
+                    <p class="help-modal-desc">คำอธิบายว่าแต่ละช่องในแต่ละขั้นตอนต้องกรอกอะไร พร้อมตัวอย่าง หากติดปัญหาส่วนไหนสามารถติดต่อสอบถามได้ที่ช่องทางท้ายหน้านี้</p>
+
+                    <div class="help-section-grid">
+                    <div class="help-section">
+                        <h3 class="help-section-title"><span class="help-step-number">1</span> ข้อมูลส่วนตัวและผู้ติดต่อ</h3>
+                        <div class="help-field-list">
+                            <div>
+                                <div class="help-field-name">คำนำหน้า <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">เลือกคำนำหน้าชื่อของผู้สมัคร</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">ชื่อ <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">ชื่อจริงตามบัตรประชาชน ไม่ใช่ชื่อเล่น</p>
+                                <span class="help-example">ตัวอย่าง: สมชาย</span>
+                            </div>
+                            <div>
+                                <div class="help-field-name">นามสกุล <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">นามสกุลจริงตามบัตรประชาชน</p>
+                                <span class="help-example">ตัวอย่าง: ใจดี</span>
+                            </div>
+                            <div>
+                                <div class="help-field-name">ชื่อเล่น</div>
+                                <p class="help-field-desc">ไม่บังคับ ใส่ไว้เพื่อให้พี่ค่ายเรียกได้ถูกในค่าย</p>
+                                <span class="help-example">ตัวอย่าง: บอล, มายด์</span>
+                            </div>
+                            <div>
+                                <div class="help-field-name">วัน/เดือน/ปีเกิด <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">วันเกิดจริงของผู้สมัคร ใช้ยืนยันตัวตนและตรวจสอบช่วงอายุที่รับสมัคร</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">เบอร์โทรศัพท์ <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">เบอร์โทรของผู้สมัครเองที่ติดต่อได้สะดวกที่สุด</p>
+                                <span class="help-example">ตัวอย่าง: 081-234-5678</span>
+                            </div>
+                            <div>
+                                <div class="help-field-name">เบอร์โทรผู้ปกครอง <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">เบอร์โทรของผู้ปกครองหรือผู้ติดต่อฉุกเฉิน ใช้ในกรณีฉุกเฉินระหว่างค่าย</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-section-title"><span class="help-step-number">2</span> ข้อมูลการเรียนและสายวิชาที่สนใจ</h3>
+                        <div class="help-field-list">
+                            <div>
+                                <div class="help-field-name">รูปแบบคอร์สเรียนในค่าย <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">เลือก "คอร์สปรับพื้นฐาน" หากต้องการทบทวนเนื้อหาตั้งแต่พื้นฐาน หรือ "คอร์สเตรียมสอบ" หากต้องการเน้นตะลุยโจทย์</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">แผนการเรียนปัจจุบัน <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">แผนการเรียนที่กำลังศึกษาอยู่ในโรงเรียนตอนนี้ (วิทย์-คณิต / ศิลป์-คำนวณ / ศิลป์-ภาษา / ศิลป์-สังคม) หรือเลือก "อื่น ๆ" แล้วระบุแผนการเรียนของคุณเองได้</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">กลุ่มวิชาที่สนใจเป็นพิเศษ</div>
+                                <p class="help-field-desc">ไม่บังคับ เลือกได้มากกว่า 1 กลุ่มสาขาที่อยากพัฒนาศักยภาพเป็นพิเศษในค่าย เช่น วิศวกรรมศาสตร์, วิทยาศาสตร์, สุขภาพ, ศึกษาศาสตร์, มนุษยศาสตร์และสังคม, ศิลปกรรมศาสตร์, สื่อและเทคโนโลยีดิจิทัล, บริหารธุรกิจ หรือเลือก "อื่น ๆ" แล้วระบุเองได้</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">สาขาวิชา คณะและสถาบันในฝัน</div>
+                                <p class="help-field-desc">ไม่บังคับ ระบุได้หากมีสาขา/คณะ/มหาวิทยาลัยที่ตั้งเป้าหมายไว้แล้ว</p>
+                                <span class="help-example">ตัวอย่าง: สาขาวิศวกรรมคอมพิวเตอร์ คณะวิศวกรรมศาสตร์ มหาวิทยาลัยเชียงใหม่</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h3 class="help-section-title"><span class="help-step-number">3</span> ยืนยันอีเมลและการยอมรับ</h3>
+                        <div class="help-field-list">
+                            <div>
+                                <div class="help-field-name">อีเมล <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">อีเมลที่ใช้งานได้จริง จะใช้รับรหัส OTP และแจ้งผลการลงทะเบียน</p>
+                                <span class="help-example">ตัวอย่าง: name@example.com</span>
+                            </div>
+                            <div>
+                                <div class="help-field-name">รหัส OTP ยืนยันอีเมล <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">กดปุ่ม "ขอรับ OTP" แล้วเช็คกล่องจดหมาย (รวมถึงกล่องสแปม/จดหมายขยะ) จะได้รับรหัส 6 หลักมากรอกยืนยัน</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">รหัสผ่านใหม่ <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">ตั้งรหัสผ่านสำหรับเข้าสู่ระบบครั้งถัดไป ต้องมีอย่างน้อย 8 ตัวอักษร และผ่านอย่างน้อย 3 ใน 4 ประเภท ได้แก่ ตัวพิมพ์เล็ก ตัวพิมพ์ใหญ่ ตัวเลข และอักขระพิเศษ</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">ยืนยันรหัสผ่านใหม่ <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">พิมพ์รหัสผ่านเดิมอีกครั้งให้ตรงกัน</p>
+                            </div>
+                            <div>
+                                <div class="help-field-name">ยอมรับเงื่อนไข PDPA <span class="required-mark">*</span></div>
+                                <p class="help-field-desc">ต้องติ๊กยอมรับก่อนส่งฟอร์ม เพื่อยืนยันว่าข้อมูลที่กรอกเป็นความจริง และยินยอมให้ใช้ข้อมูลตามเงื่อนไขคุ้มครองข้อมูลส่วนบุคคลของค่าย</p>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div class="help-contact">
+                        <h3 class="help-section-title">ช่องทางติดต่อสอบถามเพิ่มเติม</h3>
+                        <div class="help-contact-links">
+                            <a class="help-contact-link" href="https://www.facebook.com/share/g/1FvUquJ2T9/" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path d="M13.5 20.5V13H16l.4-2.8H13.5V7.3c0-.9.2-1.5 1.6-1.5H16V4.2c-.3-.1-1.2-.2-2.3-.2-2.2 0-3.6 1.2-3.6 3.9V10.2H8V13h2.6v7.5h2.9Z"/>
+                                </svg>
+                                <span>ค่าย "พี่ติวน้อง"</span>
+                            </a>
+                            <a class="help-contact-link" href="https://www.instagram.com/pee_tiwnong?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <rect x="4" y="4" width="16" height="16" rx="4"/>
+                                    <circle cx="12" cy="12" r="3.6"/>
+                                    <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
+                                </svg>
+                                <span>pee_tiwnong</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end mt-8">
+                        <button type="button" onclick="closeHelpModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition-colors">
+                            ปิดหน้าต่างนี้
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link JS -->
+    <script src="../js/layout/loader.js"></script>
+    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
+    <script src="../js/pages/form.js?v=20260914-19"></script>
+</body>
+
+</html>

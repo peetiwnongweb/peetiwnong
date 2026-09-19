@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ค่ายวิชาการพี่ติวน้อง">
+    <meta name="robots" content="noindex,nofollow">
+    <title>PTN Camp | Staff | งานวิชาการ</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon.png">
+    <link rel="stylesheet" href="../scr/output.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/utilities.css">
+    <link rel="stylesheet" href="../css/base/loader.css">
+    <link rel="stylesheet" href="../css/layout/header.css?v=20260919-1">
+    <link rel="stylesheet" href="../css/layout/footer.css?v=20260911-1">
+    <link rel="stylesheet" href="../css/layout/modal.css">
+    <link rel="stylesheet" href="../css/layout/scroll-top.css">
+    <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20260917-1">
+    <link rel="stylesheet" href="../css/pages/form.css?v=20260914-45">
+    <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20260916-1">
+    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20260822-107">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
+    <script src="../js/layout/loader.js"></script>
+    <script src="../js/layout/date-select.js?v=20260916-1"></script>
+    <script src="../js/layout/time-select.js?v=20260916-1"></script>
+    <script src="../js/layout/auth.js?v=20260919-2"></script>
+    <script src="../js/layout/nav.js?v=20260820-2"></script>
+    <script src="../js/pages/staff-academic.js?v=20260917-1"></script>
+</head>
+
+<body>
+    <header>
+        <div class="max-w-7xl header-inner">
+            <div class="brand-link" onclick="window.location.href='/'">
+                <div class="brand-icon-wrap">
+                    <img class="brand-icon" src="../assets/images/logo/logo1.png" alt="PTN logo">
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">PEETIWNONG</span>
+                    <span class="brand-subtitle">Academics Camp</span>
+                </div>
+            </div>
+
+            <!-- เมนูนำทาง (Desktop) -->
+            <nav class="desktop-nav">
+                <button onclick="goToScoreTab('mysubject')" class="nav-btn" id="nav-mysubject" data-tier="instructor">รายวิชาของฉัน</button>
+                <button onclick="switchTab('examstub')" class="nav-btn" id="nav-examstub" data-tier="instructor">การสอบอธิบาย</button>
+                <button onclick="goToScoreTab('scores')" class="nav-btn active-nav-btn" id="nav-scores">จัดการคะแนน</button>
+                <button onclick="switchTab('subjects')" class="nav-btn" id="nav-subjects" data-tier="manager">จัดการรายวิชา</button>
+                <button onclick="switchTab('schedule')" class="nav-btn" id="nav-schedule">จัดการตารางเรียน</button>
+                <button onclick="switchTab('documents')" class="nav-btn" id="nav-documents" data-tier="manager">จัดการเอกสาร</button>
+            </nav>
+
+            <!-- ปุ่มสมัครเรียน / ข้อมูลผู้ใช้ (Desktop) -->
+            <div class="desktop-actions">
+                <!-- สถานะยังไม่ได้เข้าสู่ระบบ -->
+                <div id="auth-logged-out" class="auth-actions">
+                    <button onclick="openAuthModal()" class="auth-link">เข้าสู่ระบบ</button>
+                    <button onclick="window.location.href='../html/form.html'"
+                        class="auth-btn auth-btn-primary">ลงทะเบียน</button>
+                </div>
+                <!-- สถานะเข้าสู่ระบบแล้ว -->
+                <div id="auth-logged-in" class="auth-user hidden">
+                    <div class="user-dropdown">
+                        <button type="button" class="user-chip user-chip-trigger" onclick="toggleUserMenu()">
+                            <div class="user-avatar" id="user-avatar">U</div>
+                            <span class="user-name" id="user-display-name">ผู้ใช้งานจำลอง</span>
+                            <svg class="user-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="user-dropdown-menu" class="user-dropdown-menu user-profile-menu hidden">
+                            <div class="user-profile-menu-header">
+                                <div class="user-profile-menu-avatar" id="user-menu-avatar">U</div>
+                                <div class="user-profile-menu-name" id="user-menu-username">ผู้ใช้งานจำลอง</div>
+                                <div class="user-profile-menu-role" id="user-menu-role"></div>
+                            </div>
+
+                            <div class="user-dropdown-divider"></div>
+
+                            <button type="button" class="user-dropdown-item" onclick="window.location.href='/'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                                </svg>
+                                หน้าแรก
+                            </button>
+                            <button type="button" class="user-dropdown-item" onclick="window.location.href='/staff/profile.html'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                </svg>
+                                โปรไฟล์
+                            </button>
+                            <button type="button" class="user-dropdown-item hidden" id="user-menu-admin-link" onclick="window.location.href='/admin/'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                </svg>
+                                Admin
+                            </button>
+                            <div class="nav-tasks-wrap hidden" id="user-menu-tasks-wrap">
+                                <button type="button" class="nav-dropdown-item current-page-btn" aria-current="page" data-department-name="ฝ่ายวิชาการ" onclick="goToScoreTab('scores')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                                    </svg>
+                                    งานวิชาการ
+                                </button>
+                                <button type="button" class="nav-dropdown-item" data-department-name="ฝ่ายกิจกรรมและสันทนาการ" onclick="window.location.href='/staff/activities.html'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                    </svg>
+                                    งานกิจกรรมและสันทนาการ
+                                </button>
+                            </div>
+                            <button type="button" class="user-dropdown-item hidden" id="user-menu-news-write-link" onclick="window.location.href='/staff/news.html'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                                </svg>
+                                เขียนประชาสัมพันธ์
+                            </button>
+                            <div class="user-dropdown-divider"></div>
+
+                            <button type="button" class="user-dropdown-item danger" onclick="logout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                ออกจากระบบ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ปุ่มโปรไฟล์ + แฮมเบอร์เกอร์ (มือถือ) -->
+            <div class="mobile-header-actions">
+                <button type="button" id="m-header-avatar-btn" class="user-chip m-header-user-chip md:hidden hidden" onclick="toggleMobileMenu()" aria-label="เมนูผู้ใช้งาน">
+                    <div class="user-avatar" id="m-header-avatar">U</div>
+                    <span class="user-name" id="m-header-username"></span>
+                </button>
+                <div class="mobile-toggle md:hidden" id="m-hamburger-wrap">
+                    <div class="burger" onclick="toggleMobileMenu()" role="button" aria-label="เปิด/ปิดเมนู">
+                        <input type="checkbox" id="burger-toggle" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- เมนูมือถือ (Mobile Menu Overlay) -->
+        <div id="mobile-menu" class="mobile-menu hidden">
+            <div class="space-y-1">
+                <button onclick="goToScoreTab('mysubject')" class="mobile-nav-btn" id="m-nav-mysubject" data-tier="instructor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    รายวิชาของฉัน
+                </button>
+                <button onclick="switchTab('examstub')" class="mobile-nav-btn" id="m-nav-examstub" data-tier="instructor">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+                    </svg>
+                    การสอบอธิบาย
+                </button>
+                <button onclick="goToScoreTab('scores')" class="mobile-nav-btn active-nav-btn" id="m-nav-scores">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
+                    </svg>
+                    จัดการคะแนน
+                </button>
+                <button onclick="switchTab('subjects')" class="mobile-nav-btn" id="m-nav-subjects" data-tier="manager">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443" />
+                    </svg>
+                    จัดการรายวิชา
+                </button>
+                <button onclick="switchTab('schedule')" class="mobile-nav-btn" id="m-nav-schedule">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                    </svg>
+                    จัดการตารางเรียน
+                </button>
+                <button onclick="switchTab('documents')" class="mobile-nav-btn" id="m-nav-documents" data-tier="manager">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                    </svg>
+                    จัดการเอกสาร
+                </button>
+            </div>
+
+            <hr id="m-menu-account-divider" class="hidden">
+
+            <div class="space-y-1">
+                <div class="mobile-menu-account-card hidden" id="m-menu-account-card">
+                    <div class="mobile-menu-account-avatar" id="m-menu-account-avatar">U</div>
+                    <div class="mobile-menu-account-text">
+                        <span class="mobile-menu-account-name" id="m-menu-account-name"></span>
+                        <span class="mobile-menu-account-role" id="m-menu-account-role"></span>
+                    </div>
+                </div>
+                <button type="button" onclick="window.location.href='/'" class="mobile-nav-btn" id="m-menu-home-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
+                    </svg>
+                    หน้าแรก
+                </button>
+                <button type="button" onclick="window.location.href='/staff/profile.html'" class="mobile-nav-btn" id="m-menu-profile-page-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    โปรไฟล์
+                </button>
+                <button type="button" onclick="window.location.href='/admin/'" class="mobile-nav-btn hidden" id="m-menu-admin-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                    </svg>
+                    Admin
+                </button>
+                <div class="space-y-1 nav-tasks-wrap hidden" id="m-nav-tasks-wrap">
+                    <button type="button" class="mobile-nav-btn current-page-btn" aria-current="page" data-department-name="ฝ่ายวิชาการ" onclick="goToScoreTab('scores')">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        งานวิชาการ
+                    </button>
+                    <button type="button" class="mobile-nav-btn" data-department-name="ฝ่ายกิจกรรมและสันทนาการ" onclick="window.location.href='/staff/activities.html'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                        </svg>
+                        งานกิจกรรมและสันทนาการ
+                    </button>
+                </div>
+                <button type="button" onclick="window.location.href='/staff/news.html'" class="mobile-nav-btn hidden" id="m-menu-news-write-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                    </svg>
+                    เขียนประชาสัมพันธ์
+                </button>
+                        </div>
+
+            <hr>
+
+            <div id="m-auth-logged-out" class="space-y-2">
+                <button onclick="openAuthModal()" class="mobile-nav-btn mobile-nav-center-btn border-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    เข้าสู่ระบบ
+                </button>
+                <button onclick="window.location.href='../html/form.html'" class="mobile-nav-btn mobile-nav-cta-btn bg-gradient-to-r">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                    </svg>
+                    ลงทะเบียน
+                </button>
+            </div>
+            <div id="m-auth-logged-in" class="hidden space-y-2">
+                <button onclick="logout()" class="mobile-nav-btn mobile-nav-logout-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    ออกจากระบบ
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ================= PAGE: จัดการคะแนน ================= -->
+        <div id="page-scores" class="tab-content active">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title" id="scores-page-title">จัดการคะแนน</h1>
+                    <p class="section-subtitle" id="scores-page-subtitle">บันทึกคะแนนวิชาการ แยกตามคอร์สเรียน</p>
+                </div>
+
+                <div class="scores-settings-row" data-tier="manager">
+                    <div class="activity-card">
+                        <p class="profile-section-title">สัดส่วนคะแนน</p>
+                        <form id="score-weight-form" class="score-weight-row">
+                            <label class="score-weight-field" for="score-weight-explanation-input">
+                                <span class="form-label">สัดส่วนคะแนนอธิบาย (%)</span>
+                                <input type="number" min="0" max="100" step="1" id="score-weight-explanation-input" class="form-input" value="70">
+                            </label>
+                            <label class="score-weight-field" for="score-weight-achievement-input">
+                                <span class="form-label">สัดส่วนคะแนนสอบ (%) <span class="required-mark">*</span></span>
+                                <input type="number" min="1" max="100" step="1" id="score-weight-achievement-input" class="form-input" value="30">
+                            </label>
+                            <button type="submit" class="btn-primary">บันทึก</button>
+                        </form>
+
+                        <div class="card-section-divider"></div>
+
+                        <p class="profile-section-title">ตั้งค่าเกณฑ์การประเมิน</p>
+                        <form id="grade-band-form">
+                            <div id="grade-band-rows" class="grade-band-rows"></div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-outline" id="grade-band-add-btn">+ เพิ่มช่วงคะแนน</button>
+                                <button type="submit" class="btn-primary">บันทึก</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="activity-card">
+                        <p class="profile-section-title">ตารางกำหนดคะแนนสอบอธิบาย</p>
+                        <p class="profile-section-desc">สอบผ่านครั้งที่เท่าไหร่ ได้คะแนนกี่ %</p>
+                        <form id="oral-exam-band-form">
+                            <div id="oral-exam-band-rows" class="oral-exam-band-rows"></div>
+                            <div class="form-actions">
+                                <button type="button" class="btn-outline" id="oral-exam-band-add-btn">+ เพิ่มลำดับครั้งที่สอบ</button>
+                                <button type="submit" class="btn-primary">บันทึก</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ย้ายไปแท็บ "จัดการรายวิชาของตัวเอง" อัตโนมัติสำหรับพี่ค่ายที่สอนอย่างเดียว (ไม่ใช่หัวหน้าฝ่าย) - ดู relocateScoreTableSection ใน staff-academic.js กันเห็นคะแนนวิชาอื่นที่ไม่ได้สอนทั้งคอร์ส -->
+                <div id="score-table-section">
+                    <div class="course-tab-bar" id="score-course-tab-bar" style="max-width: 900px; margin: 0 auto 1.5rem;"></div>
+
+                    <div class="activity-card score-table-card" style="max-width: 100%; margin: 0 auto;">
+                        <div class="score-table-header-row">
+                            <div>
+                                <p class="profile-section-title">ตารางคะแนน</p>
+                                <p class="profile-section-desc" id="score-table-desc">ตารางแสดงคะแนนในแต่ละรายวิชา</p>
+                            </div>
+                            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+                                <input type="text" class="form-input score-table-search-input" id="score-table-search-input" placeholder="ค้นหาชื่อหรือรหัสประจำตัว...">
+                                <button type="button" class="btn-outline score-print-btn" id="score-table-print-btn" title="พิมพ์ / บันทึกเป็น PDF">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="score-print-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9V4h12v5M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v6H6z" /></svg>
+                                    <span class="score-print-btn-label">พิมพ์ / บันทึกเป็น PDF</span>
+                                </button>
+                                <button type="button" class="score-export-csv-btn" id="score-table-export-excel-btn" title="นำออกเป็น CSV">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="score-export-csv-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v13m0 0l-4.5-4.5M12 16l4.5-4.5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" /></svg>
+                                    <span class="score-export-csv-btn-label">นำออกเป็น CSV</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- จอโทรศัพท์แนวตั้งแคบเกินกว่าจะแสดงตารางคะแนน (คอลัมน์รหัส/ชื่อที่ปักหมุดไว้กินเต็มความกว้างจอ เลื่อนดูคะแนนไม่ได้)
+                             ซ่อนตารางแล้วแสดงข้อความนี้แทน - แสดงเฉพาะตอนมีตารางจริง (คลาส has-score-table ตั้งโดย renderScoreTable) ดู .score-table-rotate-notice ใน staff-academic.css -->
+                        <div class="score-table-rotate-notice" id="score-table-rotate-notice">
+                            <div class="score-table-rotate-notice-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.6-.1c-.59-.59-1.54-.59-2.12 0L1.75 8.43c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.01-6.01c.59-.59.59-1.54 0-2.12L9.88 2.42zm4.6 19.44L2.45 9.83l6.01-6.01 12.02 12.02-6.01 6.01zM7.52 21.48C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z" /></svg>
+                            </div>
+                            <p class="score-table-rotate-notice-title">หน้าจอแคบเกินไปสำหรับตารางคะแนน</p>
+                            <p class="score-table-rotate-notice-desc">กรุณาหมุนหน้าจอเป็นแนวนอน หรือเปิดบนคอมพิวเตอร์/แท็บเล็ตเพื่อดูและกรอกคะแนน</p>
+                        </div>
+                        <div class="subject-score-table-outer">
+                            <div class="subject-score-table-wrap" id="subject-score-table-wrap"></div>
+                        </div>
+                        <p class="activities-empty hidden" id="subject-score-empty">ยังไม่มีน้องค่ายในคอร์สนี้ หรือยังไม่มีรายวิชา (ไปเพิ่มที่แท็บ "จัดการรายวิชา" ก่อน)</p>
+                        <p class="activities-empty hidden" id="subject-score-search-empty">ไม่พบน้องค่ายที่ค้นหา</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE: จัดการรายวิชา ================= -->
+        <div id="page-subjects" class="tab-content" data-tier="manager">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">จัดการรายวิชา</h1>
+                    <p class="section-subtitle">เพิ่ม/ลบวิชา กำหนดรายวิชาและผู้สอน</p>
+                </div>
+
+                <div class="activity-card" style="max-width: 640px; margin: 0 auto 2rem;">
+                    <p class="profile-section-title">เพิ่มรายวิชา</p>
+                    <form id="subject-create-form">
+                        <div class="form-group mb-6">
+                            <label for="subject-name-input" class="form-label">ชื่อวิชา <span class="required-mark">*</span></label>
+                            <input type="text" id="subject-name-input" class="form-input" placeholder="เช่น ฟิสิกส์" required>
+                        </div>
+                        <div class="form-group mb-6">
+                            <label for="subject-course-format-select" class="form-label">คอร์ส <span class="required-mark">*</span></label>
+                            <select id="subject-course-format-select" class="form-input" required>
+                                <option value="">-- เลือกคอร์ส --</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-6">
+                            <label class="toggle-switch-label">
+                                <input type="checkbox" id="subject-requires-scoring-input" class="toggle-switch" checked>
+                                เก็บคะแนน (แสดงในตารางคะแนน และนำไปคิดคะแนนรวม)
+                            </label>
+                        </div>
+                        <div id="subject-scoring-fields">
+                            <div class="form-grid mb-6">
+                                <div class="form-group">
+                                    <label for="subject-explanation-max-input" class="form-label">คะแนนเต็ม (อธิบาย)</label>
+                                    <input type="number" min="1" step="1" id="subject-explanation-max-input" class="form-input" value="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="subject-achievement-max-input" class="form-label">คะแนนเต็ม (คะแนนสอบ)</label>
+                                    <input type="number" min="1" step="1" id="subject-achievement-max-input" class="form-input" value="100">
+                                </div>
+                            </div>
+                            <div class="form-group mb-6" style="max-width: 4.5rem;">
+                                <label for="subject-credits-input" class="form-label">หน่วยกิต</label>
+                                <input type="number" min="0.5" step="0.5" id="subject-credits-input" class="form-input" value="1">
+                            </div>
+                            <p class="profile-section-desc" style="margin: -0.5rem 0 1.5rem;">คะแนนเต็มคือคะแนนดิบที่กรอกได้สูงสุดของแต่ละวิชา (แต่ละวิชากำหนดไม่เท่ากันได้ เช่น สอบเต็ม 50 อธิบายเต็ม 100) ระบบจะแปลงเป็นสัดส่วนให้เอง ส่วนสัดส่วนคะแนนอธิบาย:คะแนนสอบโดยรวมตั้งค่าครั้งเดียวได้ที่แท็บ "จัดการคะแนน" แล้วแบ่งเฉลี่ยตามหน่วยกิตของทุกวิชาที่ต้องเก็บคะแนน</p>
+                        </div>
+                        <div class="form-actions">
+                            <span></span>
+                            <button type="submit" class="btn-primary">เพิ่ม</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="activity-list" id="subject-list" style="max-width: 640px; margin: 0 auto;"></div>
+                <p class="activities-empty hidden" id="subject-list-empty">ยังไม่มีรายวิชาที่สร้างไว้</p>
+                <div class="pagination-bar hidden" id="subject-list-pagination-bar" aria-label="Pagination" style="max-width: 640px; margin-left: auto; margin-right: auto;">
+                    <button type="button" class="pagination-button pagination-prev" id="subject-list-pagination-prev">ก่อนหน้า</button>
+                    <div class="pagination-pages" id="subject-list-pagination-pages"></div>
+                    <button type="button" class="pagination-button pagination-next" id="subject-list-pagination-next">ถัดไป</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE: จัดการตารางเรียน ================= -->
+        <div id="page-schedule" class="tab-content">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title" id="schedule-page-title">จัดการตารางเรียน</h1>
+                    <p class="section-subtitle" id="schedule-page-subtitle">กำหนดตารางเรียนของแต่ละคอร์ส</p>
+                </div>
+
+                <div class="course-tab-bar" id="schedule-course-tab-bar" style="max-width: 760px; margin: 0 auto 1.5rem;"></div>
+
+                <div class="activity-card" style="max-width: 760px; margin: 0 auto 2rem;">
+                    <p class="profile-section-title">เพิ่มรายการตารางเรียน</p>
+                    <form id="schedule-create-form">
+                        <div class="form-grid mb-6">
+                            <div class="form-group">
+                                <label class="form-label">วันที่ <span class="required-mark">*</span></label>
+                                <div id="schedule-date-selects"></div>
+                                <input type="hidden" id="schedule-date-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="schedule-subject-select" class="form-label">วิชา (ถ้ามี)</label>
+                                <select id="schedule-subject-select" class="form-input">
+                                    <option value="">-- ไม่ระบุวิชา --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group mb-6 hidden" id="schedule-instructor-group">
+                            <label class="form-label">ผู้สอน</label>
+                            <div class="instructor-chip-list" id="schedule-instructor-chip-list"></div>
+                            <div class="instructor-assign-add-row">
+                                <select class="form-input" id="schedule-instructor-add-select">
+                                    <option value="">-- เลือกผู้สอนเพิ่ม --</option>
+                                </select>
+                                <button type="button" class="btn-primary instructor-assign-add-btn" id="schedule-instructor-add-btn">เพิ่มผู้สอน</button>
+                            </div>
+                        </div>
+                        <div class="form-grid mb-6">
+                            <div class="form-group">
+                                <label class="form-label">เวลาเริ่ม <span class="required-mark">*</span></label>
+                                <div id="schedule-start-selects"></div>
+                                <input type="hidden" id="schedule-start-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">เวลาสิ้นสุด <span class="required-mark">*</span></label>
+                                <div id="schedule-end-selects"></div>
+                                <input type="hidden" id="schedule-end-input">
+                            </div>
+                        </div>
+                        <div class="form-group mb-6">
+                            <label for="schedule-activity-input" class="form-label">ชื่อกิจกรรม (ถ้าไม่ใช่รายวิชา)</label>
+                            <div class="activity-combobox">
+                                <input type="text" id="schedule-activity-input" class="form-input" placeholder="เช่น แนะนำ portfolio, กิจกรรม workshop" autocomplete="off">
+                                <div id="schedule-activity-suggestions" class="activity-combobox-list hidden"></div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-6">
+                            <label for="schedule-note-input" class="form-label">หมายเหตุ</label>
+                            <input type="text" id="schedule-note-input" class="form-input" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)">
+                        </div>
+                        <div class="form-actions">
+                            <span></span>
+                            <button type="submit" class="btn-primary">เพิ่มรายการ</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="score-table-header-row" style="max-width: 100%; margin: 0 auto 1rem;">
+                    <span></span>
+                    <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                        <button type="button" class="btn-outline" id="schedule-print-btn">พิมพ์ / บันทึกเป็น PDF</button>
+                        <button type="button" class="schedule-fullscreen-btn" id="schedule-fullscreen-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+                            </svg>Fullscreen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- หัวกระดาษสำหรับตอนพิมพ์เท่านั้น (ซ่อนบนจอเสมอ) เติมข้อความสดตอนกดปุ่มพิมพ์ (ดู schedule-print-btn ใน staff-academic.js) -->
+                <div id="schedule-print-header" class="print-report-header schedule-print-header-hidden">
+                    <img src="../assets/images/logo/logo1.png" alt="PTN logo" class="print-report-logo">
+                    <h1 id="schedule-print-title"></h1>
+                    <p id="schedule-print-subtitle"></p>
+                </div>
+
+                <div class="timetable-grid-wrap" id="schedule-grid-wrap"></div>
+                <p class="activities-empty hidden" id="schedule-list-empty">ยังไม่มีตารางเรียนของคอร์สนี้</p>
+
+                <div id="schedule-fullscreen-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="schedule-fullscreen-title">
+                    <div class="modal-wrapper">
+                        <div class="modal-backdrop" onclick="closeScheduleFullscreen()" aria-hidden="true"></div>
+                        <span class="modal-trick" aria-hidden="true">&#8203;</span>
+                        <div class="modal-box schedule-fullscreen-box">
+                            <div class="modal-content">
+                                <div class="schedule-fullscreen-header">
+                                    <h2 id="schedule-fullscreen-title" class="schedule-fullscreen-title">ตารางเรียน</h2>
+                                    <button type="button" class="schedule-fullscreen-close-btn" onclick="closeScheduleFullscreen()" title="ปิด">&times;</button>
+                                </div>
+                                <div class="timetable-grid-wrap" id="schedule-fullscreen-grid-wrap"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE: จัดการเอกสาร ================= -->
+        <div id="page-documents" class="tab-content" data-tier="manager">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">จัดการเอกสาร</h1>
+                    <p class="section-subtitle">อัปโหลดเอกสารประกอบการเรียน แยกตามคอร์ส หรือเป็นเอกสารทั่วไป</p>
+                </div>
+
+                <div class="activity-card" style="max-width: 640px; margin: 0 auto 2rem;">
+                    <p class="profile-section-title">อัปโหลดเอกสารใหม่</p>
+                    <div class="form-group mb-6">
+                        <label for="document-title-input" class="form-label">ชื่อเอกสาร (ถ้าไม่ระบุจะตั้งชื่อจากชื่อไฟล์)</label>
+                        <input type="text" id="document-title-input" class="form-input" placeholder="เช่น สรุปสูตรฟิสิกส์">
+                    </div>
+                    <div class="form-group mb-6">
+                        <label for="document-description-input" class="form-label">คำอธิบาย (ถ้ามี)</label>
+                        <input type="text" id="document-description-input" class="form-input" placeholder="คำอธิบายเพิ่มเติม">
+                    </div>
+                    <div class="form-group mb-6">
+                        <label for="document-course-select" class="form-label">คอร์สเรียน <span class="required-mark">*</span></label>
+                        <select id="document-course-select" class="form-input" required></select>
+                    </div>
+                    <div class="gallery-dropzone" id="document-dropzone"
+                        ondragover="handleDocumentDragOver(event)"
+                        ondragleave="handleDocumentDragLeave(event)"
+                        ondrop="handleDocumentDrop(event)"
+                        onclick="document.getElementById('document-upload-input').click()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="gallery-dropzone-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        <p class="gallery-dropzone-text">ลากไฟล์เอกสารมาวางที่นี่ หรือ <span class="gallery-dropzone-link">เลือกไฟล์</span> (เลือกได้ทีละไฟล์)</p>
+                        <input class="hidden" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.jpg,.jpeg,.png" id="document-upload-input" onchange="handleDocumentFileInputChange(event)" onclick="event.stopPropagation()">
+                    </div>
+                </div>
+
+                <div class="activity-list" id="document-list" style="max-width: 640px; margin: 0 auto;"></div>
+                <p class="activities-empty hidden" id="document-list-empty">ยังไม่มีเอกสารที่อัปโหลดไว้</p>
+                <div class="pagination-bar hidden" id="document-list-pagination-bar" aria-label="Pagination" style="max-width: 640px; margin-left: auto; margin-right: auto;">
+                    <button type="button" class="pagination-button pagination-prev" id="document-list-pagination-prev">ก่อนหน้า</button>
+                    <div class="pagination-pages" id="document-list-pagination-pages"></div>
+                    <button type="button" class="pagination-button pagination-next" id="document-list-pagination-next">ถัดไป</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE: จัดการรายวิชาของตัวเอง (เฉพาะผู้สอน) ================= -->
+        <div id="page-mysubject" class="tab-content" data-tier="instructor">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">รายวิชาของฉัน</h1>
+                    <p class="section-subtitle">บันทึกและแก้ไขคะแนนรายวิชาที่รับผิดชอบ</p>
+                </div>
+
+                <div class="activity-list" id="my-subject-list" style="max-width: 640px; margin: 0 auto;"></div>
+                <p class="activities-empty hidden" id="my-subject-list-empty">ยังไม่มีวิชาที่ได้รับมอบหมาย</p>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE: การสอบอธิบาย (เปิด QR ให้น้องค่ายสแกนเข้าคิว แล้วประเมินผ่าน/ไม่ผ่าน) ================= -->
+        <div id="page-examstub" class="tab-content" data-tier="instructor">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">การสอบอธิบาย</h1>
+                    <p class="section-subtitle">เปิด QR ให้น้องค่ายสแกนเข้าคิวสอบ แล้วประเมินผ่าน/ไม่ผ่าน</p>
+                </div>
+
+                <ol id="oral-exam-stepper" class="oral-exam-stepper" style="max-width: 640px; margin: 0 auto 1.5rem;">
+                    <li class="oral-exam-stepper-item" id="oral-exam-step-select" data-state="current">
+                        <span class="oral-exam-step-marker"><span class="oral-exam-step-number">1</span><svg class="oral-exam-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
+                        <span class="oral-exam-stepper-label">เลือกวิชา</span>
+                    </li>
+                    <li class="oral-exam-stepper-connector"></li>
+                    <li class="oral-exam-stepper-item" id="oral-exam-step-checkin" data-state="todo">
+                        <span class="oral-exam-step-marker"><span class="oral-exam-step-number">2</span><svg class="oral-exam-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
+                        <span class="oral-exam-stepper-label">เปิดรับเช็คอิน</span>
+                    </li>
+                    <li class="oral-exam-stepper-connector"></li>
+                    <li class="oral-exam-stepper-item" id="oral-exam-step-evaluate" data-state="todo">
+                        <span class="oral-exam-step-marker"><span class="oral-exam-step-number">3</span><svg class="oral-exam-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
+                        <span class="oral-exam-stepper-label">ประเมินผล</span>
+                    </li>
+                </ol>
+
+                <div class="activity-card" id="oral-exam-picker-card" style="max-width: 640px; margin: 0 auto 1.5rem;">
+                    <p class="profile-section-title">เลือกคอร์ส รายวิชา และจำนวนผู้เข้าสอบ</p>
+                    <div class="oral-exam-subject-picker-row">
+                        <div class="oral-exam-picker-field">
+                            <label class="form-label" for="oral-exam-course-select">คอร์ส</label>
+                            <select id="oral-exam-course-select" class="form-input">
+                                <option value="" disabled selected>-- เลือกคอร์ส --</option>
+                            </select>
+                        </div>
+                        <div class="oral-exam-picker-field">
+                            <label class="form-label" for="oral-exam-subject-select">รายวิชา</label>
+                            <select id="oral-exam-subject-select" class="form-input" disabled>
+                                <option value="">-- เลือกคอร์สก่อน --</option>
+                            </select>
+                        </div>
+                        <div class="oral-exam-picker-field oral-exam-picker-field-count">
+                            <label class="form-label" for="oral-exam-max-participants-input">จำนวนผู้เข้าสอบ</label>
+                            <input type="number" min="1" step="1" id="oral-exam-max-participants-input" class="form-input" title="จำนวนผู้เข้าสอบสูงสุด" required>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-primary" id="oral-exam-open-btn" disabled>เปิดรอบสอบ</button>
+                </div>
+
+                <div class="activity-card hidden" id="oral-exam-session-card" style="max-width: 640px; margin: 0 auto 1.5rem;">
+                    <div class="oral-exam-session-header-row">
+                        <p class="profile-section-title">รอบสอบที่เปิดอยู่</p>
+                    </div>
+                    <div class="oral-exam-qr-block" id="oral-exam-qr-block">
+                        <button type="button" class="oral-exam-qr-image-btn" id="oral-exam-qr-expand-btn" title="กดเพื่อขยายเต็มจอ">
+                            <img id="oral-exam-qr-image" class="oral-exam-qr-image" alt="QR สำหรับสแกนเข้าสอบ">
+                            <span class="oral-exam-qr-image-hint">
+                                <svg class="oral-exam-qr-image-hint-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                                กดเพื่อขยาย
+                            </span>
+                        </button>
+                        <div class="oral-exam-link-row">
+                            <input type="text" id="oral-exam-link-input" class="form-input" readonly aria-label="ลิงก์เช็คอินเข้าสอบ" style="display: none;">
+                            <button type="button" class="btn-outline" id="oral-exam-copy-link-btn">คัดลอกลิงก์</button>
+                        </div>
+                    </div>
+
+                    <div id="oral-exam-qr-fullscreen-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="oral-exam-qr-fullscreen-title">
+                        <div class="modal-wrapper">
+                            <div class="modal-backdrop" onclick="closeOralExamQrFullscreen()" aria-hidden="true"></div>
+                            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+                            <div class="modal-box oral-exam-qr-fullscreen-box">
+                                <div class="modal-content">
+                                    <div class="schedule-fullscreen-header">
+                                        <h2 id="oral-exam-qr-fullscreen-title" class="schedule-fullscreen-title">QR สำหรับสแกนเข้าสอบ</h2>
+                                        <button type="button" class="schedule-fullscreen-close-btn" onclick="closeOralExamQrFullscreen()" title="ปิด">&times;</button>
+                                    </div>
+                                    <img id="oral-exam-qr-fullscreen-image" class="oral-exam-qr-fullscreen-image" alt="QR สำหรับสแกนเข้าสอบ (ขยาย)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-section-divider"></div>
+
+                    <div class="oral-exam-session-header-row">
+                        <p class="profile-section-title">รายชื่อผู้เข้าสอบ<span id="oral-exam-queue-count" class="oral-exam-queue-count"></span></p>
+                        <button type="button" class="oral-exam-refresh-btn" id="oral-exam-refresh-btn" title="รีเฟรชรายชื่อผู้เข้าสอบ">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                            </svg>
+                            <span>กดเพื่อรีเฟรช</span>
+                        </button>
+                    </div>
+                    <div id="oral-exam-queue-list" class="oral-exam-queue-list"></div>
+                    <p class="activities-empty hidden" id="oral-exam-queue-empty">ยังไม่มีใครสแกนเข้าคิว</p>
+                    <div class="oral-exam-evaluate-actions hidden" id="oral-exam-evaluate-actions">
+                        <button type="button" class="btn-outline" id="oral-exam-fail-btn">ไม่ผ่าน</button>
+                        <button type="button" class="btn-primary" id="oral-exam-pass-btn">ผ่าน</button>
+                    </div>
+
+                    <div class="oral-exam-header-actions oral-exam-footer-actions">
+                        <button type="button" class="btn-outline" id="oral-exam-close-btn">ยกเลิกรอบสอบ</button>
+                        <button type="button" class="btn-primary" id="oral-exam-start-btn">เริ่มการสอบอธิบาย</button>
+                    </div>
+                </div>
+
+                <!-- ประวัติรอบสอบที่ปิดไปแล้วของวิชาที่เลือก ลบทิ้งได้ (ลบแล้วเลขครั้งที่สอบครั้งหลัง ๆ ของคนในรอบนั้นเลื่อนลง 1 ให้เรียงต่อกันเหมือนเดิม) -->
+                <div class="activity-card hidden" id="oral-exam-history-card" style="max-width: 640px; margin: 0 auto 1.5rem;">
+                    <div class="oral-exam-session-header-row">
+                        <p class="profile-section-title">ประวัติการเปิดสอบ</p>
+                    </div>
+                    <div id="oral-exam-history-list" class="oral-exam-history-list"></div>
+                    <p class="activities-empty hidden" id="oral-exam-history-empty">ยังไม่มีประวัติการเปิดสอบวิชานี้</p>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- รายงานคะแนนสำหรับพิมพ์/บันทึกเป็น PDF (ซ่อนบนจอเสมอ สร้างเนื้อหาสดตอนกดปุ่มพิมพ์ในตารางคะแนน) - ต้องเป็นลูกโดยตรงของ body (ไม่ซ้อนใน main) เพราะ CSS @media print ใช้ body>*:not(#score-report-print) ซ่อนของเดิมทั้งหมด ถ้าซ้อนอยู่ใน main จะโดน main{display:none} บังไปด้วย -->
+    <div id="score-report-print"></div>
+
+    <!-- ส่วนท้าย (Footer) -->
+    <footer class="main-footer">
+        <div class="max-w-7xl">
+            <div class="footer-grid">
+                <!-- ข้อมูลค่าย -->
+                <div class="footer-info">
+                    <div class="footer-brand">
+                        <div>
+                            <img class="footer-logo-icon" src="../assets/images/logo/logo2.png" alt="logo">
+                        </div>
+                        <span class="footer-title">ค่ายวิชาการพี่ติวน้อง</span>
+                    </div>
+                    <p class="footer-desc">
+                        โครงการคค่ายวิชาการพี่ติวน้องก่อตั้งขึ้นเมื่อปีพุทธศักราช 2540 โดยกลุ่มศิษเก่า <br>
+                        โรงเรียนพิมายดำรงวิทยาคม นำโดย รศ.ดร.อาคม แก้วระวัง ศิษเก่ารุ่นที่ 3
+                    </p>
+                </div>
+
+                <!-- แถบด่วนเพิ่มเติม -->
+                <div class="footer-links">
+                    <h4>การนำทางด่วน</h4>
+                    <div class="footer-link-grid">
+                        <span onclick="window.location.href='/'" class="footer-link">หน้าแรก</span>
+                        <span onclick="goToScoreTab('mysubject')" class="footer-link" data-tier="instructor">รายวิชาของฉัน</span>
+                        <span onclick="switchTab('examstub')" class="footer-link" data-tier="instructor">การสอบอธิบาย</span>
+                        <span onclick="goToScoreTab('scores')" class="footer-link" id="footer-nav-scores">จัดการคะแนน</span>
+                        <span onclick="switchTab('subjects')" class="footer-link" data-tier="manager">จัดการรายวิชา</span>
+                        <span onclick="switchTab('schedule')" class="footer-link" id="footer-nav-schedule">จัดการตารางเรียน</span>
+                        <span onclick="switchTab('documents')" class="footer-link" data-tier="manager">จัดการเอกสาร</span>
+                    </div>
+                </div>
+
+                <!-- ข้อมูลติดต่อ -->
+                <div class="footer-contact">
+                    <h4>ช่องทางการติดต่อ</h4>
+                    <div class="contact-list">
+                        <p>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            044-482794
+                        </p>
+                        <a href="mailto:peetiwnong.web@gmail.com">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            peetiwnong.web@gmail.com
+                        </a>
+                        <a href="https://maps.app.goo.gl/yxLxACkMJEmEgsiZ6" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            โรงเรียนพิมายดำรงวิทยาคม
+                        </a>
+                        <a href="https://www.facebook.com/share/g/1FvUquJ2T9/" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13.5 20.5V13H16l.4-2.8H13.5V7.3c0-.9.2-1.5 1.6-1.5H16V4.2c-.3-.1-1.2-.2-2.3-.2-2.2 0-3.6 1.2-3.6 3.9V10.2H8V13h2.6v7.5h2.9Z"/>
+                            </svg>
+                            ค่าย "พี่ติวน้อง"
+                        </a>
+                        <a href="https://www.instagram.com/pee_tiwnong?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="4" y="4" width="16" height="16" rx="4"/>
+                                <circle cx="12" cy="12" r="3.6"/>
+                                <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
+                            </svg>
+                            pee_tiwnong
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- เครดิตลิขสิทธิ์ -->
+            <div class="footer-bottom">
+                <p style="margin: 0;">&copy; 2026 PEETIWNONG Academics Camp. สงวนลิขสิทธิ์ทั้งหมด.
+                    พัฒนาเว็บไซต์ต้นแบบเชิงวิชาการ · V 1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= MODAL: กล่องยืนยัน (แทน confirm() ของเบราว์เซอร์) ================= -->
+    <div id="confirm-modal" class="modal hidden" aria-labelledby="confirm-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="confirmResolve(false)" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box confirm-box">
+                <div class="modal-content">
+                    <div class="confirm-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                    </div>
+                    <h2 id="confirm-title" class="confirm-title">ยืนยันการดำเนินการ</h2>
+                    <p id="confirm-message" class="confirm-message"></p>
+                    <div class="confirm-actions">
+                        <button type="button" class="confirm-cancel-btn" onclick="confirmResolve(false)">ยกเลิก</button>
+                        <button type="button" class="confirm-ok-btn" id="confirm-ok-btn" onclick="confirmResolve(true)">ยืนยัน</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TOAST ลอย: ผลลัพธ์การบันทึก ================= -->
+    <div id="activities-toast" class="welcome-toast"><span class="welcome-toast-message"></span><div class="welcome-toast-bar"></div></div>
+
+    <!-- ================= BUTTON: SCROLL TO TOP ================= -->
+    <button id="scroll-to-top-btn" class="scroll-to-top" onclick="scrollToTop()" title="เลื่อนขึ้นบนสุด">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+    </button>
+
+</body>
+
+</html>

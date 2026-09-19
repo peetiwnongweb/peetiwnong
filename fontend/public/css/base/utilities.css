@@ -1,0 +1,268 @@
+/* ==========================================
+   Utility Classes (ใช้ร่วมกันหลายหน้า/หลาย component)
+   ========================================== */
+.main-content {
+  flex: 1 0 auto;
+}
+
+.max-w-7xl {
+  max-width: 80rem;
+  /* 1280px */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .max-w-7xl {
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-3 {
+  gap: 0.75rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.h-6 {
+  height: 1.5rem;
+}
+
+.w-6 {
+  width: 1.5rem;
+}
+
+.w-8 {
+  width: 2rem;
+}
+
+.h-8 {
+  height: 2rem;
+}
+
+.rounded-full {
+  border-radius: 50%;
+}
+
+.bg-brand-500 {
+  background-color: var(--brand-500);
+}
+
+/* ข้อความตัวหนังสือไล่เฉดสี */
+.bg-gradient-to-r {
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.block {
+  display: block;
+}
+
+.text-slate-500 {
+  color: var(--slate-500);
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.-mt-1 {
+  margin-top: -0.25rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.space-x-1>*+* {
+  margin-left: 0.25rem;
+}
+
+.space-y-1>*+* {
+  margin-top: 0.25rem;
+}
+
+.space-y-2>*+* {
+  margin-top: 0.5rem;
+}
+
+.icon-xs {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-md {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-lg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon-xl {
+  width: 3rem;
+  height: 3rem;
+}
+
+.opacity-60 {
+  opacity: 0.6;
+}
+
+.relative-z10 {
+  position: relative;
+  z-index: 10;
+}
+
+.mb-lg {
+  margin-bottom: 2.5rem;
+}
+
+.mb-xl {
+  margin-bottom: 3rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-05 {
+  margin-top: 0.125rem;
+}
+
+.center {
+  text-align: center;
+}
+
+.page-padding {
+  padding: 3rem 1rem;
+  /* เดิมใช้ margin-top: 4% ซึ่งคำนวณจากความกว้างหน้าจอ ทำให้บนมือถือ (จอแคบ) ระยะห่างจาก header (fixed) เหลือน้อยมากจนชิด
+     เปลี่ยนมาใช้ padding-top ค่าคงที่แทน โดยอิงตัวเลขเดียวกับ .hero-section ในหน้าแรก (home.css) ที่เว้นระยะห่างจาก header ได้พอดีอยู่แล้ว
+     เพื่อให้ทุกหน้าเว้นระยะเท่ากัน (เพิ่มอีกนิดหลังตัดป้ายเล็ก ๆ เหนือหัวข้อออกไป กันหัวข้อชิด header) */
+  padding-top: 5rem;
+}
+
+@media (min-width: 640px) {
+  .page-padding {
+    padding: 3rem 1.5rem;
+    padding-top: 7rem;
+  }
+}
+
+/* ใช้ร่วมกันในหน้า News / Schedule / History */
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .page-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  .page-padding {
+    padding-top: 5.5rem;
+  }
+}
+
+.section-title {
+  font-size: clamp(1.5rem, 1rem + 4vw, 3rem);
+  font-weight: 800;
+  color: var(--slate-900);
+  line-height: 1.25;
+  margin: 1rem;
+}
+
+.section-subtitle {
+  font-size: 0.875rem;
+  color: var(--slate-500);
+  margin-top: 0rem;
+}
+
+@media (min-width: 640px) {
+  .section-subtitle {
+    font-size: 1rem;
+  }
+}
+
+.text-gradient {
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+
+  /* 📱 จอมือถือ (เริ่มต้น): ขนาดเล็กสุด */
+  font-size: 2.5rem;
+  margin: 0;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* 📑 จอแท็บเล็ต (>= 640px): ขยับใหญ่ขึ้น */
+@media (min-width: 640px) {
+  .text-gradient {
+    font-size: 3.5rem;
+  }
+}
+
+/* 💻 จอคอมพิวเตอร์ (>= 1024px): ใหญ่ที่สุด */
+@media (min-width: 1024px) {
+  .text-gradient {
+    font-size: 5rem;
+  }
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}

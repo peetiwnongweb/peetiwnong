@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>เข้าสู่ระบบ WebManager - PTN Camp</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon.png">
+
+    <link rel="stylesheet" href="../scr/output.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/utilities.css">
+    <link rel="stylesheet" href="../css/base/loader.css">
+    <link rel="stylesheet" href="../css/layout/modal.css">
+    <link rel="stylesheet" href="css/webmanager-login.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="wm-login-body">
+    <div class="wm-login-page">
+        <div class="modal-box auth-box wm-login-box">
+            <div class="modal-content">
+                <!-- ================= STEP: เข้าสู่ระบบ ================= -->
+                <div id="wm-step-login">
+                    <div class="text-center mb-6">
+                        <img src="../assets/images/logo/logo1.png" alt="PTN logo" class="auth-modal-logo">
+                        <h2 class="text-2xl font-bold text-slate-900">WebManager</h2>
+                        <p class="text-sm text-slate-500 mt-1">เข้าสู่ระบบผู้ดูแลเว็บไซต์ สิทธิ์สูงสุด แยกจากผู้ใช้งานอื่นทั้งหมด</p>
+                    </div>
+
+                    <form id="wm-login-form" onsubmit="handleWebManagerLoginSubmit(event)" class="auth-form">
+                        <div class="form-group">
+                            <label for="wm-login-email" class="form-label">อีเมล</label>
+                            <input type="email" id="wm-login-email" required placeholder="you@example.com"
+                                class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="wm-login-password" class="form-label">รหัสผ่าน</label>
+                            <div class="password-field-wrap">
+                                <input type="password" id="wm-login-password" required placeholder="••••••••"
+                                    class="form-input">
+                                <button type="button" class="password-toggle-btn" tabindex="-1"
+                                    aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('wm-login-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn mt-2">เข้าสู่ระบบ</button>
+                        <span class="forgot-pwd" style="display: block; text-align: center;" onclick="goToWebManagerStep('forgot-email')">ลืมรหัสผ่าน?</span>
+                    </form>
+                </div>
+
+                <!-- ================= STEP: ขอรหัส OTP ================= -->
+                <div id="wm-step-forgot-email" class="hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-slate-900">ลืมรหัสผ่าน</h2>
+                        <p class="text-sm text-slate-500 mt-1">กรอกอีเมลที่ผูกกับบัญชี WebManager ของคุณ เราจะส่งรหัส OTP ไปให้</p>
+                    </div>
+                    <form id="wm-forgot-email-form" onsubmit="handleWebManagerForgotEmailSubmit(event)" class="auth-form">
+                        <div class="form-group">
+                            <label for="wm-forgot-email" class="form-label">อีเมลผู้ใช้งาน</label>
+                            <input type="email" id="wm-forgot-email" required placeholder="name@example.com"
+                                class="form-input">
+                        </div>
+                        <button type="submit" class="submit-btn mt-2">ส่งรหัส OTP</button>
+                    </form>
+                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 1rem;" onclick="goToWebManagerStep('login')">← กลับไปเข้าสู่ระบบ</span>
+                </div>
+
+                <!-- ================= STEP: ยืนยัน OTP ================= -->
+                <div id="wm-step-forgot-otp" class="hidden">
+                    <div class="text-center mb-6">
+                        <div class="otp-icon-circle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.06 0-2.077-.163-3.02-.465L3 21l1.395-3.72C3.512 15.892 3 14.482 3 13c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900">ยืนยันรหัส OTP</h2>
+                        <p class="text-sm text-slate-500 mt-1">กรอกรหัส 6 หลักที่ส่งไปยังอีเมลของคุณ</p>
+                    </div>
+                    <form id="wm-forgot-otp-form" onsubmit="handleWebManagerVerifyOtpSubmit(event)" class="auth-form">
+                        <div id="wm-otp-boxes" class="otp-input-group">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
+                        </div>
+                        <button type="submit" class="submit-btn">ยืนยันรหัส</button>
+                    </form>
+                    <button type="button" id="wm-resend-otp" class="resend-otp-link" onclick="handleWebManagerResendOtp()">ส่งรหัสอีกครั้ง</button>
+                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 0.5rem;" onclick="goToWebManagerStep('login')">← กลับไปเข้าสู่ระบบ</span>
+                </div>
+
+                <!-- ================= STEP: ตั้งรหัสผ่านใหม่ ================= -->
+                <div id="wm-step-forgot-newpass" class="hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-slate-900">ตั้งรหัสผ่านใหม่</h2>
+                        <p class="text-sm text-slate-500 mt-1">ตั้งรหัสผ่านใหม่สำหรับบัญชี WebManager ของคุณ</p>
+                    </div>
+                    <form id="wm-forgot-newpass-form" onsubmit="handleWebManagerForgotResetSubmit(event)" class="auth-form">
+                        <div class="form-group">
+                            <label for="wm-reset-new-password" class="form-label">รหัสผ่านใหม่</label>
+                            <div class="password-field-wrap">
+                                <input type="password" id="wm-reset-new-password" required
+                                    oninput="handleWebManagerNewPasswordInput()" class="form-input">
+                                <button type="button" class="password-toggle-btn" tabindex="-1"
+                                    aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('wm-reset-new-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <p id="wm-reset-password-hint" class="password-hint">อย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลข</p>
+                        <div class="form-group">
+                            <label for="wm-reset-confirm-password" class="form-label">ยืนยันรหัสผ่านใหม่</label>
+                            <div class="password-field-wrap">
+                                <input type="password" id="wm-reset-confirm-password" required class="form-input">
+                                <button type="button" class="password-toggle-btn" tabindex="-1"
+                                    aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('wm-reset-confirm-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="submit-btn mt-2">บันทึกรหัสผ่านใหม่</button>
+                    </form>
+                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 1rem;" onclick="goToWebManagerStep('login')">← กลับไปเข้าสู่ระบบ</span>
+                </div>
+
+                <div id="wm-login-toast" class="toast hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
+    <script src="../js/layout/loader.js"></script>
+    <script src="js/webmanager-login.js?v=20260820-1"></script>
+</body>
+
+</html>

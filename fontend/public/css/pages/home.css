@@ -1,0 +1,1308 @@
+html {
+  scroll-behavior: smooth;
+}
+
+/* ==========================================
+   Hero Section
+   ========================================== */
+.hero-section {
+  position: relative;
+  background: linear-gradient(to bottom, var(--brand-50), var(--slate-50), white);
+  overflow: hidden;
+  padding: 4rem 0;
+}
+
+@media (min-width: 640px) {
+  .hero-section {
+    padding: 6rem 0;
+  }
+}
+
+.hero-bg-graphic {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(3rem);
+}
+
+.shape-1 {
+  top: 25%;
+  left: -5rem;
+  width: 20rem;
+  height: 20rem;
+  background-color: var(--brand-500);
+  /* Adjusted to match orange theme */
+}
+
+.shape-2 {
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 24rem;
+  height: 24rem;
+  background-color: #facc15;
+  /* Adjusted to match orange theme */
+}
+
+/* .hero-grid layout: class="flex flex-col lg:flex-row lg:justify-center lg:gap-10" (Tailwind, ใน index.html) */
+
+@media (min-width: 1024px) {
+  .hero-content {
+    max-width: 60rem;
+    text-align: left;
+    margin: 0;
+  }
+
+  .hero-visual {
+    margin-top: 0;
+  }
+}
+
+/* .hero-content layout: class="lg:flex-[0_0_60%]" (Tailwind) */
+.hero-content {
+  text-align: center;
+  margin: 0.5rem;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .5;
+  }
+}
+
+.brand-logo {
+  width: auto;
+  height: 4.75rem;
+  max-width: 100%;
+  margin-bottom: 1.25rem;
+  filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.12));
+  border-radius: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .brand-logo {
+    height: 6rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .brand-logo {
+    height: 7.5rem;
+  }
+}
+
+.hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.title-break {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .title-break {
+    display: inline;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: 4rem;
+  }
+}
+
+.hero-description {
+  font-size: 2rem;
+  color: var(--slate-600);
+  margin: 0 0 1.5rem 0;
+  font-weight: 300;
+  line-height: 1.625;
+  /* กันขึ้นบรรทัดใหม่กลางคำภาษาไทย (ไม่มีช่องว่างในคำ เบราว์เซอร์เลยตัดมั่วได้ถ้าไม่กันไว้) ตัดได้เฉพาะตรงช่องว่างระหว่างวลีเท่านั้น */
+  word-break: keep-all;
+}
+
+@media (min-width: 640px) {
+  .hero-description {
+    font-size: 1.125rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-description {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* .hero-actions layout: class="flex flex-col items-center justify-center gap-[0.85rem] lg:gap-4" (Tailwind) */
+.hero-actions {
+  padding-top: 0.5rem;
+}
+
+/* .hero-action-buttons layout: class="flex flex-col items-center justify-center gap-4 sm:flex-row" (Tailwind) */
+.hero-action-buttons {
+  width: 100%;
+}
+
+/* ป้ายบอกว่าเปิดรับลงทะเบียนอยู่ตอนนี้ พร้อมจุดเขียวกระพริบแบบ "live" เหนือปุ่มลงทะเบียน */
+.hero-open-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.hero-open-dot {
+  position: relative;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background-color: #10b981;
+  flex-shrink: 0;
+}
+
+.hero-open-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: #10b981;
+  animation: heroOpenDotPulse 1.6s ease-out infinite;
+}
+
+@keyframes heroOpenDotPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* .hero-social-links layout: class="flex items-center justify-center gap-3 flex-wrap" (Tailwind) */
+.hero-social-links {
+  margin-top: 1.5rem;
+}
+
+/* .hero-social-link layout: class="inline-flex items-center justify-center gap-2" (Tailwind) */
+.hero-social-link {
+  padding: 0.6rem 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--slate-700);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.hero-social-link:hover {
+  color: var(--brand-600);
+  border-color: var(--brand-300);
+  background: white;
+  transform: translateY(-1px);
+}
+
+.hero-social-link.facebook {
+  color: #1877f2;
+  border-color: rgba(24, 119, 242, 0.25);
+}
+
+.hero-social-link.facebook:hover {
+  color: #166fe5;
+  border-color: #166fe5;
+}
+
+.hero-social-link.instagram {
+  color: #e4405f;
+  border-color: rgba(228, 64, 95, 0.25);
+}
+
+.hero-social-link.instagram:hover {
+  color: #d92f4f;
+  border-color: #d92f4f;
+}
+
+.hero-social-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .hero-action-buttons {
+    width: auto;
+  }
+
+  .hero-btn-primary,
+  .hero-btn-outline {
+    width: 14rem;
+  }
+}
+
+/* .hero-btn-primary layout: class="flex items-center justify-center gap-2" (Tailwind) */
+/* ปุ่ม "ลงทะเบียนตอนนี้": พื้นตันไล่สีส้มแบรนด์ + เงา = เปิดรับลงทะเบียน เทาตัน = ปิด (คุมได้จากแผง WebManager) - ดีไซน์ใหม่ให้เด่นสมเป็นปุ่มหลักของหน้าแรก แทนแบบขอบโปร่งใสเดิม */
+.hero-btn-primary {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 1.1rem 2.25rem;
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  color: white;
+  border-radius: 9999px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 25px -5px rgba(255, 114, 32, 0.45);
+  transition: all 0.2s ease;
+}
+
+.hero-btn-primary:hover {
+  background: linear-gradient(to right, var(--brand-700), var(--indigo-700));
+  box-shadow: 0 14px 28px -6px rgba(255, 114, 32, 0.55);
+  transform: translateY(-3px);
+}
+
+/* แถบแสงวิบวับพาดผ่านตอน hover (จากตัวอย่าง Uiverse) */
+.hero-btn-primary::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0) 70%
+  );
+  top: 0;
+  left: -100px;
+  opacity: 0.6;
+}
+
+.hero-btn-primary:hover::before {
+  animation: heroBtnShine 1.5s ease-out infinite;
+}
+
+@keyframes heroBtnShine {
+  0% {
+    left: -100px;
+  }
+  60% {
+    left: 100%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.hero-btn-primary.registration-closed {
+  background: var(--slate-300);
+  color: var(--slate-500);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.hero-btn-primary.registration-closed:hover {
+  background: var(--slate-300);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (min-width: 640px) {
+  .hero-btn-primary {
+    width: auto;
+    font-size: 1rem;
+  }
+}
+
+/* ปุ่ม "ลงทะเบียนพี่ค่าย": ขอบส้มโปร่งใส (ตัดกับปุ่มน้องค่ายที่พื้นตัน) แต่ใช้โทนสีเดียวกัน */
+.hero-btn-outline {
+  width: 100%;
+  padding: 1.1rem 2.25rem;
+  background: transparent;
+  color: var(--brand-600);
+  border: 2px solid var(--brand-600);
+  border-radius: 9999px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-btn-outline:hover {
+  background: rgba(255, 114, 32, 0.08);
+  color: var(--brand-700);
+  border-color: var(--brand-700);
+  transform: translateY(-3px);
+}
+
+.hero-btn-outline.registration-closed {
+  border-color: var(--slate-300);
+  color: var(--slate-400);
+  cursor: not-allowed;
+}
+
+.hero-btn-outline.registration-closed:hover {
+  background: transparent;
+  color: var(--slate-400);
+  border-color: var(--slate-300);
+  box-shadow: none;
+  transform: none;
+}
+
+@media (min-width: 640px) {
+  .hero-btn-outline {
+    width: auto;
+    font-size: 1rem;
+  }
+}
+
+.hero-btn-secondary {
+  display: inline-block;
+  width: auto;
+  margin-top: 1.5rem;
+  padding: 0.55rem 1.5rem;
+  border: 1px solid var(--slate-300);
+  background: transparent;
+  color: var(--slate-600);
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-btn-secondary:hover {
+  border-color: var(--slate-400);
+  color: var(--slate-800);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+@media (min-width: 640px) {
+  .hero-btn-secondary {
+    width: auto;
+  }
+}
+
+/* ปุ่มลัดไปยัง "งาน" ที่พี่ค่ายมีสิทธิ์เข้าถึง (แทนที่ปุ่ม "เรียนรู้เพิ่มเติม" เดิมซึ่งเป็นบัตรสำหรับผู้เข้าชมทั่วไป) */
+/* จัดเป็นแถว ๆ ละ 2 ปุ่ม (แต่ละแถวเป็น flex ของตัวเอง ปุ่มจึงชิดกันตามความกว้างจริงของแถวนั้น ไม่ยึดความกว้างคอลัมน์จากแถวอื่น) */
+.hero-tasks-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.hero-tasks-row {
+  display: none;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+/* แสดงแถวเฉพาะเมื่อมีปุ่มที่ไม่ถูกซ่อนอยู่ข้างใน (กันแถวว่างค้างพื้นที่ตอนพี่ค่ายเห็นแค่บางฝ่าย) */
+.hero-tasks-row:has(> .hero-task-btn:not(.hidden)) {
+  display: flex;
+}
+
+.hero-task-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: fit-content;
+  min-width: 10rem;
+  flex-shrink: 0;
+  gap: 0.65rem;
+  padding: 1.1rem 2rem;
+  border-radius: 1rem;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.hero-task-btn svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  /* จอเล็กปุ่ม 2 ปุ่มในแถวเดียวกัน (เช่น "งานวิชาการ"/"งานกิจกรรมและสันทนาการ") บีบเบียดกันจนข้อความเกือบล้น
+     เปลี่ยนเป็นเรียงลงมาทีละปุ่มแทน (column) ให้แต่ละปุ่มเต็มความกว้างเหมือนปุ่มอื่น ๆ ในแถบเดียวกัน */
+  .hero-tasks-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .hero-task-btn {
+    width: 100%;
+    min-width: 0;
+    gap: 0.4rem;
+    padding: 0.75rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  .hero-task-btn svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+.hero-task-btn.task-brand {
+  color: var(--brand-600);
+  background-color: #fff1e6;
+  border-color: rgba(255, 114, 32, 0.25);
+}
+
+.hero-task-btn.task-brand:hover {
+  background-color: #ffe1c9;
+}
+
+.hero-task-btn.task-emerald {
+  color: #059669;
+  background-color: #ecfdf5;
+  border-color: rgba(5, 150, 105, 0.25);
+}
+
+.hero-task-btn.task-emerald:hover {
+  background-color: #d1fae5;
+}
+
+
+.hero-task-btn.task-blue {
+  color: #2563eb;
+  background-color: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.hero-task-btn.task-blue:hover {
+  background-color: #dbeafe;
+}
+
+.hero-task-btn.task-rose {
+  color: #e11d48;
+  background-color: #fff1f2;
+  border-color: rgba(225, 29, 72, 0.25);
+}
+
+.hero-task-btn.task-rose:hover {
+  background-color: #ffe4e6;
+}
+
+/* .hero-stats layout: class="flex flex-wrap justify-center gap-6 sm:gap-12 lg:justify-start" (Tailwind) */
+.hero-stats {
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .stat-item {
+    text-align: left;
+  }
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--slate-900);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--slate-500);
+  font-weight: 500;
+}
+
+/* .hero-visual layout: class="flex justify-center lg:flex-[0_0_36%]" (Tailwind) */
+.hero-visual {
+  position: relative;
+  margin-top: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-visual {
+    margin-top: 0;
+  }
+}
+
+.visual-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.visual-decor {
+  position: absolute;
+}
+
+.top-decor {
+  top: -1rem;
+  right: -1rem;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--brand-500);
+  border-radius: 1rem;
+  opacity: 0.8;
+  filter: blur(1rem);
+  animation: bounce 2s infinite;
+}
+
+.bottom-decor {
+  bottom: -1rem;
+  left: -1rem;
+  width: 4rem;
+  height: 4rem;
+  background-color: #10b981;
+  border-radius: 50%;
+  opacity: 0.6;
+  filter: blur(0.5rem);
+}
+
+@keyframes bounce {
+
+  0%,
+  100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: none;
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.visual-card {
+  /* เดิมใช้ backdrop-filter (กระจกฝ้า) แต่เจอบั๊กจริงบน iOS มุมโค้งเป็นเหลี่ยม
+     ลองแก้ด้วย border-radius/-webkit-mask-image แล้วยังไม่หาย จึงตัด backdrop-filter ออกไปเลย
+     เปลี่ยนมาใช้พื้นขาวโปร่งแสงทึบกว่าเดิมแทน (ไม่เบลอสิ่งที่อยู่ข้างหลัง) รับประกันมุมโค้งถูกต้องทุกเบราว์เซอร์ */
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.22);
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  position: relative;
+  z-index: 10;
+}
+
+/* soft glow accent behind the card */
+.visual-card::before {
+  content: '';
+  position: absolute;
+  inset: -1rem;
+  border-radius: 1.75rem;
+  background: linear-gradient(135deg, rgba(255,150,84,0.06), rgba(250,204,21,0.06));
+  z-index: -1;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.card-header-gradient {
+  position: relative;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 0;
+  /* ใช้โทนไล่สีเดียวกับปุ่มอื่น ๆ ในเว็บ (เช่น .hero-btn-primary, .card-nickname) ให้เป็นโทนเดียวกันทั้งเว็บ */
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* ดาวตกแต่งกรอบสีส้ม ลอยอยู่หลังรูปโปรไฟล์/ข้อความเสมอ (z-index ต่ำกว่า) กะพริบเบา ๆ ไม่รบกวนการอ่าน */
+.card-header-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.card-header-gradient > *:not(.card-header-stars) {
+  position: relative;
+  z-index: 1;
+}
+
+.header-star {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.55);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.12));
+  animation: header-star-twinkle 2.8s ease-in-out infinite;
+}
+
+.header-star.star-1 { width: 1.15rem; height: 1.15rem; top: 0.75rem; left: 1.1rem; animation-delay: 0s; }
+.header-star.star-2 { width: 0.7rem; height: 0.7rem; top: 1.4rem; right: 1.6rem; animation-delay: 0.7s; }
+.header-star.star-3 { width: 0.55rem; height: 0.55rem; bottom: 1.1rem; left: 2.4rem; animation-delay: 1.4s; }
+.header-star.star-4 { width: 0.85rem; height: 0.85rem; bottom: 0.8rem; right: 1.2rem; animation-delay: 2.1s; }
+
+@keyframes header-star-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(0deg); }
+  50% { opacity: 0.9; transform: scale(1.1) rotate(8deg); }
+}
+
+/* ป้ายครั้งที่อยู่นอกกรอบกระจก เป็นตัวหนังสือสีส้มเรียบ ๆ ไม่มีกล่อง/พื้นหลัง แต่ตัวใหญ่เด่นเป็นจุดสนใจแรก */
+.card-badge {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-align: center;
+  margin: 0 0 0.85rem;
+  color: var(--brand-600);
+}
+
+/* .card-profile-wrapper layout: class="flex justify-center" (Tailwind) */
+.card-profile-wrapper {
+  position: relative;
+}
+
+.card-profile-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+.card-nickname {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0.9rem 0 0.2rem;
+  color: white;
+  letter-spacing: 0.02em;
+}
+
+.card-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  line-height: 1.3;
+  color: white;
+}
+
+.card-features {
+  margin-top: 1.5rem;
+}
+
+/* .feature-item layout: class="flex items-center gap-3" (Tailwind) */
+.feature-item {
+  margin-bottom: 1rem;
+}
+
+.feature-item:last-child {
+  margin-bottom: 0;
+}
+
+.university-logo {
+  width: 6rem;
+  height: 6rem;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  /* ไม่ใช้ backdrop-filter (บั๊กมุมโค้งเป็นเหลี่ยมบน iOS เหมือนจุดอื่นในการ์ดนี้) */
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0.75rem;
+}
+
+.icon-brand {
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.feature-text h3 {
+  font-weight: 600;
+  color: var(--slate-800);
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.feature-text h4 {
+  font-weight: 600;
+  margin: 0;
+  color: var(--slate-800);
+  font-size: 0.95rem;
+}
+
+.feature-text p {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--slate-500);
+}
+
+
+/* ==========================================
+   Tracks Section
+   ========================================== */
+.tracks-section {
+  padding: 3rem 0;
+  background-color: white;
+  border-top: 1px solid var(--slate-100);
+  border-bottom: 1px solid var(--slate-100);
+}
+
+/* .tracks-grid layout: class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" (Tailwind) */
+.tracks-grid {
+  margin-top: 3rem;
+}
+
+/* .pagination-bar layout: class="flex flex-wrap items-center justify-center gap-3" (Tailwind) */
+.pagination-bar {
+  margin: 2rem auto 0;
+}
+
+/* .pagination-pages layout: class="flex flex-wrap gap-2 justify-center" (Tailwind) */
+
+.pagination-button,
+.pagination-page {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: white;
+  color: var(--slate-700);
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pagination-button {
+  padding: 0.65rem 0.95rem;
+}
+
+/* ปุ่มเลขหน้า: วงกลมขนาดเท่ากันทุกปุ่มไม่ว่าจะเลขกี่หลัก (ไม่ใช้ padding ตามความยาวข้อความแบบปุ่ม ก่อนหน้า/ถัดไป) */
+.pagination-page {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pagination-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination-page:hover,
+.pagination-button:hover:not(:disabled) {
+  border-color: var(--brand-300);
+  color: var(--brand-600);
+  transform: translateY(-1px);
+}
+
+.pagination-page.active {
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: white;
+}
+
+/* .track-card layout: class="flex flex-col" (Tailwind, ต้องเพิ่มใน template ของ js/pages/home.js) */
+.track-card {
+  background-color: var(--slate-50);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+  min-height: 30rem;
+}
+
+.track-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  background-color: white;
+  border-color: rgba(255, 114, 32, 0.35);
+  transform: translateY(-0.25rem);
+}
+
+.track-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.icon-violet {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.icon-amber {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+/* .track-profile-wrapper layout: class="flex justify-center" (Tailwind, ต้องเพิ่มใน template ของ js/pages/home.js) */
+.track-profile-wrapper {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.track-profile-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.track-title-name {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--slate-600);
+  margin: 0;
+}
+
+.track-title-nickname {
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--brand-600);
+  margin: 0;
+}
+
+.track-desc {
+  font-size: 1rem;
+  color: var(--slate-600);
+  line-height: 1.625;
+  margin: 0;
+}
+
+/* .track-card-body layout: class="flex flex-col items-center justify-center gap-[0.6rem] flex-1" (Tailwind, ต้องเพิ่มใน template ของ js/pages/home.js) */
+.track-card-body {
+  margin-top: 0.8rem;
+  text-align: center;
+}
+
+.track-role {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+}
+
+.role-president {
+  background-color: white;
+  color: #f97316;
+  border: 1px solid #f97316;
+  box-shadow: 0 1px 2px rgba(249, 115, 22, 0.14);
+  /* orange-500 */
+}
+
+.role-vp {
+  background-color: #ffedd5;
+  /* orange-100 */
+  color: #c2410c;
+  /* orange-700 */
+  border: 1px solid #fed7aa;
+  /* orange-200 */
+}
+
+.role-secretary {
+  background-color: #dbeafe;
+  /* blue-100 */
+  color: #1e40af;
+  /* blue-800 */
+  border: 1px solid #bfdbfe;
+  /* blue-200 */
+}
+
+.role-academic {
+  background-color: #d1fae5;
+  /* emerald-100 */
+  color: #065f46;
+  /* emerald-800 */
+  border: 1px solid #a7f3d0;
+  /* emerald-200 */
+}
+
+.role-nurse {
+  background-color: #ffe4e6;
+  /* rose-100 */
+  color: #be123c;
+  /* rose-700 */
+  border: 1px solid #fecdd3;
+  /* rose-200 */
+}
+
+.role-it {
+  background-color: #e0e7ff;
+  /* indigo-100 */
+  color: #3730a3;
+  /* indigo-800 */
+  border: 1px solid #c7d2fe;
+  /* indigo-200 */
+}
+
+.role-welfare {
+  background-color: #ccfbf1;
+  /* teal-100 */
+  color: #115e59;
+  /* teal-800 */
+  border: 1px solid #99f6e4;
+  /* teal-200 */
+}
+
+.role-activity {
+  background-color: #f3e8ff;
+  /* purple-100 */
+  color: #6b21a8;
+  /* purple-800 */
+  border: 1px solid #e9d5ff;
+  /* purple-200 */
+}
+
+
+/* ==========================================
+   News Summary Section (หน้าแรก)
+   ========================================== */
+.news-summary-section {
+  padding: 4rem 0;
+  background-color: var(--slate-50);
+}
+
+/* .news-summary-header layout: class="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-end" (Tailwind) */
+.news-summary-header {
+  margin-bottom: 2rem;
+}
+
+/* .link-btn layout: class="flex items-center gap-1.5" (Tailwind) */
+.link-btn {
+  color: var(--brand-600);
+  font-weight: 600;
+  font-size: 0.875rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.link-btn:hover {
+  color: var(--brand-700);
+}
+
+/* .news-grid layout: class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3" (Tailwind) */
+
+/* .news-card layout: class="flex flex-col" (Tailwind, ต้องเพิ่มใน template ของ js/pages/news.js) */
+.news-card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.news-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.news-img {
+  height: 10rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  position: relative;
+}
+
+/* Wrapper สำหรับการ์ดข่าวที่ใช้รูปภาพแทน icon */
+.news-img-wrap {
+  position: relative;
+  height: 10rem;
+  overflow: hidden;
+  background-color: var(--slate-200);
+}
+
+.news-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.news-card:hover .news-thumbnail {
+  transform: scale(1.05);
+}
+
+.bg-indigo {
+  background: linear-gradient(to right, var(--brand-500), var(--indigo-500));
+}
+
+/* changed to match orange */
+.bg-emerald {
+  background: linear-gradient(to right, #10b981, #14b8a6);
+}
+
+.bg-amber {
+  background: linear-gradient(to right, #f59e0b, #f97316);
+}
+
+.news-hot-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background-color: #ef4444;
+  color: white;
+  font-weight: 600;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.375rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* .news-content layout: class="grow flex flex-col justify-between" (Tailwind, ต้องเพิ่มใน template ของ js/pages/news.js) */
+.news-content {
+  padding: 1.25rem;
+}
+
+.news-info {
+  margin-bottom: 1rem;
+}
+
+.news-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.tag-brand {
+  color: var(--brand-600);
+  background-color: var(--brand-50);
+}
+
+.tag-emerald {
+  color: #059669;
+  background-color: #ecfdf5;
+}
+
+.tag-amber {
+  color: #d97706;
+  background-color: #fffbeb;
+}
+
+.tag-blue {
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.news-title {
+  font-weight: 700;
+  color: var(--slate-800);
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s;
+}
+
+.news-card:hover .news-title {
+  color: var(--brand-600);
+}
+
+.news-desc {
+  font-size: 0.75rem;
+  color: var(--slate-500);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* .news-footer layout: class="flex items-center justify-between" (Tailwind, ต้องเพิ่มใน template ของ js/pages/news.js) */
+.news-footer {
+  padding-top: 1rem;
+  border-top: 1px solid var(--slate-100);
+  font-size: 0.75rem;
+  color: var(--slate-400);
+}
+
+.news-readmore {
+  color: var(--brand-600);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ==========================================
+   Home: Mobile-specific overrides (max-width: 480px)
+   ========================================== */
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 4.5rem 0 2rem;
+  }
+
+  .hero-badge {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.25rem;
+    margin: 1;
+  }
+
+  .hero-title {
+    font-size: 2.15rem;
+  }
+
+  .hero-description {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .hero-btn-secondary {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.85rem;
+    border-radius: 0.75rem;
+  }
+
+  .hero-stats {
+    /* gap ใช้ Tailwind class "max-[480px]:gap-4" แทน */
+    padding-top: 1.25rem;
+    margin-top: 1.25rem;
+  }
+
+  .stat-number {
+    font-size: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  .visual-wrapper {
+    max-width: 100%;
+  }
+
+  .visual-card {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .card-header-gradient {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .card-badge {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-nickname {
+    font-size: 0.95rem;
+    margin: 0.65rem 0 0.15rem;
+  }
+
+  .card-title {
+    font-size: 1.35rem;
+  }
+
+  .university-logo {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .tracks-section {
+    padding: 0 0 2rem;
+    margin-top: 0;
+  }
+
+  .tracks-grid {
+    /* gap ใช้ Tailwind class "max-[480px]:gap-5" แทน */
+    margin-top: 1.5rem;
+  }
+
+  .track-card {
+    padding: 1rem;
+  }
+
+  .track-title-name {
+    font-size: 1.35rem;
+  }
+
+  .track-title-nickname {
+    font-size: 1.45rem;
+  }
+
+  .track-role {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.625rem;
+  }
+
+  .news-summary-section {
+    padding: 2.5rem 0;
+  }
+
+  /* .news-grid gap ใช้ Tailwind class "max-[480px]:gap-4" แทน */
+
+  .news-content {
+    padding: 1rem;
+  }
+}
+
+/* ==========================================
+   Home: Small-medium mobile overrides (481px - 640px)
+   ========================================== */
+@media (min-width: 481px) and (max-width: 640px) {
+  .hero-title {
+    font-size: 2.4rem;
+  }
+}

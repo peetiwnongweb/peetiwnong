@@ -1,0 +1,22 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/generated/prisma
+
+# Tailwind build output (generated via `npm run build:css`)
+fontend/public/scr/output.css
+
+# Google Drive backup credentials (never commit real keys)
+/secrets/
+*.service-account.json
+google-credentials.json
+
+# บันทึกรหัสผ่าน/ข้อมูลบัญชีจริง (Gmail, Supabase ฯลฯ) เก็บไว้เองนอกโปรเจกต์แทน ไม่ควรอยู่ในซอร์สโค้ดเลย
+/text/
+
+# log ที่ redirect output เองตอน dev (ไม่ได้ใช้จาก script ไหนในโปรเจกต์)
+*.log
+
+# Claude Code local tooling (ประวัติสิทธิ์/lock ไฟล์เฉพาะเครื่อง ไม่ใช่ส่วนหนึ่งของแอป)
+/.claude/

@@ -1,0 +1,332 @@
+/* ==========================================
+   ACTIVITY PAGE STYLES (กลุ่ม / คะแนนกลุ่ม)
+   ========================================== */
+
+.group-info-card {
+  max-width: 640px;
+  margin: 0 auto 2rem;
+  background-color: white;
+  border: 1.5px solid var(--slate-200);
+  border-radius: 1.75rem;
+  padding: 2.25rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.25);
+}
+
+.group-info-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 0 auto 1.1rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+  color: white;
+  box-shadow: 0 10px 20px -8px rgba(255, 150, 84, 0.55);
+}
+
+.group-info-icon svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.group-info-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.4rem 0;
+}
+
+.group-info-name {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.group-member-count {
+  display: inline-flex;
+  margin: 1rem 0 0 0;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  color: var(--slate-500);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.group-member-list {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.group-member-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: white;
+  border: 1.5px solid var(--slate-200);
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.group-member-card:hover {
+  border-color: var(--brand-500);
+  box-shadow: 0 14px 30px -18px rgba(15, 23, 42, 0.3);
+  transform: translateY(-1px);
+}
+
+.group-member-avatar {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+  color: white;
+  font-weight: 800;
+  font-size: 1.1rem;
+  box-shadow: 0 6px 14px -4px rgba(255, 150, 84, 0.5);
+}
+
+.group-member-info {
+  min-width: 0;
+}
+
+.group-member-name {
+  margin: 0;
+  font-weight: 600;
+  color: var(--slate-900);
+  font-size: 0.95rem;
+}
+
+.group-member-me-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  background-color: var(--brand-500);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.group-member-nickname {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--slate-500);
+}
+
+.group-member-nickname:empty {
+  display: none;
+  margin: 0;
+}
+
+/* ==========================================
+   คะแนนกลุ่ม
+   ========================================== */
+.score-rank-card {
+  max-width: 32rem;
+  background-color: white;
+  border: 1.5px solid var(--slate-200);
+  border-radius: 1.75rem;
+  padding: 1.75rem 2rem;
+  margin: 0 auto 2rem;
+  text-align: center;
+  box-shadow: 0 20px 45px -20px rgba(15, 23, 42, 0.25);
+}
+
+/* ชื่อคอร์สของตัวเอง อยู่เหนือ "คะแนนรวม" - ว่างเปล่าไว้เฉย ๆ ถ้ายังไม่รู้คอร์ส (JS เติมข้อความให้ ดู DOMContentLoaded ใน participant-study.js) ไม่ต้องมี margin ถ้าไม่มีข้อความ */
+/* ป้ายชื่อคอร์สของตัวเอง - ทรงแคปซูลมีกรอบ สีต่างกันตามคอร์ส (ใส่คลาสสีจาก JS ดู applyCourseLabelColor ใน participant-study.js) */
+.score-rank-course {
+  display: inline-flex;
+  margin: 0 0 0.6rem;
+  padding: 0.35rem 1.1rem;
+  border-radius: 9999px;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.score-rank-course:empty {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ค่าเริ่มต้น/คอร์ส "เตรียมสอบ" - ฟ้า (โทนเดียวกับคะแนนสอบในตารางคะแนนฝั่งพี่ค่าย) */
+.score-rank-course,
+.score-rank-course--exam {
+  color: #2563eb;
+  border: 1.5px solid #2563eb;
+  background-color: #eff6ff;
+}
+
+/* คอร์ส "ปรับพื้นฐาน" - เขียว */
+.score-rank-course--basic {
+  color: var(--emerald-600);
+  border: 1.5px solid var(--emerald-600);
+  background-color: #ecfdf5;
+}
+
+.score-rank-label {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--slate-800);
+}
+
+.score-rank-big {
+  margin: 0.5rem 0 0;
+  line-height: 1;
+}
+
+.score-rank-number {
+  font-size: clamp(4rem, 15vw, 6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* "(100 คะแนน)" ต่อท้ายตัวเลขคะแนน (เต็มเสมอ 100 ตามสัดส่วน % ที่ระบบคำนวณ) เล็กกว่าตัวเลขหลักมาก ไม่ให้แย่งความเด่น แค่บอกฐานอ้างอิงเฉย ๆ */
+.score-rank-max {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: clamp(0.9rem, 3vw, 1.15rem);
+  font-weight: 700;
+  color: var(--slate-400);
+}
+
+.score-rank-unit {
+  margin: 0.6rem 0 0;
+  font-size: 1rem;
+  color: var(--slate-500);
+}
+
+.score-leaderboard-list,
+.score-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.score-leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 1rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.score-leaderboard-row-me {
+  border-color: var(--brand-500);
+  background-color: var(--brand-50);
+  box-shadow: 0 6px 16px -6px rgba(255, 114, 32, 0.35);
+}
+
+.score-leaderboard-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.9rem;
+  background-color: var(--slate-200);
+  color: var(--slate-600);
+}
+
+.score-leaderboard-row:nth-child(1) .score-leaderboard-rank {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+}
+
+.score-leaderboard-row:nth-child(2) .score-leaderboard-rank {
+  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+  color: white;
+}
+
+.score-leaderboard-row:nth-child(3) .score-leaderboard-rank {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: white;
+}
+
+.score-leaderboard-name {
+  flex: 1;
+  font-weight: 600;
+  color: var(--slate-800);
+  font-size: 0.95rem;
+}
+
+.score-leaderboard-score-wrap,
+.score-history-score-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.score-leaderboard-score-number {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--brand-600);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.score-leaderboard-score-unit,
+.score-history-score-unit {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--slate-400);
+}
+
+.score-history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: 1rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+}
+
+.score-history-name {
+  font-weight: 600;
+  color: var(--slate-800);
+  font-size: 0.92rem;
+}
+
+.score-history-score-number {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--slate-800);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.score-history-pending {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-400);
+  font-style: italic;
+}

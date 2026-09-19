@@ -1,0 +1,1072 @@
+/* ==========================================
+   Header: โครงสร้างหลัก (Layout & Glassmorphism)
+   ========================================== */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  /* สำหรับ Safari */
+  border-bottom: 1px solid var(--slate-200);
+  transition: all 0.3s ease;
+}
+
+header .flex {
+  display: flex;
+  align-items: center;
+}
+
+header .justify-between {
+  justify-content: space-between;
+}
+
+header .h-16 {
+  height: 4rem;
+  /* 64px */
+}
+
+/* กล่องไอคอนหลังโลโก้ */
+header .bg-gradient-to-tr {
+  background: linear-gradient(135deg, var(--brand-600), var(--indigo-600));
+  padding: 0;
+  border-radius: 0.5rem;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(235, 126, 37, 0.2);
+}
+
+/* ==========================================
+   Header: โลโก้ (Logo Section)
+   ========================================== */
+nav.hidden {
+  display: none;
+}
+
+.header-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 4rem;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding-left: clamp(1.5rem, 1rem + 2vw, 3rem);
+  padding-right: clamp(1.5rem, 1rem + 2vw, 3rem);
+}
+
+.header-inner .brand-link {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.header-inner .desktop-nav {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.header-inner .desktop-actions {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.header-inner .mobile-header-actions {
+  grid-column: 3;
+  justify-self: end;
+}
+
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* จอเล็ก: เหลือแค่วงกลมรูปโปรไฟล์ล้วน ๆ ไม่มีพื้นหลัง/ขอบ/ชื่อ-อีเมลข้าง ๆ อีก (เคยยาวจนต้องตัดจุดไข่ปลา)
+   ใช้ selector button.m-header-user-chip (element+class) เจาะจงกว่า .user-chip เฉย ๆ ที่นิยามไว้ทีหลังในไฟล์นี้ (บรรทัดล่างกว่า ชนะตาม cascade ถ้า specificity เท่ากัน) กัน .user-chip ทับพื้นหลัง/ขอบ/padding คืนมา */
+button.m-header-user-chip {
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+button.m-header-user-chip .user-name {
+  display: none;
+}
+
+button.m-header-user-chip .user-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.1rem;
+  border: 2px solid var(--slate-200);
+}
+
+
+.brand-link {
+  --brand-unit: 3rem;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--brand-unit) * 0.25);
+  cursor: pointer;
+}
+
+/* จอเล็ก: โลโก้ไอคอนถูกซ่อนอยู่แล้ว (แสดงเฉพาะ >=1024px) เหลือแค่ข้อความ ลด --brand-unit ให้ตัวอักษรเล็กลงตามสัดส่วน
+   เพื่อไม่ให้ชื่อแบรนด์ใหญ่เกินจนเบียดพื้นที่ปุ่มแฮมเบอร์เกอร์บนจอแคบ */
+@media (max-width: 480px) {
+  .brand-link {
+    --brand-unit: 2.2rem;
+  }
+}
+
+.brand-icon-wrap {
+  display: none;
+}
+
+.brand-icon {
+  width: var(--brand-unit);
+  height: var(--brand-unit);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+@media (min-width: 1024px) {
+  .brand-icon-wrap {
+    display: block;
+  }
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-title {
+  font-size: calc(var(--brand-unit) * 0.6);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-subtitle {
+  display: block;
+  margin-top: -0.35rem;
+  font-size: calc(var(--brand-unit) * 0.5);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: var(--slate-500);
+}
+
+/* ==========================================
+   Header: เมนูนำทางแบบ Desktop (Desktop Navigation)
+   ========================================== */
+.desktop-nav {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+@media (min-width: 1024px) {
+  .desktop-nav {
+    display: flex;
+  }
+}
+
+.desktop-actions {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .desktop-actions {
+    display: flex;
+  }
+}
+
+.nav-btn {
+  padding: 0.5rem clamp(0.5rem, 0.2rem + 0.6vw, 0.9rem);
+  border-radius: 0.5rem;
+  font-size: clamp(0.8rem, 0.75rem + 0.15vw, 0.9rem);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--slate-600);
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-btn:hover {
+  color: var(--brand-600);
+  background-color: var(--slate-100);
+}
+
+/* หน้า/แท็บที่กำลังเปิดอยู่ตอนนี้ - ใช้ดีไซน์ชุดเดียวกับการ์ดบัญชีในเมนูมือถือ (.mobile-menu-account-card)
+   คือพื้นไล่สีส้มอ่อน + เส้นขอบส้มบาง ๆ + ตัวหนังสือสีส้มตัวหนา (--brand-600 สีเดียวกับตอน hover)
+   ใช้เหมือนกันหมดทั้งแถบเมนูจอใหญ่ เมนูดรอปดาวน์ และเมนูมือถือ
+   วาดเส้นขอบด้วย box-shadow แทน border เพื่อไม่ให้ปุ่มขยับ 1px ตอนสลับหน้า */
+.active-nav-btn,
+.user-dropdown-item.current-page-btn,
+.nav-dropdown-item.current-page-btn,
+.mobile-nav-btn.active-nav-btn,
+.mobile-nav-btn.current-page-btn {
+  background-color: transparent;
+  background-image: linear-gradient(135deg, rgba(255, 150, 84, 0.14), rgba(255, 114, 32, 0.05));
+  color: var(--brand-600);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 114, 32, 0.18);
+}
+
+/* กันสี hover ปกติ (เทา) มาทับพื้นส้มของรายการที่เลือกอยู่ */
+.nav-btn.active-nav-btn:hover,
+.user-dropdown-item.current-page-btn:hover,
+.nav-dropdown-item.current-page-btn:hover,
+.mobile-nav-btn.active-nav-btn:hover,
+.mobile-nav-btn.current-page-btn:hover {
+  background-color: rgba(255, 114, 32, 0.06);
+  color: var(--brand-600);
+}
+
+/* ==========================================
+   Header: เมนู "งาน" แบบดรอปดาวน์ (Task/Department Dropdown)
+   ========================================== */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.nav-dropdown-caret {
+  width: 0.8rem;
+  height: 0.8rem;
+  color: var(--slate-400);
+  transition: transform 0.15s ease;
+}
+
+.nav-dropdown-trigger[aria-expanded="true"] .nav-dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 15rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  padding: 0.4rem;
+  z-index: 60;
+  animation: navDropdownIn 0.18s ease-out;
+}
+
+.nav-dropdown-menu.closing {
+  animation: navDropdownOut 0.15s ease-in forwards;
+}
+
+@keyframes navDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes navDropdownOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-0.5rem);
+  }
+}
+
+/* เมนู "ลงทะเบียน" อยู่ขวาสุดของ header ถ้า center align ใต้ปุ่มแบบเมนูอื่นจะล้นขอบจอ เลยชิดขวาแทน */
+#register-nav-wrap .nav-dropdown-menu {
+  left: auto;
+  right: 0;
+  transform: none;
+  animation: navDropdownInRight 0.18s ease-out;
+}
+
+#register-nav-wrap .nav-dropdown-menu.closing {
+  animation: navDropdownOutRight 0.15s ease-in forwards;
+}
+
+@keyframes navDropdownInRight {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes navDropdownOutRight {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  cursor: pointer;
+  text-align: left;
+  white-space: normal;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-dropdown-item:hover {
+  background-color: var(--slate-100);
+  color: var(--brand-600);
+}
+
+.nav-dropdown-item svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  color: var(--slate-400);
+  transition: color 0.15s ease;
+}
+
+.nav-dropdown-item:hover svg {
+  color: var(--brand-600);
+}
+
+/* การ์ดบอกว่ากำลังใช้งานด้วยบัญชีไหนอยู่ วางคั่นก่อนกลุ่มทางลัดส่วนตัวในเมนูมือถือ
+   (เดิมเป็นแค่ข้อความเล็ก ๆ ว่า "แท็บ" ซึ่งไม่ได้บอกอะไรผู้ใช้เลย) */
+.mobile-menu-account-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.35rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, rgba(255, 150, 84, 0.14), rgba(255, 114, 32, 0.05));
+  border: 1px solid rgba(255, 114, 32, 0.18);
+}
+
+.mobile-menu-account-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+  color: white;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* min-width:0 จำเป็นสำหรับ flex item ที่ต้องตัดข้อความด้วย ellipsis ไม่งั้นชื่อยาว ๆ จะดันการ์ดล้นออกนอกเมนู */
+.mobile-menu-account-text {
+  min-width: 0;
+}
+
+.mobile-menu-account-name,
+.mobile-menu-account-role {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-menu-account-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.mobile-menu-account-role {
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--brand-700);
+}
+
+/* กลุ่มที่กดเปิด/ปิดได้ (เช่น "งาน" ในเมนูมือถือ) ต่างจาก label เฉย ๆ ตรงที่คลิกได้และมีลูกศรบอกสถานะ
+   จึงต้องมีขนาด/น้ำหนักตัวอักษรเท่ากับปุ่มเมนูอื่น (.mobile-nav-btn) ไม่ใช่เล็กแบบ label เพราะกดได้จริง ไม่ใช่แค่หัวข้อ */
+.mobile-nav-group-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--slate-600);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.mobile-nav-group-trigger:hover {
+  background-color: var(--slate-50);
+  color: var(--brand-600);
+}
+
+/* กล่องรายการที่ยุบ/ขยายได้ในเมนูมือถือ (เช่น รายชื่อฝ่ายใต้ "งาน") */
+.mobile-nav-collapse {
+  animation: mobileNavCollapseIn 0.18s ease-out;
+}
+
+.mobile-nav-collapse.closing {
+  animation: mobileNavCollapseOut 0.15s ease-in forwards;
+}
+
+@keyframes mobileNavCollapseIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mobileNavCollapseOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+
+.mobile-nav-group-trigger .nav-dropdown-caret {
+  transition: transform 0.15s ease;
+}
+
+.mobile-nav-group-trigger[aria-expanded="true"] .nav-dropdown-caret {
+  transform: rotate(180deg);
+}
+
+/* ==========================================
+   Header: ปุ่มระบบและข้อมูลผู้ใช้ (Auth Buttons & User Profile)
+   ========================================== */
+.auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.auth-link,
+.auth-btn {
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-link {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--slate-600);
+  background: transparent;
+}
+
+.auth-link:hover {
+  color: var(--brand-600);
+  background-color: var(--slate-100);
+}
+
+.auth-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  box-shadow: 0 8px 12px -3px rgba(37, 99, 235, 0.2);
+}
+
+.auth-btn:hover {
+  background: linear-gradient(to right, var(--brand-700), var(--indigo-700));
+  transform: translateY(-2px);
+}
+
+/* ปุ่ม "เข้าสู่ระบบ" หน้าแรกสาธารณะ ตอนนี้เป็นปุ่มเดียวในโซนนี้ (ไม่มี "ลงทะเบียน" คู่กันแล้ว) เลยขยายให้ใหญ่/กว้างกว่าปุ่ม auth-btn ปกติหน่อย */
+.auth-btn-lg {
+  padding: 0.65rem 1.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.auth-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem 0.375rem 0.375rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  border: 1px solid var(--slate-200);
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: var(--brand-500);
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.user-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--slate-700);
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.user-chip-trigger {
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.user-chip-trigger:hover {
+  background-color: var(--slate-200);
+}
+
+.user-dropdown-caret {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--slate-400);
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  min-width: 11rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  padding: 0.4rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* กลุ่มทางลัด ("งาน" ของพี่ค่าย / "การเรียน-กิจกรรม" ของน้องค่าย ฯลฯ) เป็น div ครอบอีกชั้น
+   ต้องตั้ง gap ให้เองด้วย ไม่งั้นรายการข้างในจะติดกันแน่นกว่ารายการอื่นในเมนูเดียวกัน
+   (.hidden เป็น display:none !important จึงยังซ่อนกลุ่มได้ตามปกติ ไม่โดน display:flex ตรงนี้ทับ) */
+.user-dropdown-menu .nav-tasks-wrap,
+.user-dropdown-menu .participant-tasks-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.user-profile-menu {
+  width: 15.5rem;
+  padding: 0.5rem;
+}
+
+.user-profile-menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.75rem 0.5rem 0.9rem;
+}
+
+.user-profile-menu-avatar {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+  color: white;
+  font-weight: 800;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.55rem;
+}
+
+.user-profile-menu-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.user-profile-menu-role {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--slate-400);
+  margin-top: 0.15rem;
+}
+
+.user-dropdown-divider {
+  height: 1px;
+  background-color: var(--slate-200);
+  /* ระยะห่างรอบเส้นคั่นบวกกับ gap ของเมนูอีกชั้นแล้ว จึงตั้งไว้น้อยกว่าระยะระหว่างรายการปกติ ไม่งั้นกลุ่มจะห่างเกินไป */
+  margin: 0.15rem 0.25rem;
+}
+
+/* รายการในกลุ่มทางลัดใช้ระยะในปุ่มเท่ากับรายการอื่นในเมนูบัญชี (เฉพาะในเมนูนี้ ไม่ไปกระทบดรอปดาวน์ "งาน" บนแถบเมนู) */
+.user-dropdown-menu .nav-dropdown-item {
+  padding: 0.7rem 0.75rem;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+  background-color: var(--slate-100);
+  color: var(--brand-600);
+}
+
+.user-dropdown-item svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  color: var(--slate-400);
+  transition: color 0.15s ease;
+}
+
+.user-dropdown-item:hover svg {
+  color: var(--brand-600);
+}
+
+.user-dropdown-item.danger {
+  color: var(--rose-600);
+}
+
+.user-dropdown-item.danger svg {
+  color: var(--rose-600);
+}
+
+.user-dropdown-item.danger:hover {
+  background-color: var(--rose-50);
+  color: var(--rose-600);
+}
+
+.user-dropdown-item.danger:hover svg {
+  color: var(--rose-600);
+}
+
+/* ปุ่มเข้าสู่ระบบ (มือถือ) */
+.text-slate-600.hover\:text-brand-600 {
+  background: transparent;
+  border: none;
+  color: var(--slate-600);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.text-slate-600.hover\:text-brand-600:hover {
+  color: var(--brand-600);
+}
+
+/* ปุ่มสมัครเข้าค่าย */
+header button.bg-gradient-to-r {
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  color: white;
+  border-radius: 0.4rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+header button.bg-gradient-to-r:hover {
+  background: linear-gradient(to right, var(--brand-700), var(--indigo-700));
+  transform: translateY(-2px);
+}
+
+/* ปุ่ม "ลงทะเบียน" ตอนปิดรับสมัครทั้งพี่ค่ายและน้องค่าย เปลี่ยนเป็น "ยังไม่เปิดลงทะเบียน" สีเทา กดไม่ได้ */
+header button.nav-register-disabled,
+header button.nav-register-disabled:hover {
+  background: var(--slate-200);
+  color: var(--slate-500);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* โปรไฟล์ผู้ใช้เวลากรณีล็อกอินแล้ว (มือถือ) */
+.bg-slate-100 {
+  background-color: var(--slate-100);
+  padding: 0.375rem 1rem 0.375rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid var(--slate-200);
+}
+
+.user-avatar-style {
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.text-xs.font-semibold {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--slate-700);
+}
+
+/* ปุ่มออกจากระบบ (มือถือ) */
+.text-rose-600 {
+  color: var(--rose-600);
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.text-rose-600:hover {
+  background-color: var(--rose-50);
+}
+
+/* ==========================================
+   Header: เมนูบนมือถือ (Mobile Menu & Hamburger)
+   ========================================== */
+.mobile-toggle .burger {
+  position: relative;
+  width: 40px;
+  height: 30px;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+}
+
+.mobile-toggle .burger input {
+  display: none;
+}
+
+.mobile-toggle .burger span {
+  display: block;
+  position: absolute;
+  height: 4px;
+  width: 100%;
+  background: black;
+  border-radius: 9px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: .25s ease-in-out;
+}
+
+.mobile-toggle .burger span:nth-of-type(1) {
+  top: 0px;
+  transform-origin: left center;
+}
+
+.mobile-toggle .burger span:nth-of-type(2) {
+  top: 50%;
+  transform: translateY(-50%);
+  transform-origin: left center;
+}
+
+.mobile-toggle .burger span:nth-of-type(3) {
+  top: 100%;
+  transform-origin: left center;
+  transform: translateY(-100%);
+}
+
+.mobile-toggle .burger input:checked ~ span:nth-of-type(1) {
+  transform: rotate(45deg);
+  top: 0px;
+  left: 5px;
+}
+
+.mobile-toggle .burger input:checked ~ span:nth-of-type(2) {
+  width: 0%;
+  opacity: 0;
+}
+
+.mobile-toggle .burger input:checked ~ span:nth-of-type(3) {
+  transform: rotate(-45deg);
+  top: 28px;
+  left: 5px;
+}
+
+.mobile-toggle .burger:hover span {
+  background: var(--brand-600);
+}
+
+.md\:hidden {
+  display: flex;
+}
+
+@media (min-width: 1024px) {
+  .md\:hidden {
+    display: none !important;
+  }
+}
+
+header button.focus\:outline-none {
+  background: transparent;
+  border: none;
+  color: var(--slate-600);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+header button.focus\:outline-none:hover {
+  color: var(--brand-600);
+  background-color: var(--slate-100);
+}
+
+/* กล่องเมนูพับเปิด-ปิดบนมือถือ */
+/* หมายเหตุ: ตั้งใจไม่ใส่ backdrop-filter ตรงนี้ เพราะ element นี้เล่นแอนิเมชันทุกครั้งที่เปิด/ปิด
+   และซ้อนทับอยู่บน header ที่มี backdrop-filter อยู่แล้ว การซ้อน backdrop-filter สองชั้นบน element ที่กำลังแอนิเมชัน
+   ทำให้ Chrome DevTools (responsive/device-toolbar mode) เรนเดอร์เพี้ยนเป็นภาพซ้อน/กลับด้าน
+   พื้นหลังทึบ 95% ก็ให้ผลลัพธ์ใกล้เคียงกันโดยไม่ชนบั๊กนี้ */
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--slate-200);
+  /* ทึบเต็ม 100% - เดิมใส่ไว้ 0.98 แล้วโลโก้/หัวข้อของหน้าที่อยู่ข้างหลังทะลุขึ้นมาให้เห็นจาง ๆ อ่านเมนูยาก */
+  background-color: white;
+  padding: 0.6rem 0.75rem 0.85rem;
+  border-radius: 0 0 1.25rem 1.25rem;
+  box-shadow: 0 18px 38px -12px rgba(15, 23, 42, 0.28);
+  animation: mobileMenuSlideDown 0.22s ease-out;
+}
+
+@keyframes mobileMenuSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu.closing {
+  animation: mobileMenuSlideUp 0.18s ease-in forwards;
+}
+
+@keyframes mobileMenuSlideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+}
+
+/* ปุ่มเมนูมือถือ: เป็น flex เพื่อให้วางไอคอนนำหน้าข้อความได้ ปุ่มที่ยังไม่มีไอคอนก็ยังแสดงผลปกติ */
+.mobile-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--slate-700);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.mobile-nav-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  color: var(--slate-400);
+  transition: color 0.2s;
+}
+
+.mobile-nav-btn:hover {
+  background-color: var(--slate-100);
+  color: var(--brand-600);
+}
+
+.mobile-nav-btn:hover svg {
+  color: var(--brand-600);
+}
+
+/* เส้นคั่นกลุ่มในเมนูมือถือ ให้บางและเว้นระยะมากกว่า hr ปกติของหน้า */
+.mobile-menu hr {
+  margin: 0.55rem 0.25rem;
+  border-top-color: var(--slate-100);
+}
+
+/* ปุ่มท้ายเมนู (เข้าสู่ระบบ/ลงทะเบียน/ออกจากระบบ) - จัดกึ่งกลางและเน้นให้ต่างจากรายการเมนูด้านบน */
+.mobile-nav-btn.mobile-nav-logout-btn,
+.mobile-nav-btn.mobile-nav-center-btn,
+.mobile-nav-btn.mobile-nav-cta-btn {
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* ปุ่มหลักท้ายเมนูใช้พื้นไล่สีส้มร่วมกับปุ่มอื่นในเว็บ (.bg-gradient-to-r) ตัวหนังสือ/ไอคอนจึงต้องเป็นสีขาวทั้งตอนปกติและตอน hover
+   ไม่งั้นจะโดนสีจาก .mobile-nav-btn:hover (ส้ม) ทับจนอ่านไม่ออกบนพื้นส้ม */
+.mobile-nav-btn.mobile-nav-cta-btn,
+.mobile-nav-btn.mobile-nav-cta-btn:hover {
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.mobile-nav-btn.mobile-nav-cta-btn svg,
+.mobile-nav-btn.mobile-nav-cta-btn:hover svg {
+  color: white;
+}
+
+.mobile-nav-btn.mobile-nav-logout-btn {
+  background-color: var(--rose-50);
+  color: var(--rose-600);
+  border: 1px solid var(--rose-100);
+}
+
+.mobile-nav-btn.mobile-nav-logout-btn svg {
+  color: var(--rose-600);
+}
+
+.mobile-nav-btn.mobile-nav-logout-btn:hover {
+  background-color: var(--rose-100);
+  color: var(--rose-600);
+}
+
+hr {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 0;
+  border-top: 1px solid var(--slate-200);
+}
+
+/* ปุ่มสำหรับมือถือ */
+.border-slate-300 {
+  border: 1px solid var(--slate-300);
+  background: white;
+  color: var(--slate-700);
+}
+
+.border-slate-300:hover {
+  background-color: var(--slate-50);
+}
+
+/* ==========================================
+   Header: ควบคุมตามขนาดหน้าจอ (Media Queries)
+   ========================================== */
+@media (min-width: 1024px) {
+
+  /* ซ่อนปุ่มแฮมเบอร์เกอร์เมื่อจอใหญ่ขึ้น */
+  .md\:hidden {
+    display: none !important;
+  }
+
+  /* แสดงเมนูนำทางหลักและปุ่มล็อกอิน */
+  .desktop-nav,
+  .desktop-actions {
+    display: flex !important;
+  }
+
+  .mobile-toggle {
+    display: none !important;
+  }
+}
+

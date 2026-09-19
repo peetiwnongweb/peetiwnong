@@ -319,15 +319,15 @@
                                 โรงเรียนพิมายดำรงวิทยาคม นำโดย รศ.ดร.อาคม แก้วระวัง ศิษเก่ารุ่นที่ 3
                             </p>
                             <div class="hero-actions flex flex-col items-center justify-center gap-[0.85rem] lg:gap-4">
-                                <div class="hero-open-badge" id="hero-open-badge">
+                                <div class="hero-open-badge hidden" id="hero-open-badge">
                                     <span class="hero-open-dot"></span>
                                     เปิดลงทะเบียนแล้ววันนี้
                                 </div>
                                 <div class="hero-action-buttons flex flex-col items-center justify-center gap-4 sm:flex-row flex-wrap">
-                                    <button id="hero-register-participant-btn" class="hero-btn-primary flex items-center justify-center gap-2" onclick="handleHeroRegisterClick(event, 'participant', '/html/form.html')">
+                                    <button id="hero-register-participant-btn" class="hero-btn-primary flex items-center justify-center gap-2 hidden" onclick="handleHeroRegisterClick(event, 'participant', '/html/form.html')">
                                         <span id="hero-register-participant-text">ลงทะเบียนสำหรับน้องค่าย</span>
                                     </button>
-                                    <button id="hero-register-staff-btn" class="hero-btn-outline flex items-center justify-center gap-2" onclick="handleHeroRegisterClick(event, 'staff', '/html/staff-form.html')">
+                                    <button id="hero-register-staff-btn" class="hero-btn-outline flex items-center justify-center gap-2 hidden" onclick="handleHeroRegisterClick(event, 'staff', '/html/staff-form.html')">
                                         <span id="hero-register-staff-text">ลงทะเบียนสำหรับพี่ค่าย</span>
                                     </button>
                                     <!-- พี่ค่าย login แล้ว: ปุ่มลัดตามฝ่าย กรองด้วย applyStaffTaskMenuVisibility() ใน auth.js -->

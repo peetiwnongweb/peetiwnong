@@ -159,17 +159,27 @@ function redirectHtmlExtension(req, res, next) {
     res.redirect(301, clean + query)
 }
 
+// ไฟล์ CSS/JS อ้างด้วย query string ?v=วันที่-เลขรัน (cache-busting) อยู่แล้วเกือบทุกไฟล์ แต่ไม่ครบ 100% จึงยังไม่กล้าตั้งอายุ cache ยาวเป็นปีแบบ /media (ที่ path ไม่เปลี่ยนเลยตลอดชีพไฟล์)
+// ตั้งสั้น ๆ พอกันไม่ให้ browser ต้องถาม server ซ้ำทุกไฟล์ทุกครั้งที่สลับหน้าในเซสชันเดียวกัน (เคสที่เจอบ่อยสุด) โดยเสี่ยงเห็นไฟล์เก่าค้างได้ไม่เกิน 1 ชม. ถ้า deploy ใหม่แล้วลืมบัมพ์ ?v= ของไฟล์ไหน
+function setStaticCacheHeaders(res, filePath) {
+    if (/\.(css|js)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=3600')
+    } else if (/\.(png|jpe?g|svg|webp|ico|woff2?|ttf)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=86400')
+    }
+}
+
 app.use(redirectHtmlExtension)
 app.use(keepStaffOnStaffPage)
 // extensions: ['html'] ให้ "/staff/academic" เสิร์ฟไฟล์ academic.html ได้ตรง ๆ โดยไม่ต้องมี .html ใน URL (ยังเสิร์ฟ index.html อัตโนมัติที่ path โฟลเดอร์เหมือนเดิมอยู่แล้ว)
-app.use(express.static(path.join(__dirname, 'fontend', 'public'), { extensions: ['html'] }))
-app.use('/assets', express.static(path.join(__dirname, 'fontend', 'assets')))
-app.use('/backend/uploads', express.static(path.join(__dirname, 'backend', 'uploads')))
+app.use(express.static(path.join(__dirname, 'fontend', 'public'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
+app.use('/assets', express.static(path.join(__dirname, 'fontend', 'assets'), { setHeaders: setStaticCacheHeaders }))
+app.use('/backend/uploads', express.static(path.join(__dirname, 'backend', 'uploads'), { setHeaders: setStaticCacheHeaders }))
 app.use('/media', mediaRoutes)
-app.use('/admin', requireAdminPage, express.static(path.join(__dirname, 'fontend', 'admin'), { extensions: ['html'] }))
-app.use('/webmanager', requireWebManagerPage, express.static(path.join(__dirname, 'fontend', 'webmanager'), { extensions: ['html'] }))
-app.use('/staff', requireStaffPage, express.static(path.join(__dirname, 'fontend', 'staff'), { extensions: ['html'] }))
-app.use('/participant', requireParticipantPage, express.static(path.join(__dirname, 'fontend', 'participant'), { extensions: ['html'] }))
+app.use('/admin', requireAdminPage, express.static(path.join(__dirname, 'fontend', 'admin'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
+app.use('/webmanager', requireWebManagerPage, express.static(path.join(__dirname, 'fontend', 'webmanager'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
+app.use('/staff', requireStaffPage, express.static(path.join(__dirname, 'fontend', 'staff'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
+app.use('/participant', requireParticipantPage, express.static(path.join(__dirname, 'fontend', 'participant'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
 
 // หน้าแรกของพี่ค่าย/น้องค่ายใช้ไฟล์เดียวกับหน้าแรกสาธารณะ (fontend/public/index.html) ไม่มีสำเนาแยกในโฟลเดอร์ fontend/staff, fontend/participant แล้ว
 // เนื้อหาปรับตาม role ด้วย JS ฝั่ง client (auth.js) - requireStaffPage/requireParticipantPage ยังกันคนละ role เข้าไม่ได้เหมือนเดิม

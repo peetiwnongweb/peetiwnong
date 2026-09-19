@@ -387,16 +387,29 @@ function refreshAdminDashboard() {
 }
 
 // ดึงข้อมูล 1 แท็บ (people/academic/activities) เก็บ cache ไว้ใน adminDashboardState.data ให้แท็บภาพรวมเรียกซ้ำได้โดยไม่ยิง fetch ซ้ำ
+// เก็บ promise ที่กำลังโหลดอยู่ด้วย (adminDashboardPending) เพราะตอนโหลดหน้าแรก initAdminDashboard() เรียก loadAdminDashboardTab('overview') (ซึ่งขอทั้ง people/academic/activities พร้อมกัน)
+// กับแท็บที่จำไว้ล่าสุด (เช่น 'people') พร้อมกันแบบ Promise.allSettled - ถ้าไม่กันจุดนี้ไว้ ทั้งสองฝั่งจะยังไม่เห็น cache ทันเวลากัน เลยยิง fetch ซ้ำกันเอง
+const adminDashboardPending = {};
 async function fetchAdminDashboardData(tab, force) {
     if (!force && adminDashboardState.data[tab]) return adminDashboardState.data[tab];
-    const res = await fetch(ADMIN_DASHBOARD_TAB_ENDPOINTS[tab]);
-    if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `HTTP ${res.status}`);
+    if (!force && adminDashboardPending[tab]) return adminDashboardPending[tab];
+
+    const promise = (async () => {
+        const res = await fetch(ADMIN_DASHBOARD_TAB_ENDPOINTS[tab]);
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        adminDashboardState.data[tab] = data;
+        return data;
+    })();
+    adminDashboardPending[tab] = promise;
+    try {
+        return await promise;
+    } finally {
+        delete adminDashboardPending[tab];
     }
-    const data = await res.json();
-    adminDashboardState.data[tab] = data;
-    return data;
 }
 
 async function loadAdminDashboardTab(tab, { force = false } = {}) {

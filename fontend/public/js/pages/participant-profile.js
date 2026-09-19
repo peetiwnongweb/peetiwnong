@@ -317,9 +317,7 @@ function handleSecuritySubmit(event) {
 document.addEventListener('DOMContentLoaded', () => {
     Loader.showFullPageLoader();
 
-    fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : Promise.reject()))
-        .then(({ user }) => fillProfileForm(user))
-        .catch(() => {})
+    window.PTN_AUTH_ME
+        .then(({ user }) => { if (user) fillProfileForm(user); })
         .finally(() => Loader.hideFullPageLoader());
 });

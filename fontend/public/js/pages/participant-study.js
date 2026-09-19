@@ -671,9 +671,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Loader.showFullPageLoader();
 
     // ยังไม่มีค่ายที่กำลังดำเนินการ (หรือค่ายจบแล้ว) = ระบบการเรียนล็อกทั้งหน้า (API ทุกเส้นตอบ 409 อยู่แล้ว) โชว์แผงอธิบายแทน ไม่โหลดส่วนอื่น
-    const campGate = fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : Promise.reject()))
+    const campGate = window.PTN_AUTH_ME
         .then(({ user, camp }) => {
+            if (!user) return true;
             window.PTN_CAMP_STATE = camp || null;
             if (!isCampActive(camp)) {
                 renderCampLockedPage(document.querySelector('main.main-content'), { systemName: 'ระบบการเรียน', audience: 'participant', camp });
@@ -698,8 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             return true;
-        })
-        .catch(() => true);
+        });
 
     document.getElementById('timetable-fullscreen-btn')?.addEventListener('click', openTimetableFullscreen);
     document.getElementById('timetable-print-btn')?.addEventListener('click', async () => {

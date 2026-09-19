@@ -31,10 +31,9 @@ function loadMyGroup() {
     const countEl = document.getElementById('group-member-count');
 
     if (listEl) Loader.renderSkeletonCards(listEl, 3);
-    fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : Promise.reject()))
+    window.PTN_AUTH_ME
         .then(({ user }) => {
-            if (!user.group) {
+            if (!user || !user.group) {
                 if (nameEl) nameEl.textContent = 'ยังไม่ได้ถูกจัดกลุ่ม';
                 if (emptyEl) emptyEl.classList.remove('hidden');
                 if (listEl) listEl.classList.add('hidden');
@@ -73,10 +72,9 @@ function loadGroupScores() {
 
     if (leaderboardListEl) Loader.renderSkeletonCards(leaderboardListEl, 3);
     if (historyListEl) Loader.renderSkeletonCards(historyListEl, 3);
-    return fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : Promise.reject()))
+    return window.PTN_AUTH_ME
         .then(({ user }) => {
-            if (!user.group) {
+            if (!user || !user.group) {
                 if (rankCardEl) rankCardEl.classList.add('hidden');
                 if (leaderboardEmptyEl) leaderboardEmptyEl.classList.remove('hidden');
                 if (historyEmptyEl) historyEmptyEl.classList.remove('hidden');
@@ -141,9 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Loader.showFullPageLoader();
 
     // ยังไม่มีค่ายที่กำลังดำเนินการ (หรือค่ายจบแล้ว) = ระบบกิจกรรมล็อกทั้งหน้า (API ตอบ 409 อยู่แล้ว) โชว์แผงอธิบายแทน ไม่โหลดกลุ่ม/คะแนน
-    fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : { user: null, camp: null }))
-        .catch(() => ({ user: null, camp: null }))
+    window.PTN_AUTH_ME
         .then(({ camp }) => {
             window.PTN_CAMP_STATE = camp || null;
             if (!isCampActive(camp)) {

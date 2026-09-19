@@ -657,9 +657,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // เช็คสถานะค่ายก่อนทุกอย่าง: ยังไม่มีค่ายที่กำลังดำเนินการ = ระบบกิจกรรมล็อก (API ทุกเส้นตอบ 409 อยู่แล้ว) โชว์แผงอธิบายแทนแล้วจบ ไม่โหลดข้อมูลอื่นให้เจอ toast error รัว ๆ
     // ต้องรู้ tier ก่อนถึงจะตัดสินใจได้ว่าโหลด loadGroups() ไหม (ไม่งั้นทีมงานปกติจะเจอ toast แจ้งเตือนโหลดไม่สำเร็จโดยไม่จำเป็น เพราะ /unassigned-participants ตอบ 403)
-    fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : { user: null, camp: null }))
-        .catch(() => ({ user: null, camp: null }))
+    window.PTN_AUTH_ME
         .then(({ user, camp }) => {
             window.PTN_CAMP_STATE = camp || null;
             if (!isCampActive(camp)) {

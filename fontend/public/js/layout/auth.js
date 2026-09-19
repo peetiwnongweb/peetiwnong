@@ -10,6 +10,17 @@ let isUserLoggedIn = false;
 // เก็บ settings ล่าสุดไว้ให้ applyCheckStatusTabState() เรียกซ้ำได้จาก loginUser() ด้วย กัน race condition เดียวกับข้างบน
 let lastSiteSettings = null;
 
+// promise เดียวใช้ร่วมกันทั้งหน้า กันแต่ละสคริปต์ (auth.js เอง + สคริปต์เฉพาะหน้าอย่าง staff-academic.js/participant-study.js ฯลฯ)
+// ยิง fetch('/api/auth/me') ของตัวเองซ้ำตอนโหลดหน้าเดียวกัน (บางหน้าก่อนหน้านี้ยิงซ้ำ 2-4 รอบพร้อมกัน) auth.js โหลดก่อนสคริปต์เฉพาะหน้าเสมอ
+// จึงประกาศ promise นี้ทันทีตอนสคริปต์ทำงาน (ไม่ต้องรอ DOMContentLoaded) ให้สคริปต์อื่นมาแนบ .then() ใช้ผลเดียวกันได้ทัน
+// resolve เป็น {user:null, camp:null} เสมอ ไม่มี reject กันทุกจุดที่เรียกใช้ต้องเขียน .catch() ซ้ำอีก
+// ข้าม fetch จริงถ้าอยู่ในกรอบพรีวิวของ WebManager (ดูคอมเมนต์ preview=1 ใน checkAuthSession เดิม) ให้ถือเป็น "ยังไม่ได้ล็อกอิน" ไปเลย
+window.PTN_AUTH_ME = (new URLSearchParams(window.location.search).get('preview') === '1')
+    ? Promise.resolve({ user: null, camp: null })
+    : fetch('/api/auth/me')
+        .then((res) => (res.ok ? res.json() : { user: null, camp: null }))
+        .catch(() => ({ user: null, camp: null }));
+
 const ROLE_LABELS = {
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',
@@ -580,21 +591,14 @@ async function logout() {
 }
 
 function checkAuthSession() {
-    // iframe "ตัวอย่างหน้าเว็บหลัก" ในแผง WebManager (หน้าแรก) โหลดด้วย src="/?preview=1" (ดู keepStaffOnStaffPage ใน server.js ที่ข้าม redirect ให้ path นี้)
-    // จุดประสงค์ของกรอบนี้คือดูหน้าตาเนื้อหาเฉย ๆ ไม่ใช่ใช้งานเมนูบัญชี (Admin/ออกจากระบบ ฯลฯ ทำได้อยู่แล้วที่ /webmanager/) จึงข้ามการเช็ก session ไปเลย
+    // ใช้ผลจาก window.PTN_AUTH_ME (ยิงไปแล้วตั้งแต่สคริปต์นี้โหลด ดูคอมเมนต์ตรงประกาศด้านบน) ไม่ fetch เอง
+    // โหมดพรีวิว (iframe "ตัวอย่างหน้าเว็บหลัก" ในแผง WebManager, src="/?preview=1") ผลจะเป็น user:null เสมออยู่แล้ว
     // ปล่อยให้ header อยู่ในสถานะเริ่มต้น (เหมือนผู้เยี่ยมชมทั่วไปที่ยังไม่ได้ล็อกอิน) กันปุ่ม "ออกจากระบบ"/"Admin" หลุดเข้ามาให้กดพลาดในกรอบพรีวิวเล็ก ๆ
-    if (new URLSearchParams(window.location.search).get('preview') === '1') return;
-
-    fetch('/api/auth/me')
-        .then((res) => {
-            if (!res.ok) throw new Error('not logged in');
-            return res.json();
-        })
-        .then(({ user, camp }) => {
-            window.PTN_CAMP_STATE = camp || null;
-            loginUser(user);
-        })
-        .catch(() => {});
+    window.PTN_AUTH_ME.then(({ user, camp }) => {
+        if (!user) return;
+        window.PTN_CAMP_STATE = camp || null;
+        loginUser(user);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', checkAuthSession);

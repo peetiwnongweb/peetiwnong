@@ -2690,7 +2690,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // เช็คสถานะค่ายก่อนทุกอย่าง: ยังไม่มีค่ายที่กำลังดำเนินการ = ระบบวิชาการล็อก (API ทุกเส้นตอบ 409 อยู่แล้ว) โชว์แผงอธิบายแทนแล้วจบ ไม่โหลดข้อมูลอื่นให้เจอ error รัว ๆ
     // ต้องรู้ tier ก่อนถึงจะ render ตารางคะแนน/ตารางเรียนได้ถูกต้อง (ช่องไหนแก้ได้ ปุ่มไหนเห็น) จึงรอ auth.me + subjects/mine ก่อนโหลดส่วนอื่น
-    fetch('/api/auth/me').then((res) => (res.ok ? res.json() : { user: null, camp: null })).catch(() => ({ user: null, camp: null })).then(({ user, camp }) => {
+    window.PTN_AUTH_ME.then(({ user, camp }) => {
         window.PTN_CAMP_STATE = camp || null;
         if (!isCampActive(camp)) {
             renderCampLockedPage(document.querySelector('main.main-content'), { systemName: 'ระบบวิชาการ', audience: 'staff', camp });

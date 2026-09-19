@@ -433,9 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // มีแค่ในหน้า staff/profile.html เท่านั้น (participant/profile.html ที่ใช้ไฟล์นี้ร่วมกันไม่มี element นี้ ฟังก์ชันจะคืน null เฉย ๆ ไม่พัง)
     profileBirthDateSelects = setupDateSelects({ containerId: 'profile-birth-date-selects', hiddenId: 'profile-birth-date', yearsBack: 100, yearsAhead: 0 });
 
-    fetch('/api/auth/me')
-        .then((res) => (res.ok ? res.json() : Promise.reject()))
-        .then(({ user }) => fillProfileForm(user))
-        .catch(() => {})
+    window.PTN_AUTH_ME
+        .then(({ user }) => { if (user) fillProfileForm(user); })
         .finally(() => Loader.hideFullPageLoader());
 });

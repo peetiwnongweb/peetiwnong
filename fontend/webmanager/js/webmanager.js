@@ -101,7 +101,7 @@ function loadAdminUser() {
 
         })
         .catch(() => {
-            window.location.href = '/webmanager/login.html';
+            window.location.href = '/webmanager/login';
         });
 }
 
@@ -220,7 +220,7 @@ async function adminLogout() {
 
     fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
         try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
-        window.location.href = '/webmanager/login.html';
+        window.location.href = '/webmanager/login';
     });
 }
 
@@ -627,7 +627,7 @@ function newsRowActionButtonsHtml() {
 // ==========================================
 // หน้าแรก (Home): สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดใน Hero ของหน้าเว็บหลัก
 // ==========================================
-// ข้อความเริ่มต้นที่ฝังอยู่ในหน้าเว็บสาธารณะ (fontend/*/index.html) ใช้เติมในฟอร์มตอนที่ยังไม่เคยบันทึกค่าจาก WebManager
+// ข้อความเริ่มต้นที่ฝังอยู่ในหน้าเว็บสาธารณะ (fontend/*/) ใช้เติมในฟอร์มตอนที่ยังไม่เคยบันทึกค่าจาก WebManager
 // เพื่อให้เห็นข้อความปัจจุบันจริง ๆ พร้อมแก้ไขได้เลย แทนที่จะเห็นช่องว่างเปล่า
 const DEFAULT_HISTORY_TITLE = 'จุดเริ่มต้นของค่ายวิชาการ "พี่ติวน้อง"';
 const DEFAULT_HISTORY_BODY = 'ค่ายวิชาการพี่ติวน้องก่อตั้งขึ้นเมื่อปีพุทธศักราช 2540 โดยกลุ่มศิษย์เก่าโรงเรียนพิมายดำรงวิทยาคม นำโดย รศ.ดร.อาคม แก้วระวัง ศิษย์เก่ารุ่นที่ 3 ด้วยความตั้งใจที่จะส่งต่อความรู้และประสบการณ์ให้แก่รุ่นน้องที่กำลังจะก้าวเข้าสู่รั้วมหาวิทยาลัย\n\nตลอดระยะเวลากว่า 28 รุ่น ค่ายแห่งนี้เติบโตขึ้นเรื่อย ๆ ทั้งในด้านจำนวนผู้เข้าร่วมและคุณภาพของกิจกรรม โดยยังคงยึดมั่นในเจตนารมณ์เดิมคือ "พี่สอนน้อง น้องส่งต่อรุ่นต่อไป" เพื่อสร้างเครือข่ายศิษย์เก่าที่เข้มแข็งและพร้อมช่วยเหลือกันตลอดไป';
@@ -4650,7 +4650,7 @@ async function deleteUserItem(item, role) {
 
 // ==========================================
 // งานกิจกรรมและสันทนาการ (แผง "พี่ค่าย" > ฝ่ายกิจกรรมและสันทนาการ)
-// พอร์ตมาจาก fontend/public/js/pages/staff-activities.js (หน้า /staff/activities.html) มาใช้ภายใน WebManager
+// พอร์ตมาจาก fontend/public/js/pages/staff-activities.js (หน้า /staff/activities) มาใช้ภายใน WebManager
 // ตั้งชื่อ id/ฟังก์ชันขึ้นต้นด้วย "da" (Department Activity) กันชนกับของเดิมในไฟล์นี้ทั้งหมด
 // WebManager มีสิทธิ์จัดการกลุ่มเต็มอยู่แล้วเสมอ (ดู requireGroupManagementAccess) จึงไม่ต้องเช็คสิทธิ์แยกเหมือนหน้า /staff/
 // ==========================================

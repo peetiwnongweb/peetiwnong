@@ -90,7 +90,7 @@ function requireWebManagerPage(req, res, next) {
         const user = req.session && req.session.user
         const hasWebManagerAccess = user && user.role === 'WEBMANAGER'
         if (!hasWebManagerAccess) {
-            return res.redirect('/webmanager/login.html')
+            return res.redirect('/webmanager/login')
         }
     }
     next()
@@ -143,22 +143,36 @@ function keepStaffOnStaffPage(req, res, next) {
     next()
 }
 
+// เปลี่ยนทุก URL ที่ลงท้าย .html ให้ redirect (301) ไปหาแบบไม่มีนามสกุลเสมอ ให้ที่อยู่บนเบราว์เซอร์สะอาด ("/staff/academic" แทน "/staff/academic.html")
+// "index.html" พับรวมเป็น path ของโฟลเดอร์แม่ไปเลย ("/webmanager/index.html" -> "/webmanager/", "/index.html" -> "/") - ต้องอยู่ก่อน static ทุกตัวเสมอ
+function redirectHtmlExtension(req, res, next) {
+    if (!req.path.endsWith('.html')) return next()
+    const withoutExt = req.path.slice(0, -5)
+    const clean = withoutExt.endsWith('/index') ? (withoutExt.slice(0, -5) || '/') : withoutExt
+    if (clean === req.path) return next()
+    const queryIndex = req.originalUrl.indexOf('?')
+    const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex)
+    res.redirect(301, clean + query)
+}
+
+app.use(redirectHtmlExtension)
 app.use(keepStaffOnStaffPage)
-app.use(express.static(path.join(__dirname, 'fontend', 'public')))
+// extensions: ['html'] ให้ "/staff/academic" เสิร์ฟไฟล์ academic.html ได้ตรง ๆ โดยไม่ต้องมี .html ใน URL (ยังเสิร์ฟ index.html อัตโนมัติที่ path โฟลเดอร์เหมือนเดิมอยู่แล้ว)
+app.use(express.static(path.join(__dirname, 'fontend', 'public'), { extensions: ['html'] }))
 app.use('/assets', express.static(path.join(__dirname, 'fontend', 'assets')))
 app.use('/backend/uploads', express.static(path.join(__dirname, 'backend', 'uploads')))
 app.use('/media', mediaRoutes)
-app.use('/admin', requireAdminPage, express.static(path.join(__dirname, 'fontend', 'admin')))
-app.use('/webmanager', requireWebManagerPage, express.static(path.join(__dirname, 'fontend', 'webmanager')))
-app.use('/staff', requireStaffPage, express.static(path.join(__dirname, 'fontend', 'staff')))
-app.use('/participant', requireParticipantPage, express.static(path.join(__dirname, 'fontend', 'participant')))
+app.use('/admin', requireAdminPage, express.static(path.join(__dirname, 'fontend', 'admin'), { extensions: ['html'] }))
+app.use('/webmanager', requireWebManagerPage, express.static(path.join(__dirname, 'fontend', 'webmanager'), { extensions: ['html'] }))
+app.use('/staff', requireStaffPage, express.static(path.join(__dirname, 'fontend', 'staff'), { extensions: ['html'] }))
+app.use('/participant', requireParticipantPage, express.static(path.join(__dirname, 'fontend', 'participant'), { extensions: ['html'] }))
 
 // หน้าแรกของพี่ค่าย/น้องค่ายใช้ไฟล์เดียวกับหน้าแรกสาธารณะ (fontend/public/index.html) ไม่มีสำเนาแยกในโฟลเดอร์ fontend/staff, fontend/participant แล้ว
 // เนื้อหาปรับตาม role ด้วย JS ฝั่ง client (auth.js) - requireStaffPage/requireParticipantPage ยังกันคนละ role เข้าไม่ได้เหมือนเดิม
-app.get(['/staff/', '/staff/index.html'], requireStaffPage, (req, res) => {
+app.get('/staff/', requireStaffPage, (req, res) => {
     res.sendFile(path.join(__dirname, 'fontend', 'public', 'index.html'))
 })
-app.get(['/participant/', '/participant/index.html'], requireParticipantPage, (req, res) => {
+app.get('/participant/', requireParticipantPage, (req, res) => {
     res.sendFile(path.join(__dirname, 'fontend', 'public', 'index.html'))
 })
 

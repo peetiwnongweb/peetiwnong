@@ -136,7 +136,7 @@ function loadAdminUser() {
 
             const homeLink = document.getElementById('admin-menu-home-link');
             if (homeLink) homeLink.onclick = () => {
-                window.location.href = user.role === 'STAFF' ? '/staff/profile.html' : '/';
+                window.location.href = user.role === 'STAFF' ? '/staff/profile' : '/';
             };
 
             applyAdminTaskMenuVisibility(user);

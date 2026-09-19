@@ -540,10 +540,10 @@ function loginUser(userData) {
 
     // ลิงก์ "โปรไฟล์" พาไปหน้าที่ถูกต้องตาม role (STAFF/PARTICIPANT มีหน้าโปรไฟล์จริง)
     // ตอน WebManager จำลองอยู่ก็ให้เข้าหน้าโปรไฟล์ของโซนที่กำลังจำลองได้เหมือนกัน (ข้อมูลจะว่างเพราะไม่มีโปรไฟล์จริง แต่โครงหน้าต้องขึ้นได้ ไม่ใช่ stub เฉย ๆ)
-    const profileUrl = userData.role === 'STAFF' ? '/staff/profile.html'
-        : userData.role === 'PARTICIPANT' ? '/participant/profile.html'
-        : isSimulating && window.location.pathname.startsWith('/staff/') ? '/staff/profile.html'
-        : isSimulating && window.location.pathname.startsWith('/participant/') ? '/participant/profile.html'
+    const profileUrl = userData.role === 'STAFF' ? '/staff/profile'
+        : userData.role === 'PARTICIPANT' ? '/participant/profile'
+        : isSimulating && window.location.pathname.startsWith('/staff/') ? '/staff/profile'
+        : isSimulating && window.location.pathname.startsWith('/participant/') ? '/participant/profile'
         : null;
     if (profileUrl) {
         const profileLinkEl = document.getElementById('user-menu-profile-link');
@@ -581,7 +581,7 @@ async function logout() {
 
 function checkAuthSession() {
     // iframe "ตัวอย่างหน้าเว็บหลัก" ในแผง WebManager (หน้าแรก) โหลดด้วย src="/?preview=1" (ดู keepStaffOnStaffPage ใน server.js ที่ข้าม redirect ให้ path นี้)
-    // จุดประสงค์ของกรอบนี้คือดูหน้าตาเนื้อหาเฉย ๆ ไม่ใช่ใช้งานเมนูบัญชี (Admin/ออกจากระบบ ฯลฯ ทำได้อยู่แล้วที่ /webmanager/index.html) จึงข้ามการเช็ก session ไปเลย
+    // จุดประสงค์ของกรอบนี้คือดูหน้าตาเนื้อหาเฉย ๆ ไม่ใช่ใช้งานเมนูบัญชี (Admin/ออกจากระบบ ฯลฯ ทำได้อยู่แล้วที่ /webmanager/) จึงข้ามการเช็ก session ไปเลย
     // ปล่อยให้ header อยู่ในสถานะเริ่มต้น (เหมือนผู้เยี่ยมชมทั่วไปที่ยังไม่ได้ล็อกอิน) กันปุ่ม "ออกจากระบบ"/"Admin" หลุดเข้ามาให้กดพลาดในกรอบพรีวิวเล็ก ๆ
     if (new URLSearchParams(window.location.search).get('preview') === '1') return;
 

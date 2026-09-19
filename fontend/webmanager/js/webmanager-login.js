@@ -54,7 +54,7 @@ function handleWebManagerLoginSubmit(event) {
             return body;
         })
         .then(() => {
-            window.location.href = '/webmanager/index.html';
+            window.location.href = '/webmanager/';
         })
         .catch((error) => {
             showWebManagerToast(error.message, false);
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then((res) => (res.ok ? res.json() : null))
         .then((body) => {
             if (body && body.user && body.user.role === 'WEBMANAGER') {
-                window.location.href = '/webmanager/index.html';
+                window.location.href = '/webmanager/';
             }
         })
         .catch(() => {});

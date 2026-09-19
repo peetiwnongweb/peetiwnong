@@ -507,7 +507,7 @@ function handleFormSubmit(event) {
             clearFormDraft();
             showFormToast('ส่งใบสมัครพี่ค่ายสำเร็จ! บัญชีของคุณอยู่ระหว่างรอการอนุมัติจากผู้ดูแลระบบ กำลังพากลับหน้าหลัก...', false);
             setTimeout(() => {
-                window.location.href = '../index.html';
+                window.location.href = '../';
             }, 2500);
         })
         .catch((error) => {

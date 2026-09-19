@@ -113,13 +113,23 @@ function removeNewsWriteImage() {
 
 // ใส่ url ให้ execCommand('createLink') เอง เพราะปุ่มอื่น ๆ (bold/italic/insertUnorderedList) ไม่ต้องการ argument (ส่ง null พอ) มีแค่คำสั่งนี้ที่ต้องถามผู้ใช้ก่อน
 // ไม่ได้เลือกข้อความไว้ (selection ว่าง) ก็แทรกตัว url เองเป็นเนื้อลิงก์ให้เลย กันกดแล้วไม่เกิดอะไรขึ้นเพราะไม่รู้ว่าต้องลากเลือกก่อน
-function insertNewsWriteRichTextLink(editorEl) {
+async function insertNewsWriteRichTextLink(editorEl) {
     editorEl.focus();
-    const rawUrl = prompt('ใส่ลิงก์ (เช่น https://...)');
-    if (!rawUrl || !rawUrl.trim()) return;
-    const url = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `https://${rawUrl.trim()}`;
+    // เก็บตำแหน่งที่เลือกไว้ไว้ก่อนเปิด modal เพราะโฟกัสจะย้ายไปช่องกรอกลิงก์ ทำให้ selection เดิมในกล่องข้อความหายไป ต้องกู้คืนก่อนสั่ง execCommand
+    const selection = window.getSelection();
+    const savedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
+    const hasSelection = !!selection?.toString();
 
-    const hasSelection = !!window.getSelection()?.toString();
+    const rawUrl = await showLinkPrompt();
+    if (!rawUrl) return;
+    const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+
+    editorEl.focus();
+    if (savedRange) {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    }
+
     if (hasSelection) {
         document.execCommand('createLink', false, url);
     } else {
@@ -129,6 +139,26 @@ function insertNewsWriteRichTextLink(editorEl) {
         a.setAttribute('target', '_blank');
         a.setAttribute('rel', 'noopener noreferrer');
     });
+}
+
+// กล่องถามลิงก์แบบมีสไตล์ตรงกับเว็บ แทน prompt() เบราว์เซอร์เดิม
+let linkPromptResolver = null;
+function showLinkPrompt() {
+    const modal = document.getElementById('link-prompt-modal');
+    const input = document.getElementById('link-prompt-input');
+    if (!modal || !input) return Promise.resolve(null);
+    input.value = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => input.focus(), 50);
+    return new Promise((resolve) => { linkPromptResolver = resolve; });
+}
+
+function linkPromptResolve(value) {
+    document.getElementById('link-prompt-modal')?.classList.add('hidden');
+    if (linkPromptResolver) {
+        linkPromptResolver(value && value.trim() ? value.trim() : null);
+        linkPromptResolver = null;
+    }
 }
 
 // วางลิงก์ (คัดลอกมาทั้งดุ้น ไม่ได้เลือกคำอื่นมาแปะด้วย) ให้กลายเป็นลิงก์คลิกได้ทันทีโดยไม่ต้องกดปุ่ม "แทรกลิงก์" เอง
@@ -144,9 +174,9 @@ function handleNewsWriteRichTextPaste(event) {
 function initNewsWriteRichTextToolbar() {
     document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
         btn.addEventListener('mousedown', (event) => event.preventDefault());
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             if (btn.dataset.richtextCmd === 'createLink') {
-                insertNewsWriteRichTextLink(document.getElementById('news-write-detail'));
+                await insertNewsWriteRichTextLink(document.getElementById('news-write-detail'));
             } else {
                 document.execCommand(btn.dataset.richtextCmd, false, null);
             }
@@ -165,6 +195,12 @@ function initNewsWriteRichTextToolbar() {
         });
         detailEl.addEventListener('paste', handleNewsWriteRichTextPaste);
     }
+
+    document.getElementById('link-prompt-input')?.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        linkPromptResolve(document.getElementById('link-prompt-input').value);
+    });
 }
 
 function updateNewsWriteRichTextToolbarState() {
@@ -397,7 +433,15 @@ function viewNewsDetail(newsId) {
             </div>
             <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-snug">${item.title}</h2>
             <p class="news-item-meta">${NEWS_TAG_LABELS[item.tag] || item.tag} · ส่งเมื่อ ${formatNewsDate(item.createdAt)}</p>
-            ${item.imageUrl ? `<img src="${item.imageUrl}" alt="ภาพประกอบประชาสัมพันธ์" class="news-detail-image">` : ''}
+            ${item.imageUrl ? `
+            <div style="position: relative;">
+                <img src="${item.imageUrl}" alt="ภาพประกอบประชาสัมพันธ์" class="news-detail-image" style="cursor: zoom-in;" onclick="openImageLightbox('${item.imageUrl}')">
+                <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${item.imageUrl}')" aria-label="ดูรูปเต็ม">
+                    <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                    </svg>
+                </button>
+            </div>` : ''}
             <hr class="border-slate-100">
             <p class="news-detail-body">${item.detail}</p>
         </div>
@@ -410,6 +454,17 @@ function viewNewsDetail(newsId) {
 function closeNewsDetailModal() {
     document.getElementById('news-detail-modal').classList.add('hidden');
     document.body.classList.remove('modal-open');
+}
+
+// ดูรูปประกอบข่าวแบบเต็มจอ ไม่ถูกครอบตัด (รูปในกรอบตัวอย่างแสดงแบบ object-cover ครอบตัดไว้)
+function openImageLightbox(url) {
+    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-modal').classList.remove('hidden');
+}
+
+function closeImageLightbox() {
+    document.getElementById('image-lightbox-modal').classList.add('hidden');
+    document.getElementById('image-lightbox-img').src = '';
 }
 
 document.addEventListener('DOMContentLoaded', () => {

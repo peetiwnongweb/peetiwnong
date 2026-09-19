@@ -2892,13 +2892,23 @@ function toDateInputValue(isoDate) {
 // โดยไม่ต้องพิมพ์แท็ก HTML เอง แต่ยังคงเก็บ/แสดงผลเป็น HTML เหมือนเดิม (ใช้ execCommand ซึ่งรองรับใน Chrome/Edge ที่ทีมงานใช้งานจริง)
 // ใส่ url ให้ execCommand('createLink') เอง เพราะปุ่มอื่น ๆ (bold/italic/insertUnorderedList) ไม่ต้องการ argument (ส่ง null พอ) มีแค่คำสั่งนี้ที่ต้องถามผู้ใช้ก่อน
 // ไม่ได้เลือกข้อความไว้ (selection ว่าง) ก็แทรกตัว url เองเป็นเนื้อลิงก์ให้เลย กันกดแล้วไม่เกิดอะไรขึ้นเพราะไม่รู้ว่าต้องลากเลือกก่อน
-function insertRichTextLink(editorEl) {
+async function insertRichTextLink(editorEl) {
     editorEl.focus();
-    const rawUrl = prompt('ใส่ลิงก์ (เช่น https://...)');
-    if (!rawUrl || !rawUrl.trim()) return;
-    const url = /^https?:\/\//i.test(rawUrl.trim()) ? rawUrl.trim() : `https://${rawUrl.trim()}`;
+    // เก็บตำแหน่งที่เลือกไว้ไว้ก่อนเปิด modal เพราะโฟกัสจะย้ายไปช่องกรอกลิงก์ ทำให้ selection เดิมในกล่องข้อความหายไป ต้องกู้คืนก่อนสั่ง execCommand
+    const selection = window.getSelection();
+    const savedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0).cloneRange() : null;
+    const hasSelection = !!selection?.toString();
 
-    const hasSelection = !!window.getSelection()?.toString();
+    const rawUrl = await showLinkPrompt();
+    if (!rawUrl) return;
+    const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+
+    editorEl.focus();
+    if (savedRange) {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    }
+
     if (hasSelection) {
         document.execCommand('createLink', false, url);
     } else {
@@ -2911,12 +2921,32 @@ function insertRichTextLink(editorEl) {
     });
 }
 
+// กล่องถามลิงก์แบบมีสไตล์ตรงกับเว็บ แทน prompt() เบราว์เซอร์เดิม (ดีไซน์เริ่มต้นของเบราว์เซอร์ไม่สวย/ไม่ตรงกับธีมเว็บ)
+let linkPromptResolver = null;
+function showLinkPrompt() {
+    const modal = document.getElementById('link-prompt-modal');
+    const input = document.getElementById('link-prompt-input');
+    if (!modal || !input) return Promise.resolve(null);
+    input.value = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => input.focus(), 50);
+    return new Promise((resolve) => { linkPromptResolver = resolve; });
+}
+
+function linkPromptResolve(value) {
+    document.getElementById('link-prompt-modal')?.classList.add('hidden');
+    if (linkPromptResolver) {
+        linkPromptResolver(value && value.trim() ? value.trim() : null);
+        linkPromptResolver = null;
+    }
+}
+
 function initRichTextToolbar() {
     document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
         btn.addEventListener('mousedown', (event) => event.preventDefault());
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             if (btn.dataset.richtextCmd === 'createLink') {
-                insertRichTextLink(document.getElementById('news-detail'));
+                await insertRichTextLink(document.getElementById('news-detail'));
             } else {
                 document.execCommand(btn.dataset.richtextCmd, false, null);
             }
@@ -2936,6 +2966,13 @@ function initRichTextToolbar() {
         });
         detailEl.addEventListener('paste', handleRichTextPaste);
     }
+
+    // กด Enter ในช่องกรอกลิงก์ของ modal ให้เท่ากับกดปุ่ม "ตกลง" (ผูกครั้งเดียวตอน init กันพ่วงซ้ำถ้าเรียก initRichTextToolbar หลายรอบ)
+    document.getElementById('link-prompt-input')?.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        linkPromptResolve(document.getElementById('link-prompt-input').value);
+    });
 }
 
 // วางลิงก์ (คัดลอกมาทั้งดุ้น ไม่ได้เลือกคำอื่นมาแปะด้วย) ให้กลายเป็นลิงก์คลิกได้ทันทีโดยไม่ต้องกดปุ่ม "แทรกลิงก์" เอง

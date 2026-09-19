@@ -2068,6 +2068,25 @@
         <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
     </div>
 
+    <!-- ================= MODAL: กล่องถามลิงก์ (แทน prompt() ของเบราว์เซอร์ ใช้ตอนกดปุ่ม "แทรกลิงก์" ใน rich text editor) ================= -->
+    <div id="link-prompt-modal" class="modal hidden" aria-labelledby="link-prompt-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="linkPromptResolve(null)" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box confirm-box">
+                <div class="modal-content">
+                    <h2 id="link-prompt-title" class="confirm-title">แทรกลิงก์</h2>
+                    <p class="confirm-message">ใส่ลิงก์ที่ต้องการแทรก</p>
+                    <input type="url" id="link-prompt-input" class="form-input" placeholder="https://..." style="margin-bottom: 1.25rem;">
+                    <div class="confirm-actions">
+                        <button type="button" class="confirm-cancel-btn" onclick="linkPromptResolve(null)">ยกเลิก</button>
+                        <button type="button" class="confirm-ok-btn" onclick="linkPromptResolve(document.getElementById('link-prompt-input').value)">ตกลง</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= MODAL: ยืนยันการทำรายการ ================= -->
     <div id="admin-confirm-modal" class="modal hidden" aria-labelledby="admin-confirm-title" role="dialog" aria-modal="true">
         <div class="modal-wrapper">
@@ -2176,7 +2195,7 @@
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/webmanager.js?v=20260920-4"></script>
+    <script src="js/webmanager.js?v=20260920-5"></script>
     <script src="js/webmanager-dashboard.js?v=20260919-1"></script>
 </body>
 

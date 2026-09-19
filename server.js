@@ -3,6 +3,7 @@ const express = require('express')
 const path = require('path')
 const session = require('express-session')
 const helmet = require('helmet')
+const compression = require('compression')
 const pgSession = require('connect-pg-simple')(session)
 const presidentsRoutes = require('./backend/routes/presidentsRoutes')
 const newsRoutes = require('./backend/routes/newsRoutes')
@@ -51,6 +52,9 @@ app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
 }))
+// บีบอัด response ด้วย gzip ก่อนส่ง (HTML/CSS/JS/JSON เล็กลง 60-80%) เดิมไม่มี middleware นี้เลยส่งไฟล์ข้อความทุกไฟล์แบบไม่บีบอัด
+// รูปภาพ (/media/*) ไม่โดนกระทบ - compression filter ค่าเริ่มต้นข้าม content-type ที่บีบอัดไปแล้วอยู่แล้ว (image/*) ให้เอง
+app.use(compression())
 app.use(express.json())
 
 // เก็บ session ลง Postgres ตัวเดียวกับข้อมูลอื่น (ตาราง session สร้างอัตโนมัติถ้ายังไม่มี) แทน MemoryStore เดิม

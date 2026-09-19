@@ -9,7 +9,9 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "node prisma/seed.mjs",
   },
+  // ใช้ DIRECT_URL (session pooler) สำหรับคำสั่ง CLI (migrate/studio/db pull ฯลฯ) เท่านั้น - ตัวแอปตอนรันจริงสร้าง Pool ของตัวเองจาก DATABASE_URL โดยตรงใน backend/lib/prisma.js ไม่ผ่านค่านี้
+  // ต้องแยกกันเพราะ DATABASE_URL เปลี่ยนไปใช้ transaction pooler (พอร์ต 6543) แล้ว ซึ่งไม่รองรับ session ยาว ๆ ที่ migration ต้องการ
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: process.env["DIRECT_URL"],
   },
 });

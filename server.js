@@ -159,13 +159,15 @@ function redirectHtmlExtension(req, res, next) {
     res.redirect(301, clean + query)
 }
 
-// ไฟล์ CSS/JS อ้างด้วย query string ?v=วันที่-เลขรัน (cache-busting) อยู่แล้วเกือบทุกไฟล์ แต่ไม่ครบ 100% จึงยังไม่กล้าตั้งอายุ cache ยาวเป็นปีแบบ /media (ที่ path ไม่เปลี่ยนเลยตลอดชีพไฟล์)
-// ตั้งสั้น ๆ พอกันไม่ให้ browser ต้องถาม server ซ้ำทุกไฟล์ทุกครั้งที่สลับหน้าในเซสชันเดียวกัน (เคสที่เจอบ่อยสุด) โดยเสี่ยงเห็นไฟล์เก่าค้างได้ไม่เกิน 1 ชม. ถ้า deploy ใหม่แล้วลืมบัมพ์ ?v= ของไฟล์ไหน
+// ไฟล์ CSS/JS ส่วนใหญ่อ้างด้วย query string ?v=วันที่-เลขรัน (cache-busting) แต่ไม่ครบ 100% ทั้งเว็บ (เจอจริงระหว่างแก้วันนี้ - news.js/loader.js/modal.css ไม่มี ?v= ทำให้เห็นโค้ดเก่าค้างหลัง deploy)
+// จึงเช็คจาก query string ของคำขอจริงแทนการเดาจากนามสกุลไฟล์อย่างเดียว: มี ?v= แปลว่ามั่นใจว่า cache-bust ได้แน่ (path เปลี่ยนทุกครั้งที่เนื้อหาเปลี่ยน) ให้ cache ยาวได้เต็มที่
+// ไม่มี ?v= (ไฟล์ไหนก็ตามที่ยังไม่ได้ใส่/ลืมใส่) ให้ cache สั้นแค่ 5 นาทีไว้ก่อน กันเห็นโค้ดเก่าค้างนานเกินไปโดยไม่ต้องไล่หาทุกจุดที่ยังไม่ได้ใส่ ?v= ให้ครบ
 function setStaticCacheHeaders(res, filePath) {
+    const isVersioned = /[?&]v=/.test(res.req.originalUrl || '')
     if (/\.(css|js)$/i.test(filePath)) {
-        res.setHeader('Cache-Control', 'public, max-age=3600')
+        res.setHeader('Cache-Control', isVersioned ? 'public, max-age=31536000, immutable' : 'public, max-age=300')
     } else if (/\.(png|jpe?g|svg|webp|ico|woff2?|ttf)$/i.test(filePath)) {
-        res.setHeader('Cache-Control', 'public, max-age=86400')
+        res.setHeader('Cache-Control', isVersioned ? 'public, max-age=31536000, immutable' : 'public, max-age=86400')
     }
 }
 

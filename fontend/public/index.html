@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="/css/base/loader.css">
     <link rel="stylesheet" href="/css/layout/header.css?v=20260919-1">
     <link rel="stylesheet" href="/css/layout/footer.css?v=20260911-1">
-    <link rel="stylesheet" href="/css/layout/modal.css">
+    <link rel="stylesheet" href="/css/layout/modal.css?v=20260920-1">
     <link rel="stylesheet" href="/css/layout/scroll-top.css">
     <link rel="stylesheet" href="/css/pages/home.css?v=20260919-1">
     <link rel="stylesheet" href="/css/pages/news.css">
@@ -30,13 +30,13 @@
         href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <script src="/js/layout/otp-input.js?v=20260916-1"></script>
-    <script src="/js/layout/loader.js"></script>
+    <script src="/js/layout/loader.js?v=20260920-1"></script>
     <script src="/js/layout/auth.js?v=20260919-4"></script>
     <script src="/js/layout/nav.js?v=20260820-2"></script>
-    <script src="/js/pages/home.js"></script>
-    <script src="/js/pages/news.js"></script>
-    <script src="/js/pages/schedule.js"></script>
-    <script src="/js/pages/faq.js"></script>
+    <script src="/js/pages/home.js?v=20260920-1"></script>
+    <script src="/js/pages/news.js?v=20260920-1"></script>
+    <script src="/js/pages/schedule.js?v=20260920-1"></script>
+    <script src="/js/pages/faq.js?v=20260920-1"></script>
 </head>
 
 <body data-tab-restore="false">
@@ -902,6 +902,19 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- ================= MODAL: ดูรูปเต็มจอ (คลิกรูปประกอบข่าวเพื่อดูรูปขนาดเต็ม ไม่ถูกครอบตัด) ================= -->
+    <div id="image-lightbox-modal" class="modal hidden image-lightbox-modal" role="dialog" aria-modal="true">
+        <div onclick="closeImageLightbox()" class="modal-backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox-close-btn">
+            <button type="button" onclick="closeImageLightbox()" aria-label="ปิด">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
     </div>
 
     <!-- ================= MODAL: กล่องยืนยัน (แทน confirm() ของเบราว์เซอร์) ================= -->

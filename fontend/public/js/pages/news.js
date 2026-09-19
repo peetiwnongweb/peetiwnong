@@ -210,6 +210,17 @@ function closeNewsModal() {
     document.body.classList.remove('modal-open');
 }
 
+// ดูรูปประกอบข่าวแบบเต็มจอ ไม่ถูกครอบตัด (รูปในการ์ด/หน้ารายละเอียดแสดงแบบ object-cover ครอบตัดไว้)
+function openImageLightbox(url) {
+    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-modal').classList.remove('hidden');
+}
+
+function closeImageLightbox() {
+    document.getElementById('image-lightbox-modal').classList.add('hidden');
+    document.getElementById('image-lightbox-img').src = '';
+}
+
 function viewNewsDetail(newsId) {
     const news = NEWS_ITEMS.find(item => item.id === newsId);
     if (!news) return;
@@ -228,9 +239,17 @@ function viewNewsDetail(newsId) {
                 <span>•</span>
                 <span>โดย: คณะกรรมการค่าย</span>
             </div>
-            <img src="${news.imageUrl || '../../backend/uploads/news/news.jpg'}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl">
+            ${news.imageUrl ? `
+            <div class="news-detail-image-wrap" style="position: relative;">
+                <img src="${news.imageUrl}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${news.imageUrl}')">
+                <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${news.imageUrl}')" aria-label="ดูรูปเต็ม">
+                    <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                    </svg>
+                </button>
+            </div>` : ''}
             <hr class="border-slate-100">
-            <div class="text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2">
+            <div class="text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2" style="white-space: pre-line;">
                 ${news.detail}
             </div>
             <div class="pt-4 border-t border-slate-100 flex justify-end">

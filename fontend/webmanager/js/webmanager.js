@@ -4065,7 +4065,14 @@ function renderNewsPreviewModal(item, { showApprovalActions }) {
         day: 'numeric', month: 'long', year: 'numeric',
     });
     const imageHtml = item.imageUrl
-        ? `<img src="${escapeHtml(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="margin-top: 1rem; cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">`
+        ? `<div style="position: relative; margin-top: 1rem;">
+            <img src="${escapeHtml(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">
+            <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')" aria-label="ดูรูปเต็ม">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                </svg>
+            </button>
+        </div>`
         : '';
 
     preview.innerHTML = `
@@ -4078,7 +4085,7 @@ function renderNewsPreviewModal(item, { showApprovalActions }) {
         </div>
         ${imageHtml}
         <hr class="border-slate-100" style="margin: 1rem 0;">
-        <div class="text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2">${item.detail || ''}</div>
+        <div class="text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2" style="white-space: pre-line;">${item.detail || ''}</div>
     `;
 
     document.getElementById('news-approval-detail-title').textContent = 'ตัวอย่างประชาสัมพันธ์';

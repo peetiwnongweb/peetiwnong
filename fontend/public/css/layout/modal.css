@@ -587,6 +587,25 @@
   background: rgba(15, 23, 42, 0.75);
 }
 
+/* ป้ายแว่นขยายมุมล่างขวาของรูปประกอบ บอกใบ้ว่ากดดูรูปเต็มได้ (ใช้กับรูปที่แสดงแบบครอบตัด object-cover ซึ่งเผินๆ ดูไม่ออกว่ากดได้) */
+.news-detail-zoom-btn {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  color: white;
+  background: rgba(15, 23, 42, 0.55);
+  border: none;
+  padding: 0.45rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+}
+
+.news-detail-zoom-btn:hover {
+  background: rgba(15, 23, 42, 0.8);
+}
+
 .image-lightbox-img {
   position: fixed;
   top: 50%;

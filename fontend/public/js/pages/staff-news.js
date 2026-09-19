@@ -105,10 +105,45 @@ function removeNewsWriteImage() {
     document.getElementById('news-write-image-preview').src = '';
 }
 
+// ผูกปุ่ม B/I/หัวข้อย่อย ของ rich text editor เข้ากับช่อง news-write-detail (ก๊อปพฤติกรรมจาก initRichTextToolbar() ใน webmanager.js เป๊ะ)
+function initNewsWriteRichTextToolbar() {
+    document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
+        btn.addEventListener('mousedown', (event) => event.preventDefault());
+        btn.addEventListener('click', () => {
+            document.execCommand(btn.dataset.richtextCmd, false, null);
+            updateNewsWriteRichTextToolbarState();
+        });
+    });
+    document.addEventListener('selectionchange', updateNewsWriteRichTextToolbarState);
+
+    // สั่งแทรก <br> เองตอนกด Enter แทนที่จะปล่อยให้เบราว์เซอร์ห่อ <div> ใหม่ทุกครั้ง (execCommand('defaultParagraphSeparator','br') ไม่เสถียรพอในทุกเบราว์เซอร์)
+    const detailEl = document.getElementById('news-write-detail');
+    if (detailEl) {
+        detailEl.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' || event.shiftKey) return;
+            event.preventDefault();
+            document.execCommand('insertLineBreak');
+        });
+    }
+}
+
+function updateNewsWriteRichTextToolbarState() {
+    if (document.activeElement?.id !== 'news-write-detail') return;
+    document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
+        try {
+            btn.classList.toggle('active', document.queryCommandState(btn.dataset.richtextCmd));
+        } catch (error) {
+            // บางคำสั่ง (เช่นตอนยังไม่ได้ focus) เรียก queryCommandState ไม่ได้ ข้ามไปเฉย ๆ
+        }
+    });
+}
+
 function resetNewsWriteForm() {
     editingNewsId = null;
     newsWriteImageUrl = null;
     document.getElementById('news-write-form').reset();
+    // form.reset() ข้างบนไม่แตะช่อง rich text (ไม่ใช่ form control ปกติ) ต้องเคลียร์เอง
+    document.getElementById('news-write-detail').innerHTML = '';
     document.getElementById('news-write-form-error').classList.add('hidden');
     document.getElementById('news-write-image-preview-wrap').classList.add('hidden');
     document.getElementById('news-write-image-preview').src = '';
@@ -125,7 +160,7 @@ function startEditNews(item) {
     document.getElementById('news-write-tag').value = item.tag;
     document.getElementById('news-write-title').value = item.title;
     document.getElementById('news-write-summary').value = item.summary;
-    document.getElementById('news-write-detail').value = item.detail;
+    document.getElementById('news-write-detail').innerHTML = item.detail;
 
     const previewWrap = document.getElementById('news-write-image-preview-wrap');
     if (item.imageUrl) {
@@ -152,7 +187,7 @@ function submitNewsWriteForm(event) {
         tag: document.getElementById('news-write-tag').value,
         title: document.getElementById('news-write-title').value.trim(),
         summary: document.getElementById('news-write-summary').value.trim(),
-        detail: document.getElementById('news-write-detail').value.trim(),
+        detail: document.getElementById('news-write-detail').innerHTML.trim(),
         imageUrl: newsWriteImageUrl,
     };
 
@@ -342,6 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const writeForm = document.getElementById('news-write-form');
     if (writeForm) writeForm.addEventListener('submit', submitNewsWriteForm);
+    initNewsWriteRichTextToolbar();
 
     document.getElementById('news-check-pagination-prev')?.addEventListener('click', () => goToNewsCheckPage(newsCheckCurrentPage - 1));
     document.getElementById('news-check-pagination-next')?.addEventListener('click', () => goToNewsCheckPage(newsCheckCurrentPage + 1));

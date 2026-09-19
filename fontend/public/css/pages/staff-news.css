@@ -26,6 +26,97 @@
   display: none;
 }
 
+/* ช่อง "เนื้อหาประชาสัมพันธ์" เป็น rich text editor (พิมพ์ตัวหนา/เอียง/หัวข้อย่อย + Enter ขึ้นบรรทัดใหม่จริงได้) แทน textarea ธรรมดา
+   คัดลอกมาจาก .admin-richtext-* ในแผง WebManager (fontend/webmanager/css/webmanager.css) ทุกประการ - หน้านี้ไม่ได้โหลด CSS ชุดนั้นจึงต้องมีสำเนาของตัวเอง */
+.admin-textarea {
+  resize: vertical;
+  min-height: 8rem;
+  font-family: inherit;
+}
+
+.admin-richtext-editor {
+  border: 1.5px solid var(--slate-200);
+  border-radius: 0.75rem;
+  background-color: var(--slate-50);
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-richtext-editor:focus-within {
+  border-color: var(--slate-400);
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12);
+}
+
+.admin-richtext-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem;
+  background-color: white;
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.admin-richtext-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0.3rem;
+  background-color: var(--slate-200);
+}
+
+.admin-richtext-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: var(--slate-600);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-richtext-btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.admin-richtext-btn:hover {
+  background-color: var(--slate-100);
+  color: var(--slate-900);
+}
+
+.admin-richtext-btn.active {
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.admin-richtext {
+  overflow-y: auto;
+  cursor: text;
+  line-height: 1.6;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  color: var(--slate-900);
+  background-color: transparent;
+  outline: none;
+}
+
+.admin-richtext:empty::before {
+  content: attr(data-placeholder);
+  color: var(--slate-400);
+}
+
+.admin-richtext ul {
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
 .news-write-mode-label.show {
   display: block;
 }

@@ -4065,7 +4065,7 @@ function renderNewsPreviewModal(item, { showApprovalActions }) {
         day: 'numeric', month: 'long', year: 'numeric',
     });
     const imageHtml = item.imageUrl
-        ? `<img src="${escapeHtml(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="margin-top: 1rem;">`
+        ? `<img src="${escapeHtml(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="margin-top: 1rem; cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">`
         : '';
 
     preview.innerHTML = `
@@ -4109,6 +4109,17 @@ function openNewsPreview(item) {
 
 function closeNewsApprovalDetail() {
     document.getElementById('news-approval-detail-modal').classList.add('hidden');
+}
+
+// ดูรูปเต็มจอ ไม่ครอบตัด - ใช้ร่วมกันได้ทุกจุดที่มีรูปในกรอบเล็ก (ตอนนี้ใช้กับรูปประกอบในตัวอย่างประชาสัมพันธ์)
+function openImageLightbox(url) {
+    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-modal').classList.remove('hidden');
+}
+
+function closeImageLightbox() {
+    document.getElementById('image-lightbox-modal').classList.add('hidden');
+    document.getElementById('image-lightbox-img').src = '';
 }
 
 async function setNewsApprovalStatus(item, approvalStatus) {

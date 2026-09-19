@@ -559,6 +559,48 @@
 }
 
 /* ==========================================
+   Modal: ดูรูปเต็มจอ (เช่น คลิกรูปในตัวอย่างประชาสัมพันธ์) - แสดงรูปเต็ม ไม่ครอบตัด (object-fit: contain) กึ่งกลางจอเสมอ
+   ========================================== */
+.image-lightbox-modal .modal-backdrop {
+  cursor: zoom-out;
+}
+
+.image-lightbox-close-btn {
+  position: fixed;
+  right: 1.25rem;
+  top: 1.25rem;
+  z-index: 51;
+}
+
+.image-lightbox-close-btn button {
+  color: white;
+  background: rgba(15, 23, 42, 0.5);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+}
+
+.image-lightbox-close-btn button:hover {
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.image-lightbox-img {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 51;
+}
+
+/* ==========================================
    Modal: Mobile-specific overrides (max-width: 480px)
    ========================================== */
 @media (max-width: 480px) {

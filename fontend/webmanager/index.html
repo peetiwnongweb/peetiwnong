@@ -2049,6 +2049,19 @@
         </div>
     </div>
 
+    <!-- ================= MODAL: ดูรูปเต็มจอ (คลิกรูปในตัวอย่างประชาสัมพันธ์เพื่อดูรูปขนาดเต็ม ไม่ถูกครอบตัด) ================= -->
+    <div id="image-lightbox-modal" class="modal hidden image-lightbox-modal" role="dialog" aria-modal="true">
+        <div onclick="closeImageLightbox()" class="modal-backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox-close-btn">
+            <button type="button" onclick="closeImageLightbox()" aria-label="ปิด">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
+    </div>
+
     <!-- ================= MODAL: ยืนยันการทำรายการ ================= -->
     <div id="admin-confirm-modal" class="modal hidden" aria-labelledby="admin-confirm-title" role="dialog" aria-modal="true">
         <div class="modal-wrapper">
@@ -2157,7 +2170,7 @@
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/webmanager.js?v=20260920-1"></script>
+    <script src="js/webmanager.js?v=20260920-2"></script>
     <script src="js/webmanager-dashboard.js?v=20260919-1"></script>
 </body>
 

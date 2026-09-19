@@ -1,15 +1,16 @@
-// สคริปต์ช่วยขอ Google Drive refresh token ครั้งเดียว (รันเองด้วยมือ ไม่ใช่ส่วนหนึ่งของแอปที่รันตลอด)
+// สคริปต์ช่วยขอ Google refresh token ครั้งเดียว (รันเองด้วยมือ ไม่ใช่ส่วนหนึ่งของแอปที่รันตลอด)
+// ขอสิทธิ์รวม 2 อย่างในโทเคนเดียว: Drive (สำรองข้อมูล/เอกสาร/รูปภาพ) + Gmail Send (ส่ง OTP/อีเมลแจ้งเตือน แทน SMTP ที่ Render แผนฟรีบล็อก)
 //
 // ก่อนรัน ต้องมีใน .env แล้ว:
 //   GOOGLE_OAUTH_CLIENT_ID=...
 //   GOOGLE_OAUTH_CLIENT_SECRET=...
 // (สร้างได้จาก Google Cloud Console > APIs & Services > Credentials > Create Credentials > OAuth client ID
-//  เลือกประเภท "Desktop app" แล้วเปิดใช้งาน Google Drive API ให้โปรเจกต์นั้นก่อน)
+//  เลือกประเภท "Desktop app" แล้วเปิดใช้งาน Google Drive API + Gmail API ให้โปรเจกต์นั้นก่อน)
 //
 // วิธีรัน: node scripts/get-drive-refresh-token.js
-// สคริปต์จะพิมพ์ลิงก์ให้เปิดในเบราว์เซอร์ (ล็อกอินด้วยบัญชี Google ที่จะใช้เก็บไฟล์สำรอง) กด "อนุญาต"
+// สคริปต์จะพิมพ์ลิงก์ให้เปิดในเบราว์เซอร์ (ล็อกอินด้วยบัญชี Google ที่จะใช้เก็บไฟล์สำรอง/ส่งอีเมล) กด "อนุญาต"
 // แล้วเบราว์เซอร์จะ redirect กลับมาที่ localhost เอง สคริปต์จะจับรหัสและแลกเป็น refresh token ให้อัตโนมัติ
-// เอา refresh token ที่ได้ไปใส่ .env เป็น GOOGLE_OAUTH_REFRESH_TOKEN
+// เอา refresh token ที่ได้ไปแทนที่ค่าเดิมใน .env ที่ GOOGLE_OAUTH_REFRESH_TOKEN (ตัวเดิมใช้ต่อไม่ได้แล้วเพราะสิทธิ์ไม่ครอบคลุม Gmail)
 
 require('dotenv').config();
 const http = require('http');
@@ -30,7 +31,10 @@ async function main() {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent', // บังคับให้ Google ออก refresh_token ให้ใหม่เสมอ แม้เคยอนุญาตแอปนี้มาก่อน
-    scope: ['https://www.googleapis.com/auth/drive'],
+    scope: [
+      'https://www.googleapis.com/auth/drive',
+      'https://www.googleapis.com/auth/gmail.send',
+    ],
   });
 
   console.log('\nเปิดลิงก์นี้ในเบราว์เซอร์ แล้วล็อกอินด้วยบัญชี Google ที่จะใช้เก็บไฟล์สำรอง:\n');

@@ -553,7 +553,7 @@ async function getSystem(req, res) {
     backups: { list: backups, failedLast30Days: failed30d, configured: isDriveConfigured(), intervalHours: Number(process.env.BACKUP_INTERVAL_HOURS) || 12 },
     integrations: {
       googleDrive: isDriveConfigured(),
-      mail: !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+      mail: !!(process.env.GMAIL_USER && process.env.GOOGLE_OAUTH_REFRESH_TOKEN),
       sessionSecretSet: !!process.env.SESSION_SECRET,
       nodeEnv: process.env.NODE_ENV || 'development',
     },

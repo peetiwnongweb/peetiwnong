@@ -1,4 +1,4 @@
-const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 
 const OTP_EMAIL_CONTENT = {
   reset: {
@@ -45,34 +45,60 @@ function renderEmailWrapper(heading, bodyHtml) {
 </html>`;
 }
 
-// ส่งผ่าน Gmail SMTP ตรง ๆ (ไม่ผ่านบริการอีเมลภายนอกอย่าง Resend/Elastic Email อีกแล้ว) ใช้บัญชี Gmail ของค่ายเอง
-// ต้องเปิด 2-Step Verification ที่บัญชี Gmail นั้นก่อน แล้วสร้าง App Password ที่ myaccount.google.com/apppasswords
-// มาใส่ใน GMAIL_APP_PASSWORD (Gmail ไม่ให้ล็อกอิน SMTP ด้วยรหัสผ่านจริงตรง ๆ ต้องใช้ App Password เท่านั้น)
-// สร้าง transporter ครั้งเดียวแล้วใช้ซ้ำ (ไม่สร้างใหม่ทุกครั้งที่ส่ง เปลืองการเชื่อมต่อโดยไม่จำเป็น)
-let cachedTransporter = null;
-function getTransporter() {
-  if (cachedTransporter) return cachedTransporter;
-
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) {
-    throw new Error('GMAIL_USER หรือ GMAIL_APP_PASSWORD ยังไม่ได้ตั้งค่าใน .env');
+// ส่งผ่าน Gmail API (ไม่ใช่ SMTP ตรงแบบเดิมอีกต่อไป) เพราะ Render แผนฟรีบล็อกพอร์ต SMTP ขาออกทั้งหมด (25/465/587)
+// ทำให้ nodemailer ค้างไม่มีวันเสร็จ - Gmail API เป็น HTTPS ธรรมดา ไม่โดนบล็อก และใช้ credential ชุดเดียวกับ Google Drive ได้เลย
+// (GOOGLE_OAUTH_REFRESH_TOKEN ต้องขอสิทธิ์ "gmail.send" เพิ่มด้วย ดู scripts/get-drive-refresh-token.js)
+let gmailClientPromise = null;
+function getGmailClient() {
+  if (!gmailClientPromise) {
+    const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
+    if (!clientId || !clientSecret || !refreshToken || !process.env.GMAIL_USER) {
+      throw new Error('ยังไม่ได้ตั้งค่าการส่งอีเมล (ต้องมี GOOGLE_OAUTH_CLIENT_ID/SECRET/REFRESH_TOKEN และ GMAIL_USER ใน .env)');
+    }
+    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
+    gmailClientPromise = Promise.resolve(google.gmail({ version: 'v1', auth: oauth2Client }));
   }
+  return gmailClientPromise;
+}
 
-  cachedTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-  });
-  return cachedTransporter;
+// เข้ารหัสหัวเรื่องภาษาไทย (RFC 2047 encoded-word) กัน subject เพี้ยน/อ่านไม่ออกในบาง mail client
+function encodeSubject(subject) {
+  return `=?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=`;
+}
+
+// Gmail API รับอีเมลเป็นข้อความ RFC 2822 ดิบทั้งฉบับ เข้ารหัส base64url (ไม่ใช่ base64 ธรรมดา ต้องแทน +/ ด้วย -_ และตัด padding ออก)
+function buildRawMessage({ from, to, subject, html }) {
+  const message = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${encodeSubject(subject)}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    Buffer.from(html, 'utf8').toString('base64'),
+  ].join('\r\n');
+
+  return Buffer.from(message, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 async function sendMail({ to, subject, html }) {
   const user = process.env.GMAIL_USER;
   const from = process.env.EMAIL_FROM || `PeeTiwNong Camp <${user}>`;
-  const transporter = getTransporter();
+  const gmail = await getGmailClient();
 
   try {
-    await transporter.sendMail({ from, to, subject, html });
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: { raw: buildRawMessage({ from, to, subject, html }) },
+    });
   } catch (error) {
     throw new Error(`ส่งอีเมลไม่สำเร็จ: ${error.message}`);
   }

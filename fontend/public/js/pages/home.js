@@ -151,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดใน Hero + ข้อความ "ความเป็นมา" ตั้งค่าได้จากหน้า "ประวัติความเป็นมา" ในแผง WebManager
-  const siteSettingsLoaded = fetch('/api/site-settings')
-    .then((response) => (response.ok ? response.json() : { heroCardVisible: true }))
+  // ใช้ window.PTN_SITE_SETTINGS (auth.js ยิงไปแล้วตั้งแต่สคริปต์นั้นโหลด) แทนการ fetch เอง กัน /api/site-settings ยิงซ้ำ 2 รอบบนหน้าแรก
+  const siteSettingsLoaded = window.PTN_SITE_SETTINGS
     .then((settings) => {
       heroSettingVisible = settings.heroCardVisible !== false;
       applyHeroCardVisibility();
@@ -174,8 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
           historyBody.appendChild(p);
         });
       }
-    })
-    .catch((error) => console.error('โหลดการตั้งค่าเว็บไซต์ไม่สำเร็จ:', error));
+    });
 
   // ประมวลภาพบรรยากาศค่าย: ซ่อนทั้งการ์ดไว้จนกว่าจะมีรูปจริงที่อัปโหลดจากแผง WebManager
   const galleryLoaded = fetch('/api/gallery')

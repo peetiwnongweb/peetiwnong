@@ -21,6 +21,12 @@ window.PTN_AUTH_ME = (new URLSearchParams(window.location.search).get('preview')
         .then((res) => (res.ok ? res.json() : { user: null, camp: null }))
         .catch(() => ({ user: null, camp: null }));
 
+// promise เดียวกันอีกตัว ใช้แพทเทิร์นเดียวกับ PTN_AUTH_ME ด้านบน กัน home.js ยิง /api/site-settings ซ้ำกับ loadRegistrationOpenSetting() ด้านล่างตอนอยู่หน้าแรก
+// ทุกจุดที่เรียกใช้เช็คค่าแบบ "!== false" อยู่แล้ว object ว่างตอน fetch ล้มเหลวจึงเท่ากับค่าเริ่มต้นเดิมทุกจุดพอดี
+window.PTN_SITE_SETTINGS = fetch('/api/site-settings')
+    .then((res) => (res.ok ? res.json() : {}))
+    .catch(() => ({}));
+
 const ROLE_LABELS = {
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',
@@ -660,17 +666,14 @@ function applyNavRegisterState(settings) {
 }
 
 function loadRegistrationOpenSetting() {
-    fetch('/api/site-settings')
-        .then((res) => (res.ok ? res.json() : { staffRegistrationOpen: true, participantRegistrationOpen: true }))
-        .then((settings) => {
-            lastSiteSettings = settings;
-            applyHeroRegisterButtonState('staff', settings.staffRegistrationOpen !== false);
-            applyHeroRegisterButtonState('participant', isParticipantRegistrationOpen(settings));
-            applyNavRegisterState(settings);
+    window.PTN_SITE_SETTINGS.then((settings) => {
+        lastSiteSettings = settings;
+        applyHeroRegisterButtonState('staff', settings.staffRegistrationOpen !== false);
+        applyHeroRegisterButtonState('participant', isParticipantRegistrationOpen(settings));
+        applyNavRegisterState(settings);
 
-            applyCheckStatusTabState(settings);
-        })
-        .catch((error) => console.error('โหลดการตั้งค่าเว็บไซต์ไม่สำเร็จ:', error));
+        applyCheckStatusTabState(settings);
+    });
 }
 
 // ==========================================

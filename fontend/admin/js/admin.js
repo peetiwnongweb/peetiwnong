@@ -1072,12 +1072,13 @@ function renderNewsTable() {
                     <input type="checkbox" class="admin-visibility-toggle" ${isVisible ? 'checked' : ''}>
                 </label>
             </td>
-            <td>${adminActionButtonsHtml()}</td>
+            <td>${newsRowActionButtonsHtml()}</td>
         `;
         row.querySelector('.admin-row-checkbox').addEventListener('change', (e) => toggleNewsRowSelect(item.id, e.target.checked));
         row.querySelector('.admin-hot-toggle').addEventListener('change', (e) => toggleNewsHot(item, e.target.checked));
         row.querySelector('.admin-visibility-toggle').addEventListener('change', (e) => toggleNewsVisibility(item, e.target.checked));
         row.querySelector('[data-action="edit"]').addEventListener('click', () => openNewsForm(item));
+        row.querySelector('[data-action="view"]').addEventListener('click', () => openNewsPreview(item));
         row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteNewsItem(item));
         tbody.appendChild(row);
     });
@@ -1520,6 +1521,111 @@ async function deleteNewsItem(item) {
             showToast('ลบประชาสัมพันธ์ไม่สำเร็จ', true);
         });
 }
+
+function newsRowActionButtonsHtml() {
+    return `
+        <div class="admin-row-actions">
+            <button type="button" class="admin-icon-btn admin-icon-btn-edit" data-action="edit" aria-label="แก้ไข" title="แก้ไข">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                </svg>
+            </button>
+            <button type="button" class="admin-icon-btn admin-icon-btn-view" data-action="view" aria-label="ดูตัวอย่างจริงบนเว็บ" title="ดูตัวอย่างจริงบนเว็บ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+            <button type="button" class="admin-icon-btn admin-icon-btn-delete" data-action="delete" aria-label="ลบ" title="ลบ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+            </button>
+        </div>
+    `;
+}
+
+function formatNewsAuthorName(item) {
+    const profile = item.author && item.author.staffProfile;
+    const fullName = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(' ') : '';
+    return fullName || (item.author && item.author.email) || '-';
+}
+
+function renderNewsPreviewModal(item) {
+    const grid = document.getElementById('news-approval-detail-grid');
+    const preview = document.getElementById('news-approval-detail-preview');
+    if (!grid || !preview) return;
+
+    const publishedOnlyDate = new Date(item.publishedAt).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric',
+    });
+
+    const fields = [
+        ['สรุปย่อ (ใช้บนการ์ดหน้าแรก)', item.summary],
+        ['ผู้เขียน', formatNewsAuthorName(item)],
+        ['เผยแพร่เมื่อ', publishedOnlyDate],
+    ];
+
+    grid.innerHTML = fields
+        .map(([label, value]) => `
+            <div class="approval-detail-item">
+                <span class="approval-detail-label">${escapeHtml(label)}</span>
+                <span class="approval-detail-value">${escapeHtml(value)}</span>
+            </div>
+        `)
+        .join('');
+
+    const publishedDateText = new Date(item.publishedAt || item.createdAt).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const imageHtml = item.imageUrl
+        ? `<div style="position: relative; margin-top: 1rem;">
+            <img src="${escapeHtml(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">
+            <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')" aria-label="ดูรูปเต็ม">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                </svg>
+            </button>
+        </div>`
+        : '';
+
+    preview.innerHTML = `
+        <span class="text-xs font-bold px-2.5 py-1 rounded bg-brand-50 text-brand-600 inline-block">${escapeHtml(NEWS_TAG_LABELS[item.tag] || item.tag)}</span>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-snug" style="margin-top: 0.75rem;">${escapeHtml(item.title)}</h2>
+        <div class="flex items-center gap-2 text-xs text-slate-400" style="margin-top: 0.5rem;">
+            <span>เผยแพร่เมื่อ: ${publishedDateText}</span>
+            <span>•</span>
+            <span>โดย: คณะกรรมการค่าย</span>
+        </div>
+        ${imageHtml}
+        <hr class="border-slate-100" style="margin: 1rem 0;">
+        <div class="news-detail-content text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2" style="white-space: pre-line;">${item.detail || ''}</div>
+    `;
+
+    document.getElementById('news-approval-detail-title').textContent = 'ตัวอย่างประชาสัมพันธ์';
+    document.getElementById('news-approval-detail-subtitle').innerHTML = 'แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก';
+
+    document.getElementById('news-approval-detail-modal').classList.remove('hidden');
+}
+
+function openNewsPreview(item) {
+    renderNewsPreviewModal(item);
+}
+
+function closeNewsApprovalDetail() {
+    document.getElementById('news-approval-detail-modal').classList.add('hidden');
+}
+
+function openImageLightbox(url) {
+    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-modal').classList.remove('hidden');
+}
+
+function closeImageLightbox() {
+    document.getElementById('image-lightbox-modal').classList.add('hidden');
+    document.getElementById('image-lightbox-img').src = '';
+}
+
 
 // ==========================================
 // กำหนดการ (Schedule)

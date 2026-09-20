@@ -578,41 +578,135 @@
                 <!-- ================= SECTION: อนุมัติการลงทะเบียน (Approve Registration) ================= -->
                 <section id="admin-section-approve-registration" class="admin-section">
                     <section id="admin-panel-approve-staff" class="admin-panel active">
-                        <div class="admin-panel-header">
-                            <h2 class="admin-panel-title">คำขอลงทะเบียนพี่ค่าย</h2>
-                            <p class="admin-panel-desc">รายการที่รอการอนุมัติ</p>
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">การลงทะเบียนพี่ค่าย</h2>
+                                <p class="admin-panel-desc">ตรวจสอบและอนุมัติ/ปฏิเสธคำขอลงทะเบียนของพี่ค่ายที่สมัครเข้ามาเอง</p>
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <button type="button" class="btn-outline" onclick="loadUsers('STAFF')">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row admin-toggle-row-standalone">
+                            <label class="admin-toggle-switch large">
+                                <input type="checkbox" data-registration-toggle="staff" onchange="submitRegistrationOpen('staff', this.checked)">
+                            </label>
+                            <div>
+                                <span class="admin-toggle-label">
+                                    เปิดรับลงทะเบียนพี่ค่าย
+                                    <span data-registration-status-dot="staff" class="registration-status-dot"></span>
+                                </span>
+                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่ม "ลงทะเบียนพี่ค่าย" ที่หน้าแรกกดได้ตามปกติ ปิดไว้ = กดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย) — พี่ค่ายรับสมัครได้ตลอดเวลาไม่ผูกกับขั้นตอนดำเนินการค่าย</p>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row-grid">
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="staff-auto-approve-toggle" onchange="submitAutoApprove('staff', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">
+                                        อนุมัติการลงทะเบียนพี่ค่ายอัตโนมัติ
+                                        <span id="staff-auto-approve-status-dot" class="registration-status-dot"></span>
+                                    </span>
+                                    <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = บัญชีพี่ค่ายที่สมัครลงทะเบียนเข้ามาได้รับอนุมัติทันที เข้าสู่ระบบได้เลยโดยไม่ต้องรอตรวจสอบ ปิดไว้ = ต้องรอ Admin/Owner กดอนุมัติเองที่นี่</p>
+                                </div>
+                            </div>
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="check-registration-visible-toggle-staff" onchange="submitCheckRegistrationVisible('staff', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">ตรวจสอบผลการลงทะเบียนพี่ค่าย</span>
+                                    <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนตัวเลือกพี่ค่ายออกจากหน้าตรวจสอบผลการลงทะเบียนของเว็บไซต์หลัก ไม่กระทบข้อมูลการลงทะเบียนที่มีอยู่</p>
+                                </div>
+                            </div>
                         </div>
                         <div class="admin-table-wrap">
                             <table class="admin-table">
                                 <thead>
                                     <tr>
+                                        <th>ชื่อ-นามสกุล</th>
                                         <th>อีเมล</th>
-                                        <th>สร้างเมื่อ</th>
-                                        <th class="admin-col-actions">จัดการ</th>
+                                        <th>สมัครเมื่อ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions admin-col-actions-wide">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="approval-table-body-STAFF"></tbody>
                             </table>
-                            <p id="approval-empty-STAFF" class="admin-empty hidden">ไม่มีคำขอที่รอดำเนินการ</p>
+                            <p id="approval-empty-STAFF" class="admin-empty hidden">ยังไม่มีคำขอลงทะเบียนพี่ค่ายที่รอตรวจสอบ</p>
                         </div>
                     </section>
                     <section id="admin-panel-approve-participant" class="admin-panel">
-                        <div class="admin-panel-header">
-                            <h2 class="admin-panel-title">คำขอลงทะเบียนน้องค่าย</h2>
-                            <p class="admin-panel-desc">รายการที่รอการอนุมัติ</p>
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">การลงทะเบียนน้องค่าย</h2>
+                                <p class="admin-panel-desc">ตรวจสอบและอนุมัติ/ปฏิเสธคำขอลงทะเบียนของน้องค่ายที่สมัครเข้ามาเอง</p>
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <button type="button" class="btn-outline" onclick="loadUsers('PARTICIPANT')">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row admin-toggle-row-standalone">
+                            <label class="admin-toggle-switch large">
+                                <input type="checkbox" data-registration-toggle="participant" onchange="submitRegistrationOpen('participant', this.checked)">
+                            </label>
+                            <div>
+                                <span class="admin-toggle-label">
+                                    เปิดรับลงทะเบียนน้องค่าย
+                                    <span data-registration-status-dot="participant" class="registration-status-dot"></span>
+                                </span>
+                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่ม "ลงทะเบียนน้องค่าย" ที่หน้าแรกกดได้ตามปกติ ปิดไว้ = กดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย) เหมือนกับสวิตช์ที่แท็บ "ขั้นตอนดำเนินการค่าย"</p>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row-grid">
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="participant-auto-approve-toggle" onchange="submitAutoApprove('participant', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">
+                                        อนุมัติการลงทะเบียนน้องค่ายอัตโนมัติ
+                                        <span id="participant-auto-approve-status-dot" class="registration-status-dot"></span>
+                                    </span>
+                                    <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = บัญชีน้องค่ายที่สมัครลงทะเบียนเข้ามาได้รับอนุมัติทันที เข้าสู่ระบบได้เลยโดยไม่ต้องรอตรวจสอบ ปิดไว้ = ต้องรอ Admin/Owner กดอนุมัติเองที่นี่</p>
+                                </div>
+                            </div>
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="check-registration-visible-toggle-participant" onchange="submitCheckRegistrationVisible('participant', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">ตรวจสอบผลการลงทะเบียนน้องค่าย</span>
+                                    <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนตัวเลือกน้องค่ายออกจากหน้าตรวจสอบผลการลงทะเบียนของเว็บไซต์หลัก ไม่กระทบข้อมูลการลงทะเบียนที่มีอยู่</p>
+                                </div>
+                            </div>
                         </div>
                         <div class="admin-table-wrap">
                             <table class="admin-table">
                                 <thead>
                                     <tr>
+                                        <th>ชื่อ-นามสกุล</th>
                                         <th>อีเมล</th>
-                                        <th>สร้างเมื่อ</th>
-                                        <th class="admin-col-actions">จัดการ</th>
+                                        <th>สมัครเมื่อ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions admin-col-actions-wide">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="approval-table-body-PARTICIPANT"></tbody>
                             </table>
-                            <p id="approval-empty-PARTICIPANT" class="admin-empty hidden">ไม่มีคำขอที่รอดำเนินการ</p>
+                            <p id="approval-empty-PARTICIPANT" class="admin-empty hidden">ยังไม่มีคำขอลงทะเบียนน้องค่ายที่รอตรวจสอบ</p>
                         </div>
                     </section>
                 </section>

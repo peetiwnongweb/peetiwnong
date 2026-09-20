@@ -58,6 +58,7 @@ app.use(helmet({
     // ปิด CSP ของ helmet ไว้ก่อน เพราะหน้าเว็บโหลดสคริปต์/ฟอนต์จากหลาย origin (Google Fonts ฯลฯ) นโยบาย default ของ helmet เข้มเกินจะพังของเดิมทันที ต้องออกแบบ CSP เฉพาะทีหลังถ้าจะเปิด
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
 }))
 // บีบอัด response ด้วย gzip ก่อนส่ง (HTML/CSS/JS/JSON เล็กลง 60-80%) เดิมไม่มี middleware นี้เลยส่งไฟล์ข้อความทุกไฟล์แบบไม่บีบอัด
 // รูปภาพ (/media/*) ไม่โดนกระทบ - compression filter ค่าเริ่มต้นข้าม content-type ที่บีบอัดไปแล้วอยู่แล้ว (image/*) ให้เอง

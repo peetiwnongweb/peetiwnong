@@ -5,6 +5,7 @@ const session = require('express-session')
 const helmet = require('helmet')
 const compression = require('compression')
 const pgSession = require('connect-pg-simple')(session)
+const cors = require('cors')
 const presidentsRoutes = require('./backend/routes/presidentsRoutes')
 const newsRoutes = require('./backend/routes/newsRoutes')
 const authRoutes = require('./backend/routes/authRoutes')
@@ -44,6 +45,12 @@ if (isProduction && !process.env.SESSION_SECRET) {
 
 const app = express()
 
+// CORS configuration to allow cross-origin requests from Cloudflare Pages or frontend domains
+app.use(cors({
+    origin: process.env.FRONTEND_URL || true, // Allow frontend domain or allow all if not set
+    credentials: true // Allow cookies to be sent
+}))
+
 // เชื่อ header X-Forwarded-* จาก reverse proxy ชั้นเดียว (Render/Railway/nginx ที่ทำ HTTPS ให้หน้าเว็บ) - ถ้าไม่เปิดไว้ req.protocol จะเป็น http เสมอแม้ผู้ใช้เข้าผ่าน https จริง ทำให้ลิงก์ QR เช็คอินสอบ (ดู buildCheckinUrl ใน oralExamSessionController.js) ผิดเป็น http:// ทั้งที่เว็บเป็น https:// และ cookie secure ก็จะไม่ยอมส่งตามไปด้วย
 app.set('trust proxy', 1)
 
@@ -67,7 +74,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         httpOnly: true,
-        sameSite: 'lax', // กัน CSRF ระดับหนึ่ง (ทุก endpoint ใช้ cookie auth) โดยไม่พังลิงก์ข้ามเว็บแบบคลิกเปิดปกติ (เช่นลิงก์ QR เช็คอินสอบที่เปิดจากแอปกล้อง/แอปแชท)
+        sameSite: isProduction ? 'none' : 'lax', // ต้องเป็น 'none' เพราะ Frontend และ Backend อยู่คนละ Domain (cross-site)
         secure: isProduction, // ต้องเข้าผ่าน https เท่านั้นถึงส่ง cookie ตอนโปรดักชัน (dev/local เป็น http ธรรมดาต้องปล่อย false ไม่งั้น cookie จะไม่ติดเลย)
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 วัน
     },

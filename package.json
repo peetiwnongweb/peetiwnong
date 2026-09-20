@@ -4,12 +4,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prestart": "npm run build:css",
     "start": "node server.js",
-    "predev": "npm run build:css",
-    "dev": "nodemon server",
+    "dev": "npm run build:css && nodemon server",
     "build:css": "tailwindcss -i fontend/public/scr/input.css -o fontend/public/scr/output.css",
     "watch:css": "tailwindcss -i fontend/public/scr/input.css -o fontend/public/scr/output.css --watch",
+    "build": "npm run build:css && node scripts/build-frontend.js",
     "db:generate": "prisma generate && node scripts/fix-prisma-esm.js",
     "db:migrate": "prisma migrate dev && node scripts/fix-prisma-esm.js"
   },
@@ -24,6 +23,7 @@
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.2",
     "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",

@@ -577,6 +577,48 @@
 
                 <!-- ================= SECTION: อนุมัติการลงทะเบียน (Approve Registration) ================= -->
                 <section id="admin-section-approve-registration" class="admin-section">
+                    <section id="admin-panel-approve-staff" class="admin-panel active">
+                        <div class="admin-panel-header">
+                            <h2 class="admin-panel-title">คำขอลงทะเบียนพี่ค่าย</h2>
+                            <p class="admin-panel-desc">รายการที่รอการอนุมัติ</p>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>อีเมล</th>
+                                        <th>สร้างเมื่อ</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approval-table-body-STAFF"></tbody>
+                            </table>
+                            <p id="approval-empty-STAFF" class="admin-empty hidden">ไม่มีคำขอที่รอดำเนินการ</p>
+                        </div>
+                    </section>
+                    <section id="admin-panel-approve-participant" class="admin-panel">
+                        <div class="admin-panel-header">
+                            <h2 class="admin-panel-title">คำขอลงทะเบียนน้องค่าย</h2>
+                            <p class="admin-panel-desc">รายการที่รอการอนุมัติ</p>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>อีเมล</th>
+                                        <th>สร้างเมื่อ</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approval-table-body-PARTICIPANT"></tbody>
+                            </table>
+                            <p id="approval-empty-PARTICIPANT" class="admin-empty hidden">ไม่มีคำขอที่รอดำเนินการ</p>
+                        </div>
+                    </section>
+                </section>
+
+                <!-- ================= SECTION: จัดการผู้ใช้งาน (User) ================= -->
+                <section id="admin-section-user" class="admin-section">
                     <section id="admin-panel-users" class="admin-panel active">
                         <div class="admin-panel-header flex items-center justify-between">
                             <div>
@@ -632,6 +674,8 @@
                         </div>
                     </section>
                 </section>
+
+
 
                 <!-- ================= SECTION: ประวัติการดำเนินการ (Activity Log) ================= -->
                 <section id="admin-section-log" class="admin-section">
@@ -1103,11 +1147,52 @@
         </div>
     </div>
 
+    <!-- ================= MODAL: ดูรายละเอียด/ตัวอย่างประชาสัมพันธ์ ================= -->
+    <div id="news-approval-detail-modal" class="modal hidden" aria-labelledby="news-approval-detail-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeNewsApprovalDetail()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeNewsApprovalDetail()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="news-approval-detail-title" class="admin-modal-title">ตัวอย่างประชาสัมพันธ์</h2>
+                    <p class="admin-panel-desc" id="news-approval-detail-subtitle" style="margin: 0.15rem 0 1rem;">แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก</p>
+                    <div class="approval-detail-grid" id="news-approval-detail-grid"></div>
+                    <div class="news-live-preview-frame" id="news-approval-detail-preview"></div>
+                    <div class="admin-confirm-actions hidden" id="news-approval-detail-actions" style="margin-top: 1.5rem;">
+                        <button type="button" class="admin-approve-btn" id="news-approval-detail-approve-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">อนุมัติ</button>
+                        <button type="button" class="admin-reject-btn" id="news-approval-detail-reject-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">ปฏิเสธ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ดูรูปเต็มจอ ================= -->
+    <div id="image-lightbox-modal" class="modal hidden image-lightbox-modal" role="dialog" aria-modal="true">
+        <div onclick="closeImageLightbox()" class="modal-backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox-close-btn">
+            <button type="button" onclick="closeImageLightbox()" aria-label="ปิด">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
+    </div>
+
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/admin.js?v=20260920-3"></script>
+    <script src="js/admin.js?v=20260920-4"></script>
     <script src="js/admin-dashboard.js?v=20260919-2"></script>
 </body>
+
 
 </html>

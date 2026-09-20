@@ -341,6 +341,8 @@ const ADMIN_LAZY_LOADERS = {
     schedule: () => loadSchedules(),
     'approve-staff': () => loadUsers('STAFF'),
     'approve-participant': () => loadUsers('PARTICIPANT'),
+    'approve-news': () => loadNews(),
+    users: () => loadUsers('ALL'),
 };
 
 const ADMIN_TAB_LOAD_KEYS = {
@@ -351,6 +353,8 @@ const ADMIN_TAB_LOAD_KEYS = {
     'approve-participant': ['approve-participant'],
     'staff-users': ['approve-staff'],
     'participant-users': ['approve-participant'],
+    'approve-news': ['approve-news'],
+    users: ['users'],
 };
 
 function loadAdminLazyKeys(keys) {
@@ -360,6 +364,12 @@ function loadAdminLazyKeys(keys) {
         ADMIN_LAZY_LOADERS[key]();
     });
 }
+
+// Sections ที่ไม่มี subnav แต่ต้อง load ข้อมูลเมื่อเปิด
+
+const ADMIN_SECTION_LOAD_KEYS = {
+    user: ['users'],
+};
 
 function switchAdminSection(section) {
     const sidebar = document.querySelector('.admin-shell-sidebar');
@@ -398,6 +408,10 @@ function switchAdminSection(section) {
             const firstChild = document.querySelector(`#${ownSubnavId} .admin-shell-nav-child`);
             if (firstChild) switchAdminTab(firstChild.id.replace('admin-tab-', ''));
         }
+    } else {
+        // Section ที่ไม่มี subnav: load ข้อมูล lazy
+        const sectionLoadKeys = ADMIN_SECTION_LOAD_KEYS[section];
+        if (sectionLoadKeys) loadAdminLazyKeys(sectionLoadKeys);
     }
 }
 
@@ -956,6 +970,8 @@ let newsSortDirection = 'desc';
 
 function loadNews() {
     Loader.renderSkeletonTableRows(document.getElementById('news-table-body'), 5, 4);
+    const approvalBody = document.getElementById('news-approval-table-body');
+    if (approvalBody) Loader.renderSkeletonTableRows(approvalBody, 5, 4);
     fetch('/api/news')
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -966,6 +982,11 @@ function loadNews() {
             newsCurrentPage = 1;
             newsSelectedIds.clear();
             renderNewsTable();
+
+            // อัปเดตตาราง "คอนุมัติประชาสัมพันธ์" ใช้ผลจาก fetch เดียวกัน
+            newsApprovalItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
+            newsApprovalCurrentPage = 1;
+            renderNewsApprovalTable();
         })
         .catch((error) => {
             console.error('โหลดข่าวสารไม่สำเร็จ:', error);
@@ -1551,11 +1572,14 @@ function formatNewsAuthorName(item) {
     return fullName || (item.author && item.author.email) || '-';
 }
 
-function renderNewsPreviewModal(item) {
+function renderNewsPreviewModal(item, { showApprovalActions = false } = {}) {
     const grid = document.getElementById('news-approval-detail-grid');
     const preview = document.getElementById('news-approval-detail-preview');
     if (!grid || !preview) return;
 
+    const submittedDate = new Date(item.createdAt).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
     const publishedOnlyDate = new Date(item.publishedAt).toLocaleDateString('th-TH', {
         day: 'numeric', month: 'long', year: 'numeric',
     });
@@ -1563,14 +1587,14 @@ function renderNewsPreviewModal(item) {
     const fields = [
         ['สรุปย่อ (ใช้บนการ์ดหน้าแรก)', item.summary],
         ['ผู้เขียน', formatNewsAuthorName(item)],
-        ['เผยแพร่เมื่อ', publishedOnlyDate],
+        [showApprovalActions ? 'ส่งเมื่อ' : 'เผยแพร่เมื่อ', showApprovalActions ? submittedDate : publishedOnlyDate],
     ];
 
     grid.innerHTML = fields
         .map(([label, value]) => `
             <div class="approval-detail-item">
                 <span class="approval-detail-label">${escapeHtml(label)}</span>
-                <span class="approval-detail-value">${escapeHtml(value)}</span>
+                <span class="approval-detail-value">${escapeHtml(value || '-')}</span>
             </div>
         `)
         .join('');
@@ -1603,14 +1627,27 @@ function renderNewsPreviewModal(item) {
     `;
 
     document.getElementById('news-approval-detail-title').textContent = 'ตัวอย่างประชาสัมพันธ์';
-    document.getElementById('news-approval-detail-subtitle').innerHTML = 'แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก';
+    document.getElementById('news-approval-detail-subtitle').innerHTML = showApprovalActions
+        ? `สถานะ: ${NEWS_APPROVAL_STATUS_BADGE[item.approvalStatus] || ''}`
+        : 'แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก';
+
+    const actionsWrap = document.getElementById('news-approval-detail-actions');
+    if (actionsWrap) actionsWrap.classList.toggle('hidden', !showApprovalActions);
+
+    if (showApprovalActions) {
+        const approveBtn = document.getElementById('news-approval-detail-approve-btn');
+        const rejectBtn = document.getElementById('news-approval-detail-reject-btn');
+        if (approveBtn) approveBtn.onclick = () => { closeNewsApprovalDetail(); setNewsApprovalStatus(item, 'APPROVED'); };
+        if (rejectBtn) rejectBtn.onclick = () => { closeNewsApprovalDetail(); setNewsApprovalStatus(item, 'REJECTED'); };
+    }
 
     document.getElementById('news-approval-detail-modal').classList.remove('hidden');
 }
 
 function openNewsPreview(item) {
-    renderNewsPreviewModal(item);
+    renderNewsPreviewModal(item, { showApprovalActions: false });
 }
+
 
 function closeNewsApprovalDetail() {
     document.getElementById('news-approval-detail-modal').classList.add('hidden');
@@ -1626,6 +1663,131 @@ function closeImageLightbox() {
     document.getElementById('image-lightbox-img').src = '';
 }
 
+
+// ==========================================
+// อนุมัติประชาสัมพันธ์ (News Approval)
+// ==========================================
+const NEWS_APPROVAL_STATUS_BADGE = {
+    PENDING: '<span class="admin-badge admin-badge-pending">กำลังพิจารณา</span>',
+    REJECTED: '<span class="admin-badge admin-badge-delete">ถูกปฏิเสธ</span>',
+    APPROVED: '<span class="admin-badge admin-badge-create">อนุมัติแล้ว</span>',
+};
+
+const NEWS_APPROVAL_PAGE_SIZE = 10;
+let newsApprovalItems = [];
+let newsApprovalCurrentPage = 1;
+
+function renderNewsApprovalTable() {
+    const tbody = document.getElementById('news-approval-table-body');
+    const empty = document.getElementById('news-approval-empty');
+    if (!tbody || !empty) return;
+
+    const totalPages = Math.max(1, Math.ceil(newsApprovalItems.length / NEWS_APPROVAL_PAGE_SIZE));
+    if (newsApprovalCurrentPage > totalPages) newsApprovalCurrentPage = totalPages;
+    const start = (newsApprovalCurrentPage - 1) * NEWS_APPROVAL_PAGE_SIZE;
+    const pageItems = newsApprovalItems.slice(start, start + NEWS_APPROVAL_PAGE_SIZE);
+
+    tbody.innerHTML = '';
+    empty.classList.toggle('hidden', newsApprovalItems.length !== 0);
+
+    pageItems.forEach((item) => {
+        const submittedDate = new Date(item.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="admin-cell-strong">${escapeHtml(item.title)}</td>
+            <td>${escapeHtml(formatNewsAuthorName(item))}</td>
+            <td>${submittedDate}</td>
+            <td>${NEWS_APPROVAL_STATUS_BADGE[item.approvalStatus] || ''}</td>
+            <td>
+                <div class="admin-row-actions">
+                    <button type="button" class="btn-outline admin-detail-btn" style="padding: 0.4rem 0.75rem; font-size: 0.78rem;">ดูรายละเอียด</button>
+                    <button type="button" class="admin-approve-btn">อนุมัติ</button>
+                    <button type="button" class="admin-reject-btn">ปฏิเสธ</button>
+                </div>
+            </td>
+        `;
+        row.querySelector('.admin-detail-btn').addEventListener('click', () => openNewsApprovalDetail(item));
+        row.querySelector('.admin-approve-btn').addEventListener('click', () => setNewsApprovalStatus(item, 'APPROVED'));
+        row.querySelector('.admin-reject-btn').addEventListener('click', () => setNewsApprovalStatus(item, 'REJECTED'));
+        tbody.appendChild(row);
+    });
+
+    updateNewsApprovalPagination(newsApprovalItems.length, totalPages);
+}
+
+function updateNewsApprovalPagination(totalCount, totalPages) {
+    const pagination = document.getElementById('news-approval-pagination');
+    const prevBtn = document.getElementById('news-approval-prev-btn');
+    const nextBtn = document.getElementById('news-approval-next-btn');
+    if (!pagination || !prevBtn || !nextBtn) return;
+
+    pagination.classList.toggle('hidden', totalCount <= NEWS_APPROVAL_PAGE_SIZE);
+    prevBtn.disabled = newsApprovalCurrentPage <= 1;
+    nextBtn.disabled = newsApprovalCurrentPage >= totalPages;
+    renderNewsApprovalPageNumbers(totalPages);
+}
+
+function renderNewsApprovalPageNumbers(totalPages) {
+    const container = document.getElementById('news-approval-page-numbers');
+    if (!container) return;
+
+    container.innerHTML = '';
+    getPaginationRange(newsApprovalCurrentPage, totalPages).forEach((page) => {
+        if (page === '...') {
+            const span = document.createElement('span');
+            span.className = 'admin-page-ellipsis';
+            span.textContent = '...';
+            container.appendChild(span);
+            return;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'admin-page-number-btn';
+        btn.textContent = page;
+        btn.classList.toggle('active', page === newsApprovalCurrentPage);
+        btn.addEventListener('click', () => goToNewsApprovalPage(page));
+        container.appendChild(btn);
+    });
+}
+
+function goToNewsApprovalPage(page) {
+    newsApprovalCurrentPage = page;
+    renderNewsApprovalTable();
+}
+
+function changeNewsApprovalPage(delta) {
+    newsApprovalCurrentPage += delta;
+    renderNewsApprovalTable();
+}
+
+function openNewsApprovalDetail(item) {
+    renderNewsPreviewModal(item, { showApprovalActions: true });
+}
+
+async function setNewsApprovalStatus(item, approvalStatus) {
+    const label = approvalStatus === 'APPROVED' ? 'อนุมัติ' : 'ปฏิเสธ';
+    const confirmed = await adminConfirm(`${label}ประชาสัมพันธ์ "${item.title}" ใช่หรือไม่?`, {
+        title: `ยืนยันการ${label}`,
+        confirmText: label,
+        variant: approvalStatus === 'APPROVED' ? 'approve' : 'reject',
+    });
+    if (!confirmed) return;
+
+    fetch(`/api/news/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvalStatus }),
+    })
+        .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            showToast(`${label}ประชาสัมพันธ์สำเร็จ`);
+            loadNews();
+        })
+        .catch((error) => {
+            console.error(error);
+            showToast(`${label}ประชาสัมพันธ์ไม่สำเร็จ`, true);
+        });
+}
 
 // ==========================================
 // กำหนดการ (Schedule)
@@ -2316,7 +2478,7 @@ async function deleteApprovalItem(item, role) {
 const USER_PAGE_SIZE = 20;
 const USER_SORTABLE_COLUMNS = ['email', 'createdAt'];
 
-const userState = { STAFF: [], PARTICIPANT: [] };
+const userState = { STAFF: [], PARTICIPANT: [], ALL: [] };
 const userCurrentPage = { STAFF: 1, PARTICIPANT: 1, ALL: 1 };
 const userSelectedIds = { STAFF: new Set(), PARTICIPANT: new Set(), ALL: new Set() };
 const userSortColumn = { STAFF: 'createdAt', PARTICIPANT: 'createdAt', ALL: 'createdAt' };

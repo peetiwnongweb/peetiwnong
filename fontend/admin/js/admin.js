@@ -2317,15 +2317,25 @@ const USER_PAGE_SIZE = 20;
 const USER_SORTABLE_COLUMNS = ['email', 'createdAt'];
 
 const userState = { STAFF: [], PARTICIPANT: [] };
-const userCurrentPage = { STAFF: 1, PARTICIPANT: 1 };
-const userSelectedIds = { STAFF: new Set(), PARTICIPANT: new Set() };
-const userSortColumn = { STAFF: 'createdAt', PARTICIPANT: 'createdAt' };
-const userSortDirection = { STAFF: 'desc', PARTICIPANT: 'desc' };
+const userCurrentPage = { STAFF: 1, PARTICIPANT: 1, ALL: 1 };
+const userSelectedIds = { STAFF: new Set(), PARTICIPANT: new Set(), ALL: new Set() };
+const userSortColumn = { STAFF: 'createdAt', PARTICIPANT: 'createdAt', ALL: 'createdAt' };
+const userSortDirection = { STAFF: 'desc', PARTICIPANT: 'desc', ALL: 'desc' };
 
-function loadUsers(role) {
-    Loader.renderSkeletonTableRows(document.getElementById(`user-table-body-${role}`), 5, 4);
-    Loader.renderSkeletonTableRows(document.getElementById(`approval-table-body-${role}`), 5, 3);
-    fetch(`/api/users?role=${role}`)
+function loadUsers(role = 'ALL') {
+    const tableBodyId = role === 'ALL' ? 'user-table-body' : `user-table-body-${role}`;
+    const approvalBodyId = `approval-table-body-${role}`;
+    
+    const tableBody = document.getElementById(tableBodyId);
+    if (tableBody) Loader.renderSkeletonTableRows(tableBody, 5, 4);
+    
+    if (role !== 'ALL') {
+        const approvalBody = document.getElementById(approvalBodyId);
+        if (approvalBody) Loader.renderSkeletonTableRows(approvalBody, 5, 3);
+    }
+
+    const url = role === 'ALL' ? '/api/users' : `/api/users?role=${role}`;
+    fetch(url)
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.json();
@@ -2336,9 +2346,10 @@ function loadUsers(role) {
             userSelectedIds[role].clear();
             renderUserTable(role);
 
-            // ใช้ผลจาก fetch เดียวกันนี้อัปเดตตาราง "คำขอลงทะเบียน" ไปด้วยเลย (เดิมยิง /api/users?role= แยกอีกรอบซ้ำซ้อนใน loadApprovalQueue())
-            const pendingItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
-            renderApprovalTable(role, pendingItems);
+            if (role !== 'ALL') {
+                const pendingItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
+                renderApprovalTable(role, pendingItems);
+            }
         })
         .catch((error) => {
             console.error(`โหลดข้อมูลผู้ใช้งาน (${role}) ไม่สำเร็จ:`, error);
@@ -2346,8 +2357,9 @@ function loadUsers(role) {
         });
 }
 
-function getFilteredUserItems(role) {
-    const searchInput = document.getElementById(`user-search-${role}`);
+function getFilteredUserItems(role = 'ALL') {
+    const searchId = role === 'ALL' ? 'user-search' : `user-search-${role}`;
+    const searchInput = document.getElementById(searchId);
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     let items = userState[role] || [];
     if (query) {
@@ -2356,16 +2368,20 @@ function getFilteredUserItems(role) {
     return sortUserItems(role, items);
 }
 
-function sortUserItems(role, items) {
+function sortUserItems(role = 'ALL', items) {
     const column = userSortColumn[role];
     const direction = userSortDirection[role] === 'asc' ? 1 : -1;
     return [...items].sort((a, b) => {
         if (column === 'createdAt') return (new Date(a.createdAt) - new Date(b.createdAt)) * direction;
-        return String(a[column]).localeCompare(String(b[column]), 'th') * direction;
+        return String(a[column] || '').localeCompare(String(b[column] || ''), 'th') * direction;
     });
 }
 
-function setUserSort(role, column) {
+// Support both setUserSort('email') and setUserSort('STAFF', 'email')
+function setUserSort(arg1, arg2) {
+    const role = arg2 ? arg1 : 'ALL';
+    const column = arg2 || arg1;
+    
     if (userSortColumn[role] === column) {
         userSortDirection[role] = userSortDirection[role] === 'asc' ? 'desc' : 'asc';
     } else {
@@ -2376,9 +2392,10 @@ function setUserSort(role, column) {
     renderUserTable(role);
 }
 
-function updateUserSortIndicators(role) {
+function updateUserSortIndicators(role = 'ALL') {
     USER_SORTABLE_COLUMNS.forEach((column) => {
-        const icon = document.querySelector(`[data-sort-icon-user-${role}="${column}"]`);
+        const iconSelector = role === 'ALL' ? `[data-sort-icon-user="${column}"]` : `[data-sort-icon-user-${role}="${column}"]`;
+        const icon = document.querySelector(iconSelector);
         if (!icon) return;
         if (userSortColumn[role] !== column) {
             icon.classList.remove('active');
@@ -2390,10 +2407,14 @@ function updateUserSortIndicators(role) {
     });
 }
 
-function renderUserTable(role) {
-    const tbody = document.getElementById(`user-table-body-${role}`);
-    const empty = document.getElementById(`user-empty-${role}`);
-    const noMatch = document.getElementById(`user-no-match-${role}`);
+function renderUserTable(role = 'ALL') {
+    const tbodyId = role === 'ALL' ? 'user-table-body' : `user-table-body-${role}`;
+    const emptyId = role === 'ALL' ? 'user-empty' : `user-empty-${role}`;
+    const noMatchId = role === 'ALL' ? 'user-no-match' : `user-no-match-${role}`;
+    
+    const tbody = document.getElementById(tbodyId);
+    const empty = document.getElementById(emptyId);
+    const noMatch = document.getElementById(noMatchId);
     if (!tbody || !empty) return;
 
     const items = userState[role] || [];
@@ -2413,9 +2434,18 @@ function renderUserTable(role) {
         const createdDate = new Date(item.createdAt).toLocaleDateString('th-TH', {
             day: 'numeric', month: 'short', year: 'numeric',
         });
-        const adminBadgeCell = role === 'STAFF'
+        
+        const adminBadgeCell = (role === 'STAFF' || role === 'ALL')
             ? `<td>${item.isAdmin ? '<span class="admin-bool-badge admin-bool-badge--yes">✓</span>' : '<span class="admin-bool-badge admin-bool-badge--no">✕</span>'}</td>`
             : '';
+            
+        let roleBadgeCell = '';
+        if (role === 'ALL') {
+            const roleLabel = ACTIVITY_ROLE_LABELS[item.role] || item.role;
+            const badgeClass = item.role === 'STAFF' ? 'admin-badge-update' : (item.role === 'WEBMANAGER' ? 'admin-badge-create' : 'admin-badge-neutral');
+            roleBadgeCell = `<td><span class="admin-badge ${badgeClass}">${roleLabel}</span></td>`;
+        }
+
         row.innerHTML = `
             <td>
                 <label class="admin-checkbox-wrap">
@@ -2424,6 +2454,7 @@ function renderUserTable(role) {
                 </label>
             </td>
             <td class="admin-cell-strong">${item.email}</td>
+            ${roleBadgeCell}
             <td>${createdDate}</td>
             ${adminBadgeCell}
             <td>${adminActionButtonsHtml()}</td>
@@ -2447,7 +2478,11 @@ function toggleUserRowSelect(role, id, checked) {
     updateUserSelectAllState(role);
 }
 
-function toggleUserSelectAll(role, checked) {
+// Support both toggleUserSelectAll(true) and toggleUserSelectAll('STAFF', true)
+function toggleUserSelectAll(arg1, arg2) {
+    const role = arg2 !== undefined ? arg1 : 'ALL';
+    const checked = arg2 !== undefined ? arg2 : arg1;
+    
     const filtered = getFilteredUserItems(role);
     const start = (userCurrentPage[role] - 1) * USER_PAGE_SIZE;
     const pageItems = filtered.slice(start, start + USER_PAGE_SIZE);
@@ -2458,8 +2493,9 @@ function toggleUserSelectAll(role, checked) {
     renderUserTable(role);
 }
 
-function updateUserSelectAllState(role, currentPageItems) {
-    const selectAll = document.getElementById(`user-select-all-${role}`);
+function updateUserSelectAllState(role = 'ALL', currentPageItems) {
+    const selectAllId = role === 'ALL' ? 'user-select-all' : `user-select-all-${role}`;
+    const selectAll = document.getElementById(selectAllId);
     if (!selectAll) return;
 
     let pageItems = currentPageItems;
@@ -2471,9 +2507,11 @@ function updateUserSelectAllState(role, currentPageItems) {
     selectAll.checked = pageItems.length > 0 && pageItems.every((item) => userSelectedIds[role].has(item.id));
 }
 
-function updateUserBulkBar(role) {
-    const btn = document.getElementById(`user-bulk-delete-btn-${role}`);
-    const countEl = document.getElementById(`user-selected-count-${role}`);
+function updateUserBulkBar(role = 'ALL') {
+    const btnId = role === 'ALL' ? 'user-bulk-delete-btn' : `user-bulk-delete-btn-${role}`;
+    const countId = role === 'ALL' ? 'user-selected-count' : `user-selected-count-${role}`;
+    const btn = document.getElementById(btnId);
+    const countEl = document.getElementById(countId);
     const n = userSelectedIds[role].size;
 
     if (btn) btn.disabled = n === 0;
@@ -2483,7 +2521,7 @@ function updateUserBulkBar(role) {
     }
 }
 
-async function bulkDeleteUsers(role) {
+async function bulkDeleteUsers(role = 'ALL') {
     const ids = Array.from(userSelectedIds[role]);
     if (ids.length === 0) return;
     const confirmed = await adminConfirm(`ลบผู้ใช้งานที่เลือกไว้ ${ids.length} รายการ ใช่หรือไม่?`);
@@ -2504,10 +2542,14 @@ async function bulkDeleteUsers(role) {
         });
 }
 
-function updateUserPagination(role, filteredCount, totalPages) {
-    const pagination = document.getElementById(`user-pagination-${role}`);
-    const prevBtn = document.getElementById(`user-prev-btn-${role}`);
-    const nextBtn = document.getElementById(`user-next-btn-${role}`);
+function updateUserPagination(role = 'ALL', filteredCount, totalPages) {
+    const paginationId = role === 'ALL' ? 'user-pagination' : `user-pagination-${role}`;
+    const prevBtnId = role === 'ALL' ? 'user-prev-btn' : `user-prev-btn-${role}`;
+    const nextBtnId = role === 'ALL' ? 'user-next-btn' : `user-next-btn-${role}`;
+    
+    const pagination = document.getElementById(paginationId);
+    const prevBtn = document.getElementById(prevBtnId);
+    const nextBtn = document.getElementById(nextBtnId);
     if (!pagination || !prevBtn || !nextBtn) return;
 
     pagination.classList.toggle('hidden', filteredCount <= USER_PAGE_SIZE);
@@ -2516,8 +2558,9 @@ function updateUserPagination(role, filteredCount, totalPages) {
     renderUserPageNumbers(role, totalPages);
 }
 
-function renderUserPageNumbers(role, totalPages) {
-    const container = document.getElementById(`user-page-numbers-${role}`);
+function renderUserPageNumbers(role = 'ALL', totalPages) {
+    const containerId = role === 'ALL' ? 'user-page-numbers' : `user-page-numbers-${role}`;
+    const container = document.getElementById(containerId);
     if (!container) return;
 
     container.innerHTML = '';
@@ -2539,17 +2582,20 @@ function renderUserPageNumbers(role, totalPages) {
     });
 }
 
-function goToUserPage(role, page) {
-    userCurrentPage[role] = page;
-    renderUserTable(role);
-}
-
-function changeUserPage(role, delta) {
+// Support both changeUserPage(-1) and changeUserPage('STAFF', -1)
+function changeUserPage(arg1, arg2) {
+    const role = arg2 !== undefined ? arg1 : 'ALL';
+    const delta = arg2 !== undefined ? arg2 : arg1;
     userCurrentPage[role] += delta;
     renderUserTable(role);
 }
 
-function openUserForm(item, role) {
+function goToUserPage(role = 'ALL', page) {
+    userCurrentPage[role] = page;
+    renderUserTable(role);
+}
+
+function openUserForm(item = null, role = 'ALL') {
     const form = document.getElementById('user-form');
     const error = document.getElementById('user-form-error');
     form.reset();
@@ -2559,7 +2605,7 @@ function openUserForm(item, role) {
     document.getElementById('user-id').value = item ? item.id : '';
     document.getElementById('user-current-role-tab').value = role;
     document.getElementById('user-email').value = item ? item.email : '';
-    document.getElementById('user-role').value = item ? item.role : role;
+    document.getElementById('user-role').value = item ? item.role : (role !== 'ALL' ? role : 'STAFF');
     document.getElementById('user-role-group').classList.toggle('hidden', !!item);
     document.getElementById('user-password').value = '';
     document.getElementById('user-password').required = !item;
@@ -2596,7 +2642,6 @@ function submitUserForm(event) {
         role,
     };
     if (password) payload.password = password;
-    // Admin (พี่ค่ายที่ isAdmin) ไม่มีสิทธิ์มอบ/ถอดสิทธิ์ผู้ดูแลระบบ จึงไม่ส่ง isAdmin เลยจากแผงนี้ (ทำได้เฉพาะใน /webmanager)
 
     const url = id ? `/api/users/${id}` : '/api/users';
     const method = id ? 'PUT' : 'POST';
@@ -2619,7 +2664,6 @@ function submitUserForm(event) {
             closeUserForm();
             showToast(id ? 'แก้ไขผู้ใช้งานสำเร็จ' : 'เพิ่มผู้ใช้งานสำเร็จ');
             loadUsers(currentRoleTab);
-            if (payload.role !== currentRoleTab) loadUsers(payload.role);
         })
         .catch((error) => {
             errorBox.textContent = error.message;
@@ -2630,7 +2674,7 @@ function submitUserForm(event) {
         });
 }
 
-async function deleteUserItem(item, role) {
+async function deleteUserItem(item, role = 'ALL') {
     const confirmed = await adminConfirm(`ลบผู้ใช้งาน "${item.email}" ใช่หรือไม่?`);
     if (!confirmed) return;
 

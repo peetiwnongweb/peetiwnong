@@ -416,7 +416,7 @@ function switchAdminSection(section) {
         } else {
             // เข้าเมนูกลุ่มนี้ใหม่ (หรือเด้งออกจากโหมดย่อ) ให้ขยายเมนูย่อยและเข้ารายการแรกเสมอ
             setAdminNavGroupCollapsed(ownSubnavId, false);
-            const firstChild = document.querySelector(`#${ownSubnavId} .admin-shell-nav-child`);
+            const firstChild = document.querySelector(`#${ownSubnavId} .admin-shell-nav-child:not([id$="-toggle"]), #${ownSubnavId} .admin-shell-nav-grandchild:not([id$="-toggle"])`);
             if (firstChild) switchAdminTab(firstChild.id.replace('admin-tab-', ''));
         }
     } else {

@@ -1704,14 +1704,21 @@ function showLifecycleStep(step) {
     renderLifecyclePageView();
 }
 
+// ขั้นตอนนี้ "เสร็จพอจะไปขั้นถัดไปได้" หรือยัง ใช้ร่วมกันทั้ง lifecycleStepNav (เช็คก่อนเดินหน้าจริง) และ renderLifecyclePageView (เช็คเพื่อ enable/disable ปุ่ม "ถัดไป")
+// เดิมสองจุดนี้เขียนเช็คแยกกันคนละที่แล้วไม่ตรงกัน (ปุ่มโชว์ enable แต่กดแล้วไม่ไปไหน เพราะจุดเช็คตอนกดไม่มี exception ของขั้น "run" เหมือนจุดเช็คตอน render ปุ่ม) รวมเป็นฟังก์ชันเดียวกันจุดเดียวกันเสมอ
+function isLifecycleStepAdvanceable(stepKey) {
+    const state = document.querySelector(`#camp-lifecycle-pages [data-step="${stepKey}"]`)?.dataset.state;
+    // ขั้น "ดำเนินการค่าย" จะเสร็จก็ต่อเมื่อกดจบค่ายในขั้นถัดไป จึงต้องปล่อยให้ไปต่อได้ตั้งแต่ค่ายกำลังดำเนินการอยู่ (current)
+    return state === 'done' || (stepKey === 'run' && state === 'current');
+}
+
 function lifecycleStepNav(direction) {
     const nextIndex = currentLifecycleStepIndex + direction;
     if (nextIndex < 0 || nextIndex >= LIFECYCLE_STEP_ORDER.length) return;
     // การกดปุ่ม disabled จริงในเบราว์เซอร์ไม่ยิง onclick อยู่แล้ว แต่กันซ้ำไว้ในนี้ด้วยเผื่อถูกเรียกทางอื่น: เดินหน้าไม่ได้ถ้าขั้นปัจจุบันยังไม่เสร็จ (ถอยหลังทำได้เสมอ)
     if (direction > 0) {
         const currentStepKey = LIFECYCLE_STEP_ORDER[currentLifecycleStepIndex];
-        const currentStepDone = document.querySelector(`#camp-lifecycle-pages [data-step="${currentStepKey}"]`)?.dataset.state === 'done';
-        if (!currentStepDone) return;
+        if (!isLifecycleStepAdvanceable(currentStepKey)) return;
     }
     currentLifecycleStepIndex = nextIndex;
     renderLifecyclePageView();
@@ -1741,9 +1748,7 @@ function renderLifecyclePageView() {
         const isLastStep = currentLifecycleStepIndex === LIFECYCLE_STEP_ORDER.length - 1;
         // กดข้ามไปขั้นถัดไปไม่ได้จนกว่าจะดำเนินการขั้นที่กำลังดูอยู่ให้เสร็จก่อน (data-state "done" ตัวเดียวกับที่ทำให้วงกลมในแถบด้านบนเปลี่ยนเป็นติ๊กถูก)
         // ยังกดวงกลมในแถบด้านบนข้ามไปขั้นอื่นตรง ๆ ได้เสมอ (showLifecycleStep ไม่เช็คเงื่อนไขนี้) กันไม่ให้ติดตันตอนขั้นที่ไม่มีปุ่มให้ "ทำให้เสร็จ" ในหน้าตัวเอง เช่น "ดำเนินค่าย"
-        const currentStepState = document.querySelector(`#camp-lifecycle-pages [data-step="${stepKey}"]`)?.dataset.state;
-        // ขั้น "ดำเนินการค่าย" จะเสร็จก็ต่อเมื่อกดจบค่ายในขั้นถัดไป จึงต้องปล่อยให้ไปต่อได้ตั้งแต่ค่ายกำลังดำเนินการอยู่ (current)
-        const currentStepDone = currentStepState === 'done' || (stepKey === 'run' && currentStepState === 'current');
+        const currentStepDone = isLifecycleStepAdvanceable(stepKey);
         nextBtn.disabled = isLastStep || !currentStepDone;
         nextBtn.title = (!isLastStep && !currentStepDone)
             ? 'ดำเนินการขั้นตอนนี้ให้เสร็จก่อนถึงจะไปขั้นถัดไปได้ (หรือกดเลือกขั้นตอนจากแถบด้านบนแทนได้)'

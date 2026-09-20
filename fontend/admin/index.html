@@ -963,16 +963,30 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="news-publishedAt">วันที่เผยแพร่</label>
-                                    <input class="form-input" type="date" id="news-publishedAt">
+                                    <div id="news-publishedAt-selects"></div>
+                                    <input type="hidden" id="news-publishedAt">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="news-imageUrl">รูปภาพ</label>
-                                    <input class="form-input" type="text" id="news-imageUrl" placeholder="/backend/uploads/news/xxx.jpg">
-                                    <input class="admin-file-input" type="file" accept="image/*" id="news-imageUrl-file" onchange="uploadNewsImage(event)">
-                                    <p class="admin-field-hint hidden" id="news-imageUrl-status"></p>
+                                    <div class="news-image-upload">
+                                        <div class="news-image-preview hidden" id="news-imageUrl-preview">
+                                            <img id="news-imageUrl-preview-img" src="" alt="ตัวอย่างรูปภาพประกอบประชาสัมพันธ์">
+                                        </div>
+                                        <input class="form-input" type="text" id="news-imageUrl" placeholder="/backend/uploads/news/xxx.jpg" oninput="updateNewsImagePreview()">
+                                        <input class="admin-file-input" type="file" accept="image/*" id="news-imageUrl-file" onchange="uploadNewsImage(event)">
+                                        <p class="admin-field-hint hidden" id="news-imageUrl-status"></p>
+                                    </div>
                                 </div>
                                 <div class="checkbox-group">
-                                    <input type="checkbox" id="news-isHot" class="form-checkbox">
+                                    <label class="ios-checkbox">
+                                        <input type="checkbox" id="news-isHot">
+                                        <div class="checkbox-wrapper">
+                                            <div class="checkbox-bg"></div>
+                                            <svg class="checkbox-icon" viewBox="0 0 24 24" fill="none">
+                                                <path class="check-path" d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </label>
                                     <label for="news-isHot" class="checkbox-label">ติดป้าย "สำคัญ" (ประกาศเด่น)</label>
                                 </div>
                                 <div class="admin-toggle-row">
@@ -992,19 +1006,31 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="news-summary">สรุปย่อ</label>
-                                    <input class="form-input" type="text" id="news-summary" required>
+                                    <textarea class="form-input admin-textarea" id="news-summary" rows="3" style="min-height: 0;" required></textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="news-detail">รายละเอียด</label>
-                            <div class="admin-richtext-toolbar">
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">รายการ</button>
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">ลิงก์</button>
+                            <div class="admin-richtext-editor">
+                                <div class="admin-richtext-toolbar">
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                        </svg>
+                                    </button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="admin-textarea admin-richtext" id="news-detail" contenteditable="true" data-placeholder="พิมพ์รายละเอียดประชาสัมพันธ์..."></div>
                             </div>
-                            <div class="form-input admin-textarea admin-richtext" id="news-detail" contenteditable="true" data-placeholder="พิมพ์รายละเอียดประชาสัมพันธ์..."></div>
                         </div>
                         <div class="admin-form-actions">
                             <button type="button" class="admin-cancel-btn" onclick="closeNewsForm()">ยกเลิก</button>
@@ -1036,12 +1062,14 @@
                         <input type="hidden" id="schedule-id">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="schedule-eventDate">วันที่เริ่ม (สำหรับเรียงลำดับ)</label>
-                                <input class="form-input" type="date" id="schedule-eventDate" required onchange="autoFillScheduleDateText()">
+                                <label class="form-label" for="schedule-eventDate">วันที่เริ่ม (สำหรับเรียงลำดับ) <span class="required-mark">*</span></label>
+                                <div id="schedule-eventDate-selects"></div>
+                                <input type="hidden" id="schedule-eventDate" onchange="autoFillScheduleDateText()">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="schedule-endDate">วันที่สิ้นสุด (ถ้ามีหลายวัน)</label>
-                                <input class="form-input" type="date" id="schedule-endDate" onchange="autoFillScheduleDateText()">
+                                <div id="schedule-endDate-selects"></div>
+                                <input type="hidden" id="schedule-endDate" onchange="autoFillScheduleDateText()">
                             </div>
                         </div>
                         <div class="form-grid">

@@ -1371,7 +1371,7 @@ function openNewsForm(item) {
     document.getElementById('news-modal-title').textContent = item ? 'แก้ไขประชาสัมพันธ์' : 'เพิ่มประชาสัมพันธ์';
     document.getElementById('news-id').value = item ? item.id : '';
     document.getElementById('news-tag').value = item ? item.tag : 'ANNOUNCE';
-    document.getElementById('news-publishedAt').value = item ? toDateInputValue(item.publishedAt) : toDateInputValue(new Date());
+    newsPublishedAtSelects?.setValue(item ? toDateInputValue(item.publishedAt) : toDateInputValue(new Date()));
     document.getElementById('news-title').value = item ? item.title : '';
     document.getElementById('news-summary').value = item ? item.summary : '';
     document.getElementById('news-detail').innerHTML = item ? item.detail : '';
@@ -1380,12 +1380,27 @@ function openNewsForm(item) {
     document.getElementById('news-isVisible').checked = item ? item.isVisible !== false : true;
 
     newsOriginalImageUrl = item && item.imageUrl ? item.imageUrl : '';
+    updateNewsImagePreview();
 
     document.getElementById('news-modal').classList.remove('hidden');
 }
 
 function closeNewsForm() {
     document.getElementById('news-modal').classList.add('hidden');
+}
+
+function updateNewsImagePreview() {
+    const url = document.getElementById('news-imageUrl')?.value.trim();
+    const wrap = document.getElementById('news-imageUrl-preview');
+    const img = document.getElementById('news-imageUrl-preview-img');
+    if (!wrap || !img) return;
+    if (url) {
+        img.src = url;
+        wrap.classList.remove('hidden');
+    } else {
+        img.src = '';
+        wrap.classList.add('hidden');
+    }
 }
 
 // อัปโหลดรูปภาพประกอบข่าวโดยตรง (ไม่ครอบตัด เพราะแสดงผลด้วย object-fit: cover เสมออยู่แล้ว) แล้วเอา URL ที่ได้ไปใส่ในช่อง news-imageUrl ให้อัตโนมัติ
@@ -1413,6 +1428,7 @@ function uploadNewsImage(event) {
         })
         .then(({ url }) => {
             document.getElementById('news-imageUrl').value = url;
+            updateNewsImagePreview();
             if (status) status.classList.add('hidden');
         })
         .catch((error) => {
@@ -1839,7 +1855,9 @@ function openScheduleForm(item) {
 
     document.getElementById('schedule-modal-title').textContent = item ? 'แก้ไขกำหนดการ' : 'เพิ่มกำหนดการ';
     document.getElementById('schedule-id').value = item ? item.id : '';
-    document.getElementById('schedule-eventDate').value = item ? toDateInputValue(item.eventDate) : toDateInputValue(new Date());
+    scheduleEventDateSelects?.setValue(item ? toDateInputValue(item.eventDate) : toDateInputValue(new Date()));
+    // "วันที่สิ้นสุด" เป็นแค่ตัวช่วยคำนวณข้อความช่วงวันที่ตอนกรอกครั้งแรก ไม่มีคอลัมน์เก็บจริงใน Schedule (ดู schema) จึงไม่มีค่าให้ดึงกลับมาตอนแก้ไข เคลียร์ทุกครั้งที่เปิดฟอร์ม
+    scheduleEndDateSelects?.clear();
     document.getElementById('schedule-badgeColor').value = item ? item.badgeColor : 'BRAND';
     document.getElementById('schedule-dateText').value = item ? item.dateText : '';
     document.getElementById('schedule-mobileDate').value = item && item.mobileDate ? item.mobileDate : '';
@@ -2615,6 +2633,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('schedule-form').addEventListener('submit', submitScheduleForm);
     document.getElementById('user-form').addEventListener('submit', submitUserForm);
     initRichTextToolbar();
+
+    // date selects สำหรับช่องวันที่ใน form ข่าวและกำหนดการ (แทน input[type=date] เพื่อแก้ปัญหา iOS Safari แสดงปีพุทธศักราชเพี้ยน)
+    newsPublishedAtSelects = setupDateSelects({ containerId: 'news-publishedAt-selects', hiddenId: 'news-publishedAt' });
+    scheduleEventDateSelects = setupDateSelects({ containerId: 'schedule-eventDate-selects', hiddenId: 'schedule-eventDate' });
+    scheduleEndDateSelects = setupDateSelects({ containerId: 'schedule-endDate-selects', hiddenId: 'schedule-endDate' });
 
     if (localStorage.getItem('adminSidebarCollapsed') === '1') {
         const sidebar = document.querySelector('.admin-shell-sidebar');

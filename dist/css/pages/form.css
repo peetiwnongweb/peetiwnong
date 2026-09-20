@@ -1,0 +1,1263 @@
+/* ==========================================
+   FORM PAGE STYLES
+   ========================================== */
+
+/* เดิมเป็น selector "body" เฉย ๆ ทำให้ไปทับพื้นหลังของทุกหน้าที่แชร์ form.css ไฟล์นี้ด้วย (staff/academic.html, staff/profile.html ฯลฯ)
+   กลายเป็นพื้นหลังกลายเป็นสีกรมท่าเข้มผิดที่ผิดทาง ต้อง scope ผ่านคลาส .form-wizard-page ที่ใส่ไว้เฉพาะ body ของ form.html/staff-form.html เท่านั้น */
+body.form-wizard-page {
+    background-color: var(--slate-900);
+}
+
+/* Layout & Containers */
+.form-page-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 100px);
+    /* minus footer approx */
+    background-color: var(--slate-50);
+}
+
+@media (min-width: 1024px) {
+    .form-page-layout {
+        flex-direction: row;
+        max-width: 1400px;
+        margin: 2rem auto;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        background-color: white;
+    }
+
+    /* flex-basis 350px ใช้เป็น "ความกว้าง" คอลัมน์ตอนจอใหญ่เท่านั้น (จอเล็กเป็นคอลัมน์ซ้อนกัน ถ้าบังคับ 350px จะกลายเป็น "ความสูง" คงที่
+       จนเนื้อหา/สเต็ปด้านในถูก overflow:hidden ตัดหายไปแทน เคยเป็นบั๊กแบบนี้มาก่อน) */
+    .form-sidebar {
+        flex: 0 0 350px;
+        /* พื้นหลังทั้งสองฝั่งเป็นสีอ่อนเหมือนกันแล้ว ต้องมีเส้นแบ่งบาง ๆ ตอนจอใหญ่ให้เห็นขอบเขตชัดเจน */
+        border-right: 1px solid var(--slate-100);
+    }
+}
+
+/* Sidebar Styles: โทนสีอ่อน/ขาวแบบเดียวกับ header หน้าแรก (เดิมเป็นพื้นส้มตัน+ตัวหนังสือขาว) */
+.form-sidebar {
+    background: linear-gradient(135deg, #fff7ed, #ffffff 55%, #fff7ed);
+    background-size: 200% 200%;
+    animation: gradientShift 10s ease infinite;
+    color: var(--slate-900);
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.sidebar-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    align-self: flex-start;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.sidebar-badge svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* โลโก้เว็บที่มุมบนของ sidebar สีสลับจากหน้าหลัก (พื้นหลังตรงนี้เป็นส้มอยู่แล้ว เลยใช้ตัวหนังสือ/โลโก้ขาวแทน) */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-brand-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    object-fit: contain;
+    /* พื้นหลังเปลี่ยนเป็นสีอ่อนแล้ว ใช้โลโก้ลายเส้นเข้ม (logo1.png) แทนเวอร์ชันขาว (ดู src ใน HTML) */
+}
+
+.sidebar-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+/* ไล่สีข้อความแบบเดียวกับโลโก้ใน header หน้าแรก */
+.sidebar-brand-title {
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sidebar-brand-subtitle {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--slate-500);
+}
+
+.sidebar-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: var(--slate-900);
+}
+
+.sidebar-desc {
+    font-size: 0.875rem;
+    color: var(--slate-600);
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+}
+
+/* Steps Indicator */
+.steps-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+    padding: 0.6rem 0.75rem;
+    border-radius: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+/* ไฮไลต์สเต็ปที่กำลังทำอยู่ด้วยพื้นหลังส้มจาง ๆ ให้ดูเป็นการ์ดเด่นขึ้นมาจากสเต็ปอื่น */
+.step-item.active {
+    background-color: rgba(255, 114, 32, 0.08);
+}
+
+.step-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.step-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* State: Completed */
+.step-item.completed .step-icon {
+    background-color: var(--emerald-400);
+    color: white;
+}
+
+/* State: Active */
+.step-item.active .step-icon {
+    background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+    color: white;
+    box-shadow: 0 0 0 4px rgba(255, 114, 32, 0.15);
+    animation: pulseOrange 2s infinite;
+}
+
+@keyframes pulseOrange {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 114, 32, 0.35);
+    }
+
+    70% {
+        box-shadow: 0 0 0 8px rgba(255, 114, 32, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 114, 32, 0);
+    }
+}
+
+/* State: Pending */
+.step-item.pending .step-icon {
+    background-color: transparent;
+    border-color: var(--slate-300);
+    color: var(--slate-400);
+}
+
+.step-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.step-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* จอใหญ่: โชว์ชื่อเต็ม ซ่อนชื่อย่อ (สลับกันตอนจอเล็กด้านล่าง) */
+.step-title-short {
+    display: none;
+}
+
+.step-subtitle {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-top: 0.125rem;
+}
+
+/* Pending text opacity */
+.step-item.pending .step-text {
+    opacity: 0.6;
+}
+
+/* จอเล็ก (sidebar ซ้อนกับ form แบบคอลัมน์): เรียงสเต็ปเป็นแถวแนวนอนแทนคอลัมน์
+   ตัดคำอธิบายตัวเล็กออก + ใช้ชื่อย่อแทนชื่อเต็ม ประหยัดพื้นที่ */
+@media (max-width: 1023px) {
+    /* ลดระยะห่าง/padding ลงทั้งชุด ให้บล็อกสีส้มด้านบนเตี้ยกระชับขึ้น ไม่ต้องเลื่อนเยอะกว่าจะถึงฟอร์ม */
+    .form-sidebar {
+        padding: 1.75rem 1.5rem;
+        /* จอเล็กสลับเป็นคอลัมน์ซ้อนกัน (ไม่มี border-right แบบจอใหญ่แยกฝั่งซ้าย-ขวาให้) ต้องมีขอบล่างกั้นแยกจากฟอร์มสีขาวด้านล่างเอง */
+        border-bottom: 1px solid var(--slate-200);
+    }
+
+    .sidebar-brand {
+        margin-bottom: 1rem;
+    }
+
+    .sidebar-title {
+        font-size: 1.5rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .sidebar-desc {
+        margin-bottom: 1.25rem;
+    }
+
+    .steps-container {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 0.25rem;
+        margin-bottom: 0;
+    }
+
+    .step-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        flex: 1;
+        padding: 0.5rem 0.25rem;
+        gap: 0.35rem;
+    }
+
+    .step-subtitle {
+        display: none;
+    }
+
+    .step-title {
+        font-size: 0.7rem;
+    }
+
+    .step-title-full {
+        display: none;
+    }
+
+    .step-title-short {
+        display: inline;
+    }
+}
+
+
+/* Sidebar Footer */
+.sidebar-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-top: 2px solid var(--slate-300);
+    padding-top: 1rem;
+}
+
+/* จอเล็ก (sidebar ซ้อนกับ form แบบคอลัมน์): ย้ายปุ่ม Help ไปลอยมุมขวาบนแทน ไม่ต้องไปรอที่ล่างสุดของ sidebar */
+@media (max-width: 1023px) {
+    .sidebar-footer {
+        position: absolute;
+        /* จัดให้อยู่ระดับกึ่งกลางเดียวกับแถวโลโก้ (โลโก้เริ่มที่ padding-top ของ .form-sidebar จอเล็กคือ 1.75rem สูง 2.75rem
+           ค่าเดิมคำนวณผิดจากใช้ padding-top ของจอใหญ่ 2.5rem มาคิด เลยทำให้ปุ่มอยู่ต่ำกว่าจุดกึ่งกลางจริง) */
+        top: calc(1.75rem + 2.75rem / 2 - 1.15rem);
+        right: 1.5rem;
+        left: auto;
+        margin-top: 0;
+        border-top: none;
+        padding-top: 0;
+        z-index: 2;
+    }
+}
+
+.sidebar-footer a {
+    color: var(--slate-700);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sidebar-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ปุ่ม "ติดต่อสอบถามข้อมูลเพิ่มเติม" + กล่องช่องทางติดต่อที่เด้งขึ้นมา (เปิดขึ้นด้านบน เพราะปุ่มอยู่ล่างสุดของ sidebar) */
+.sidebar-contact-wrap {
+    position: relative;
+}
+
+.sidebar-contact-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--slate-200);
+    background: white;
+    border-radius: 9999px;
+    padding: 0.5rem 0.9rem;
+    color: var(--brand-600);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-contact-trigger:hover {
+    background: #fff7ed;
+    border-color: var(--brand-300);
+}
+
+.sidebar-contact-trigger-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+/* Form Content Area */
+.form-content-area {
+    flex: 1;
+    background-color: white;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ฟอร์มยืดเต็มความสูงของพื้นที่ฟอร์ม ให้สเต็ปแต่ละอันดันปุ่ม กลับ/ถัดไป ลงล่างสุดได้เสมอ ไม่ว่าฟิลด์แต่ละสเต็ปจะเยอะ/น้อยแค่ไหน */
+#multi-step-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+@media (min-width: 1024px) {
+    .form-content-area {
+        padding: 3.5rem 4rem;
+    }
+}
+
+.form-step-content {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.form-step-content.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Base Form Elements */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    /* .form-grid เองก็เป็น flex item ของคอลัมน์ฟอร์มด้านนอกอีกที (#multi-step-form) ต้อง min-width:0
+       ไม่งั้นเนื้อหาข้างในที่กว้างเกิน (ดูคอมเมนต์ที่ .form-group) จะดันความกว้างของ flex item นี้ล้นออกไปอีกชั้น */
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* บล็อกอย่าง .create-user-section เป็น display:block ธรรมดา (ไม่ใช่ flex) จึงไม่มี gap ให้อัตโนมัติระหว่างแถว .form-grid ที่วางต่อกัน ต้องเติมระยะห่างเอง */
+.form-grid + .form-grid {
+    margin-top: 1.35rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    /* grid item (ลูกของ .form-grid) ค่า default คือ min-width:auto = ยึดตามความกว้างขั้นต่ำของเนื้อหาข้างในเสมอ ไม่ใช่ตามสัดส่วน 1fr จริง
+       บังคับ min-width:0 ไว้กันไม่ให้ฟิลด์ที่มีเนื้อหากว้าง ๆ (เช่น dropdown ตัวเลือกยาว) ดัน grid cell ล้นออกนอกจอ */
+    min-width: 0;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--slate-700);
+}
+
+.required-mark {
+    color: var(--rose-600);
+}
+
+/* รายการเงื่อนไขรหัสผ่านใต้ช่องกรอก อัปเดตสีสดตาม JS (updatePasswordChecklist) ทุกครั้งที่พิมพ์
+   แดง = ยังไม่ผ่านเงื่อนไขนั้น, เขียว = ผ่านแล้ว */
+.password-checklist {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.password-checklist li {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--rose-600);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.2s ease;
+}
+
+.password-checklist li::before {
+    content: '\2715';
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+.password-checklist li.met {
+    color: var(--emerald-600);
+}
+
+.password-checklist li.met::before {
+    content: '\2713';
+}
+
+/* คั่นระหว่าง "ความยาวขั้นต่ำ" (บังคับเสมอ) กับกลุ่ม 4 ประเภทอักขระ (ผ่านแค่ 3 ใน 4 ก็พอ) */
+.password-checklist-hint {
+    font-size: 0.75rem;
+    color: var(--slate-500);
+    margin: 0.5rem 0 0;
+}
+
+/* เช็กบ็อกซ์ยอมรับเงื่อนไข PDPA แบบ "iOS style" มีแอนิเมชันวาดเครื่องหมายถูก + bounce ตอนติ๊ก
+   ปรับสีจากต้นฉบับ (ฟ้า) เป็นโทนส้มของเว็บ: --checkbox-color ใช้ brand-500 ตอนติ๊ก, ขอบตอนยังไม่ติ๊กใช้ slate-300 เทาเหมือนช่องอื่น ๆ ในฟอร์ม */
+.ios-checkbox {
+    --checkbox-size: 1.25rem;
+    --checkbox-color: var(--brand-500);
+    --checkbox-bg: #fff7ed;
+    --checkbox-border: var(--slate-300);
+
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+
+.ios-checkbox input {
+    display: none;
+}
+
+.checkbox-wrapper {
+    position: relative;
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
+    border-radius: 0.4rem;
+    transition: transform 0.2s ease;
+}
+
+.checkbox-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.4rem;
+    border: 2px solid var(--checkbox-border);
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.checkbox-icon {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 80%;
+    height: 80%;
+    color: white;
+    transform: scale(0);
+    transition: all 0.2s ease;
+}
+
+.check-path {
+    stroke-dasharray: 40;
+    stroke-dashoffset: 40;
+    transition: stroke-dashoffset 0.3s ease 0.1s;
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper .checkbox-bg {
+    background: var(--checkbox-color);
+    border-color: var(--checkbox-color);
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper .checkbox-icon {
+    transform: scale(1);
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper .check-path {
+    stroke-dashoffset: 0;
+}
+
+.ios-checkbox:hover .checkbox-wrapper {
+    transform: scale(1.05);
+}
+
+.ios-checkbox:active .checkbox-wrapper {
+    transform: scale(0.95);
+}
+
+.ios-checkbox input:focus+.checkbox-wrapper .checkbox-bg {
+    box-shadow: 0 0 0 4px var(--checkbox-bg);
+}
+
+@keyframes checkboxBounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.ios-checkbox input:checked+.checkbox-wrapper {
+    animation: checkboxBounce 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-input {
+    /* ไม่มี box-sizing:border-box ตั้งต้นในเว็บ (ค่า default คือ content-box) ทำให้ width:100% + padding บวกความกว้างเกินกรอบจริง */
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--slate-900);
+    background-color: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.form-input::placeholder {
+    color: var(--slate-400);
+}
+
+/* ช่องที่ระบบเติมค่าให้เองและแก้ไม่ได้ (เช่น "อาชีพ" ตอนเลือกสถานะ "กำลังศึกษา" จะถูกล็อกเป็น "นักศึกษา")
+   ทำให้ดูเป็นสีเทาชัดเจนว่ากดแก้ไม่ได้ ไม่ใช่แค่กดแล้วพิมพ์ไม่ออกเฉย ๆ จนผู้ใช้งง */
+.form-input[readonly] {
+    background-color: var(--slate-100);
+    color: var(--slate-500);
+    cursor: not-allowed;
+}
+
+/* แถววัน/เดือน/ปีเกิด: เปลี่ยนจาก input[type=date] เดิมมาเป็น dropdown 3 ช่องแทน เพราะตัวควบคุมวันของ iOS Safari
+   มี UA default บังคับความกว้างขั้นต่ำภายใน (shadow DOM) สูงเกินจอมือถือเสมอ แก้ด้วย CSS ทุกทางที่มีแล้วก็ยังล้นอยู่ดี
+   dropdown ธรรมดาไม่มีปัญหานี้ และก็ใช้ปุ่มเลือกแบบเดียวกับช่องอื่น ๆ ในฟอร์มอยู่แล้ว (ดู select.form-input) */
+/* .date-select-* เป็นชื่อกลางของช่องเลือกวันที่ 3 dropdown (ดู js/layout/date-select.js) ส่วน .dob-select-* เป็นชื่อเดิม
+   ของช่องวันเกิดในฟอร์มลงทะเบียนที่ทำไว้ก่อน ใช้สไตล์ชุดเดียวกัน */
+.date-select-row,
+.dob-select-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.date-select,
+.dob-select {
+    flex: 1;
+    min-width: 0;
+    padding-left: 0.6rem;
+    padding-right: 1.6rem;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+}
+
+/* ช่องวันมีแค่ 1-2 หลัก ใช้พื้นที่น้อยกว่าช่องอื่นได้ ลดสัดส่วนลงเพื่อคืนพื้นที่ให้ช่องปี */
+.date-select-row .date-select:nth-child(1),
+.dob-select-row .dob-select:nth-child(1) {
+    flex: 0.8;
+}
+
+/* ช่องเดือนคำยาวกว่าช่องวัน/ปี ("เดือน" 5 ตัวอักษร ขณะที่ "วัน"/"ปี" สั้นกว่า) ให้พื้นที่เพิ่มไม่ให้ถูกตัดคำ */
+.date-select-row .date-select:nth-child(2),
+.dob-select-row .dob-select:nth-child(2) {
+    flex: 1.5;
+}
+
+/* ช่องปีเป็นตัวเลข พ.ศ. 4 หลัก (เช่น 2568) กว้างกว่าคำว่า "ปี" เยอะ ให้พื้นที่เพิ่มไม่ให้ตัวเลขถูกตัด */
+.date-select-row .date-select:nth-child(3),
+.dob-select-row .dob-select:nth-child(3) {
+    flex: 1.8;
+}
+
+/* แถวชั่วโมง/นาที: เปลี่ยนจาก input[type=time] เดิมมาเป็น dropdown 2 ช่องแทน เหตุผลเดียวกับ .date-select-row ด้านบน
+   (ตัวควบคุมเวลาแบบล้อหมุนของ iOS Safari มี UA default บังคับความกว้างขั้นต่ำสูงเกินจอมือถือ) - ดู js/layout/time-select.js */
+.time-select-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-select {
+    flex: 1;
+    min-width: 0;
+    padding-left: 0.6rem;
+    padding-right: 1.6rem;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+}
+
+.time-select-sep {
+    font-weight: 700;
+    color: var(--slate-400);
+}
+
+/* select.form-input โหลดใช้ร่วมกันทุกหน้าที่มี dropdown ผ่าน form.css (staff/profile, staff/academic, staff/news,
+   staff/activities, participant/profile, webmanager, admin) ปรับตรงนี้ที่เดียวมีผลทุกหน้า */
+select.form-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.25rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+/* บนจอ PC ใช้เมาส์โฮเวอร์ได้ เพิ่มเส้นขอบเข้มขึ้นตอนชี้ ให้รู้สึกว่ากดเลือกได้ (จอสัมผัส/มือถือไม่มี hover อยู่แล้วเลยไม่ต้อง media query แยก) */
+select.form-input:hover {
+    border-color: var(--slate-300);
+}
+
+/* Premium Input Focus: ไม่ใช้สีส้มเลย เน้นด้วยเงาโปร่งแสงสีเทาเฉย ๆ */
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.25) !important;
+    transform: translateY(-1px);
+}
+
+.form-step-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    margin-bottom: 0.5rem;
+}
+
+.form-step-desc {
+    font-size: 0.875rem;
+    color: var(--slate-500);
+    margin-bottom: 2rem;
+}
+
+/* Checkbox Cards Grid */
+.checkbox-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .checkbox-card-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.checkbox-card {
+    border: 1px solid var(--slate-200);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+/* --brand-300 ไม่เคยถูกประกาศไว้ใน variables.css เลย (มีแค่ 50/500/600/700) การ์ดเลย hover ไม่ขึ้นสีขอบเลยก่อนหน้านี้
+   ส่วน --brand-50 เป็นตัวแปรที่ตั้งชื่อผิด ค่าจริงเป็นสีฟ้าอ่อนไม่ใช่ส้มอ่อน (บั๊กเดิมของโปรเจกต์) เลยใช้ #fff7ed ตรง ๆ แทนทั้งคู่ */
+.checkbox-card:hover {
+    border-color: var(--brand-500);
+    background-color: #fff7ed;
+}
+
+.checkbox-card.selected {
+    border-color: var(--slate-300);
+    background-color: #fff7ed;
+    box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
+}
+
+/* เลิกใช้ accent-color (widget เนทีฟของเบราว์เซอร์ วงแหวนหนาสีดำ ไม่สวย ควบคุมหน้าตาไม่ได้) วาดวงกลม/สี่เหลี่ยมเองด้วย
+   appearance:none แทน ให้หน้าตาสม่ำเสมอทุกเบราว์เซอร์ ตอนติ๊กแล้วใช้ box-shadow inset สีขาวสร้างวงแหวนรอบจุดสีส้มตรงกลาง */
+.checkbox-card input[type="checkbox"],
+.checkbox-card input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+    border: 2px solid var(--slate-300);
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.checkbox-card input[type="checkbox"] {
+    border-radius: 0.35rem;
+}
+
+.checkbox-card input[type="radio"] {
+    border-radius: 50%;
+}
+
+.checkbox-card input[type="checkbox"]:checked,
+.checkbox-card input[type="radio"]:checked {
+    border-color: var(--brand-500);
+    background-color: var(--brand-500);
+    box-shadow: inset 0 0 0 3px white;
+}
+
+.checkbox-card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-card-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--slate-800);
+}
+
+.checkbox-card-desc {
+    font-size: 0.75rem;
+    color: var(--slate-500);
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
+/* File Upload Field */
+.file-upload-wrapper {
+    border: 2px dashed var(--slate-200);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background-color: var(--slate-50);
+}
+
+.file-upload-wrapper:hover {
+    border-color: var(--brand-400);
+    background-color: var(--brand-50);
+}
+
+.file-upload-icon {
+    width: 3rem;
+    height: 3rem;
+    color: var(--brand-400);
+    margin: 0 auto 1rem;
+}
+
+.file-upload-text {
+    font-size: 0.875rem;
+    color: var(--slate-600);
+    margin-bottom: 0.5rem;
+}
+
+.file-upload-text strong {
+    color: var(--brand-600);
+}
+
+.file-upload-hint {
+    font-size: 0.75rem;
+    color: var(--slate-400);
+}
+
+.file-upload-input {
+    display: none;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--slate-100);
+}
+
+/* แจ้งเตือนของฟอร์ม (validate พลาด/ล้างฟอร์ม/ส่ง OTP ฯลฯ) เด้งลงมาจากขอบบนตรงกลางจอ พร้อมแถบโหลดนับถอยหลังก่อนหาย
+   แทนแบนเนอร์เดิมที่แทรกอยู่บนสุดของฟอร์ม เพราะฟอร์มยาวหลายสเต็ป ผู้ใช้เลื่อนลงมากจะไม่เห็นแบนเนอร์ด้านบน */
+.form-toast {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    z-index: 100;
+    width: fit-content;
+    max-width: min(22rem, calc(100vw - 2rem));
+    padding: 0.75rem 1.25rem 0.9rem;
+    border-radius: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.15);
+    opacity: 0;
+    transform: translate(-50%, -0.75rem);
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.form-toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+}
+
+.form-toast.error {
+    background-color: #fff1f2;
+    color: #be123c;
+    border-color: #fecdd3;
+}
+
+.form-toast-message {
+    display: block;
+}
+
+/* แถบโหลดวิ่งจากว่างไปจนเต็มความกว้าง พอเต็มพอดีก็ถึงเวลาที่ toast หายไป (ระยะเวลาต้องตรงกับ setTimeout ใน showFormToast) */
+.form-toast-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 3px;
+    background-color: currentColor;
+    opacity: 0.45;
+    transform-origin: left;
+    transform: scaleX(0);
+}
+
+.form-toast-bar.running {
+    transform: scaleX(1);
+    transition: transform 3s linear;
+}
+
+/* หัวข้อแต่ละสเต็ป + ปุ่มล้างฟอร์มอยู่แถวเดียวกัน ปุ่มชิดมุมขวาบนเสมอไม่ว่าจอจะแคบแค่ไหน
+   min-width:0 บนฝั่งข้อความ ให้มันยอมหดตัว/ตัดบรรทัดข้อความแทนการดันปุ่มตกลงไปแถวใหม่ */
+.form-step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.form-step-header-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.form-step-header .draft-clear-btn {
+    flex-shrink: 0;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--slate-600);
+    background-color: white;
+    border: 1px solid var(--slate-200);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-outline:hover {
+    background-color: var(--slate-50);
+    border-color: var(--slate-300);
+    color: var(--slate-900);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.btn-outline:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.5rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background-color: var(--brand-500);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-600);
+    box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* กล่องยินยอม PDPA: .checkbox-group ทั่วไปใช้ align-items:flex-start (เช็คบ็อกซ์ชิดขอบบน) พอข้อความยาวจนตัดขึ้น 2 บรรทัด
+   เช็คบ็อกซ์เลยดูลอยอยู่สูงกว่ากึ่งกลางข้อความ แก้ด้วย align-items:center ให้เช็คบ็อกซ์อยู่กึ่งกลางแนวตั้ง (แกน Y) เทียบกับก้อนข้อความทั้งหมดแทน
+   .checkbox-group ยังมี padding-top:0.25rem ติดมาด้วย (เดิมมีไว้เผื่อ layout แบบ align-items:flex-start) ทำให้ padding บนกับล่างไม่เท่ากัน (4px กับ 16px)
+   พอเนื้อหาข้างในจัดกึ่งกลางกันเองถูกแล้ว แต่กรอบมี padding เพี้ยน เนื้อหาเลยดูสูงกว่ากึ่งกลางกรอบจริงไปนิดหน่อย ต้องรีเซ็ต padding-top ให้เท่ากับด้านอื่นด้วย */
+/* เดิมลอง justify-content:center บนกรอบเต็มความกว้างแล้วไม่เห็นผล เพราะ label ข้อความยืดจนเต็มพื้นที่ที่เหลือเสมอ (ไม่มีที่ว่างให้จัดกึ่งกลาง)
+   ลองจำกัด max-width ของ label ให้ตัดบรรทัดเร็วขึ้นก็ได้กึ่งกลางจริง แต่ตัดคำทั้งที่จอกว้างพอจะพอดีบรรทัดเดียว ไม่ใช่สิ่งที่ต้องการ
+   ทางที่ถูกคือให้ "กรอบ" หดตัวเท่าเนื้อหาจริงแทน (width:fit-content) แล้วค่อยจัดกรอบทั้งก้อนให้อยู่กึ่งกลางคอลัมน์แทน
+   ข้อความข้างในเลยได้ยาวเต็มที่ไม่ตัดคำก่อนเวลาอันควร จะตัดก็ต่อเมื่อยาวเกินความกว้างคอลัมน์จริง ๆ เท่านั้น (max-width:100% กันล้น) */
+.pdpa-consent-row {
+    width: fit-content;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Helper spacing */
+.mt-8 {
+    margin-top: 2rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+/* ==========================================
+   Help Modal: คู่มือกรอกฟอร์ม เปิดจากปุ่ม Help แทนกล่อง popover เดิม
+   ใช้โครง .modal/.modal-box/.modal-content-wide ร่วมกับโมดัลอื่นในเว็บ (เช่น news-modal) ดูที่ modal.css
+   ========================================== */
+.help-modal-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--brand-600);
+    background-color: #fff7ed;
+    padding: 0.3rem 0.7rem;
+    border-radius: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.help-modal-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--slate-900);
+    margin-bottom: 0.5rem;
+}
+
+.help-modal-desc {
+    font-size: 0.85rem;
+    color: var(--slate-500);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.help-section + .help-section {
+    margin-top: 1.75rem;
+}
+
+/* โมดัล Help กว้างกว่า .modal-box-lg ปกติ (58rem) เพราะต้องวาง 3 คอลัมน์ให้อ่านสบาย ไม่บีบตัวหนังสือจนแน่นเกินไป
+   ทำเป็นคลาสแยกแทนแก้ .modal-box-lg ตรง ๆ เพราะคลาสนั้นใช้ร่วมกับโมดัลอื่นในหน้าแอดมิน/webmanager ด้วย */
+.help-modal-box {
+    max-width: 72rem;
+}
+
+/* จอใหญ่พอ (โมดัล Help กว้าง 72rem): วางสเต็ป 1, 2, 3 เรียงเป็นแถวเดียวกัน 3 คอลัมน์ แทนเรียงต่อกันยาว ๆ ลงมา
+   จอเล็กยังคงเรียงต่อกันตามปกติเหมือนเดิม (ไม่ตั้ง grid ไว้เลย ปล่อยให้ .help-section + .help-section ด้านบนคุมระยะห่างแทน) */
+@media (min-width: 700px) {
+    .help-section-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0 1.5rem;
+        align-items: start;
+    }
+
+    .help-section-grid .help-section + .help-section {
+        margin-top: 0;
+    }
+}
+
+.help-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--slate-900);
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.9rem;
+    border-bottom: 1px solid var(--slate-100);
+}
+
+.help-step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background-color: var(--brand-500);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.help-field-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.help-field-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--slate-800);
+}
+
+.help-field-desc {
+    font-size: 0.82rem;
+    color: var(--slate-500);
+    line-height: 1.6;
+    margin-top: 0.15rem;
+}
+
+.help-example {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--slate-400);
+    font-style: italic;
+}
+
+.help-contact {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--slate-100);
+}
+
+.help-contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+}
+
+.help-contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--slate-200);
+    color: var(--slate-600);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.help-contact-link:hover {
+    background-color: #fff7ed;
+    border-color: var(--brand-500);
+    color: var(--brand-600);
+}
+
+.help-contact-link svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* ช่องกรอกรหัส OTP ยืนยันอีเมล: ใช้คอมโพเนนต์ .otp-input-group/.otp-digit ชุดเดียวกับโมดัล "ลืมรหัสผ่าน" (ดู modal.css + otp-input.js)
+   แต่ตัวนั้นออกแบบมาให้อยู่กลางโมดัลเดี่ยว ๆ (justify-content:center) ในฟอร์มนี้ต้องชิดซ้ายเหมือนช่องอื่น ๆ และวางคู่กับปุ่ม "ขอรับ OTP" ข้าง ๆ กัน */
+.reg-otp-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.reg-otp-row .otp-input-group {
+    justify-content: flex-start;
+    margin: 0;
+}
+
+/* ==========================================
+   Pagination (ปุ่มเลขหน้า "ก่อนหน้า 1 2 3 ถัดไป") - คอมโพเนนต์กลางใช้ร่วมทุกหน้าที่มีลิสต์ยาวเกิน 1 หน้า
+   ต้นแบบมาจาก .pagination-bar เดิมใน public/css/pages/home.css (หน้าแรกใช้กับลิสต์ข่าวสาธารณะ) ย้ายมานิยามที่ form.css แทน
+   เพราะหน้าพี่ค่าย (staff/*) ไม่ได้โหลด home.css - ปรับตรงนี้ที่เดียวมีผลทุกหน้าที่ใช้ (ดู JS ของแต่ละหน้าสำหรับ state การแบ่งหน้า)
+   ========================================== */
+.pagination-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 2rem auto 0;
+}
+
+.pagination-pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.pagination-button,
+.pagination-page {
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: white;
+    color: var(--slate-700);
+    border-radius: 9999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.pagination-button {
+    padding: 0.65rem 0.95rem;
+}
+
+/* ปุ่มเลขหน้า: วงกลมขนาดเท่ากันทุกปุ่มไม่ว่าจะเลขกี่หลัก (ไม่ใช้ padding ตามความยาวข้อความแบบปุ่ม ก่อนหน้า/ถัดไป) */
+.pagination-page {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.pagination-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pagination-page:hover,
+.pagination-button:hover:not(:disabled) {
+    border-color: var(--brand-500);
+    color: var(--brand-600);
+    transform: translateY(-1px);
+}
+
+.pagination-page.active {
+    background: var(--brand-600);
+    border-color: var(--brand-600);
+    color: white;
+}

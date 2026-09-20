@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+
+<head>
+    <script src="/js/config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ค่ายวิชาการพี่ติวน้อง">
+    <meta name="robots" content="noindex,nofollow">
+    <title>PTN Camp | Staff | เขียนประชาสัมพันธ์</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon.png">
+    <link rel="stylesheet" href="../scr/output.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/utilities.css">
+    <link rel="stylesheet" href="../css/base/loader.css">
+    <link rel="stylesheet" href="../css/layout/header.css?v=20260919-1">
+    <link rel="stylesheet" href="../css/layout/footer.css?v=20260911-1">
+    <link rel="stylesheet" href="../css/layout/modal.css?v=20260920-2">
+    <link rel="stylesheet" href="../css/layout/scroll-top.css">
+    <link rel="stylesheet" href="../css/pages/form.css?v=20260914-45">
+    <link rel="stylesheet" href="../css/pages/staff-news.css?v=20260920-2">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
+    <script src="../js/layout/loader.js?v=20260920-1"></script>
+    <script src="../js/layout/auth.js?v=20260919-4"></script>
+    <script src="../js/layout/nav.js?v=20260820-2"></script>
+    <script src="../js/pages/staff-news.js?v=20260920-3"></script>
+</head>
+
+<body>
+    <header>
+        <div class="max-w-7xl header-inner">
+            <div class="brand-link" onclick="window.location.href='/'">
+                <div class="brand-icon-wrap">
+                    <img class="brand-icon" src="../assets/images/logo/logo1.png" alt="PTN logo">
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">PEETIWNONG</span>
+                    <span class="brand-subtitle">Academics Camp</span>
+                </div>
+            </div>
+
+            <!-- เมนูนำทาง (Desktop) -->
+            <nav class="desktop-nav">
+                <button onclick="switchTab('write')" class="nav-btn active-nav-btn" id="nav-write">เขียนประชาสัมพันธ์</button>
+                <button onclick="switchTab('check')" class="nav-btn" id="nav-check">ตรวจสอบสถานะ</button>
+            </nav>
+
+            <!-- ปุ่มสมัครเรียน / ข้อมูลผู้ใช้ (Desktop) -->
+            <div class="desktop-actions">
+                <!-- สถานะยังไม่ได้เข้าสู่ระบบ -->
+                <div id="auth-logged-out" class="auth-actions">
+                    <button onclick="openAuthModal()" class="auth-link">เข้าสู่ระบบ</button>
+                    <button onclick="window.location.href='../html/form'"
+                        class="auth-btn auth-btn-primary">ลงทะเบียน</button>
+                </div>
+                <!-- สถานะเข้าสู่ระบบแล้ว -->
+                <div id="auth-logged-in" class="auth-user hidden">
+                    <div class="user-dropdown">
+                        <button type="button" class="user-chip user-chip-trigger" onclick="toggleUserMenu()">
+                            <div class="user-avatar" id="user-avatar">U</div>
+                            <span class="user-name" id="user-display-name">ผู้ใช้งานจำลอง</span>
+                            <svg class="user-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="user-dropdown-menu" class="user-dropdown-menu user-profile-menu hidden">
+                            <div class="user-profile-menu-header">
+                                <div class="user-profile-menu-avatar" id="user-menu-avatar">U</div>
+                                <div class="user-profile-menu-name" id="user-menu-username">ผู้ใช้งานจำลอง</div>
+                                <div class="user-profile-menu-role" id="user-menu-role"></div>
+                            </div>
+
+                            <div class="user-dropdown-divider"></div>
+
+                            <button type="button" class="user-dropdown-item" onclick="window.location.href='/'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                                </svg>
+                                หน้าแรก
+                            </button>
+                            <button type="button" class="user-dropdown-item" onclick="window.location.href='/staff/profile'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                </svg>
+                                โปรไฟล์
+                            </button>
+                            <button type="button" class="user-dropdown-item hidden" id="user-menu-admin-link" onclick="window.location.href='/admin/'">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                </svg>
+                                Admin
+                            </button>
+                            <div class="nav-tasks-wrap hidden" id="user-menu-tasks-wrap">
+                                <button type="button" class="nav-dropdown-item" data-department-name="ฝ่ายวิชาการ" onclick="window.location.href='/staff/academic'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                                    </svg>
+                                    งานวิชาการ
+                                </button>
+                                <button type="button" class="nav-dropdown-item" data-department-name="ฝ่ายกิจกรรมและสันทนาการ" onclick="window.location.href='/staff/activities'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                                    </svg>
+                                    งานกิจกรรมและสันทนาการ
+                                </button>
+                            </div>
+                            <button type="button" class="user-dropdown-item current-page-btn" aria-current="page" onclick="switchTab('write')">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                                </svg>
+                                เขียนประชาสัมพันธ์
+                            </button>
+                            <div class="user-dropdown-divider"></div>
+
+                            <button type="button" class="user-dropdown-item danger" onclick="logout()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                ออกจากระบบ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ปุ่มโปรไฟล์ + แฮมเบอร์เกอร์ (มือถือ) -->
+            <div class="mobile-header-actions">
+                <button type="button" id="m-header-avatar-btn" class="user-chip m-header-user-chip md:hidden hidden" onclick="toggleMobileMenu()" aria-label="เมนูผู้ใช้งาน">
+                    <div class="user-avatar" id="m-header-avatar">U</div>
+                    <span class="user-name" id="m-header-username"></span>
+                </button>
+                <div class="mobile-toggle md:hidden" id="m-hamburger-wrap">
+                    <div class="burger" onclick="toggleMobileMenu()" role="button" aria-label="เปิด/ปิดเมนู">
+                        <input type="checkbox" id="burger-toggle" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- เมนูมือถือ (Mobile Menu Overlay) -->
+        <div id="mobile-menu" class="mobile-menu hidden">
+            <div class="space-y-1">
+                <button onclick="switchTab('write')" class="mobile-nav-btn active-nav-btn" id="m-nav-write">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                    </svg>
+                    เขียนประชาสัมพันธ์
+                </button>
+                <button onclick="switchTab('check')" class="mobile-nav-btn" id="m-nav-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
+                    </svg>
+                    ตรวจสอบสถานะ
+                </button>
+            </div>
+
+            <hr id="m-menu-account-divider" class="hidden">
+
+            <div class="space-y-1">
+                <div class="mobile-menu-account-card hidden" id="m-menu-account-card">
+                    <div class="mobile-menu-account-avatar" id="m-menu-account-avatar">U</div>
+                    <div class="mobile-menu-account-text">
+                        <span class="mobile-menu-account-name" id="m-menu-account-name"></span>
+                        <span class="mobile-menu-account-role" id="m-menu-account-role"></span>
+                    </div>
+                </div>
+                <button type="button" onclick="window.location.href='/'" class="mobile-nav-btn" id="m-menu-home-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75" />
+                    </svg>
+                    หน้าแรก
+                </button>
+                <button type="button" onclick="window.location.href='/staff/profile'" class="mobile-nav-btn" id="m-menu-profile-page-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    โปรไฟล์
+                </button>
+                <button type="button" onclick="window.location.href='/admin/'" class="mobile-nav-btn hidden" id="m-menu-admin-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                    </svg>
+                    Admin
+                </button>
+                <div class="space-y-1 nav-tasks-wrap hidden" id="m-nav-tasks-wrap">
+                    <button type="button" class="mobile-nav-btn" data-department-name="ฝ่ายวิชาการ" onclick="window.location.href='/staff/academic'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                        </svg>
+                        งานวิชาการ
+                    </button>
+                    <button type="button" class="mobile-nav-btn" data-department-name="ฝ่ายกิจกรรมและสันทนาการ" onclick="window.location.href='/staff/activities'">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                        </svg>
+                        งานกิจกรรมและสันทนาการ
+                    </button>
+                </div>
+                <button type="button" onclick="switchTab('write')" class="mobile-nav-btn current-page-btn" aria-current="page" id="m-menu-news-write-link">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                    </svg>
+                    เขียนประชาสัมพันธ์
+                </button>
+                <button onclick="openAuthModal()" class="mobile-nav-btn mobile-nav-center-btn border-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    เข้าสู่ระบบ
+                </button>
+                <button onclick="window.location.href='../html/form'" class="mobile-nav-btn mobile-nav-cta-btn bg-gradient-to-r">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+                    </svg>
+                    ลงทะเบียน
+                </button>
+                        </div>
+            <div id="m-auth-logged-in" class="hidden space-y-2">
+                <button onclick="logout()" class="mobile-nav-btn mobile-nav-logout-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    ออกจากระบบ
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- ================= PAGE: เขียนประชาสัมพันธ์ ================= -->
+        <div id="page-write" class="tab-content active">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">เขียนประชาสัมพันธ์</h1>
+                    <p class="section-subtitle">พี่ค่ายทุกคนเขียนประชาสัมพันธ์ส่งเข้ามาได้ ต้องรอ Admin ตรวจสอบและอนุมัติก่อนถึงจะเผยแพร่ขึ้นหน้าเว็บจริง</p>
+                </div>
+
+                <div class="news-write-card">
+                    <p id="news-write-mode-label" class="news-write-mode-label"></p>
+                    <form id="news-write-form">
+                        <div class="form-group mb-6">
+                            <label for="news-write-tag" class="form-label">ประเภทประชาสัมพันธ์</label>
+                            <select id="news-write-tag" class="form-input">
+                                <option value="ANNOUNCE">ประกาศค่าย</option>
+                                <option value="ACTIVITY">ประชาสัมพันธ์การรับสมัคร</option>
+                                <option value="SCHOLAR">กิจกรรม</option>
+                                <option value="OTHER" selected>อื่น ๆ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <label for="news-write-title" class="form-label">หัวข้อประชาสัมพันธ์ <span class="required-mark">*</span></label>
+                            <input type="text" id="news-write-title" class="form-input" placeholder="เช่น เปิดรับสมัครค่ายวิชาการ" required>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <label for="news-write-summary" class="form-label">สรุปย่อ <span class="required-mark">*</span></label>
+                            <textarea id="news-write-summary" class="form-input" rows="2" required></textarea>
+                        </div>
+
+                        <div class="form-group mb-6">
+                            <label class="form-label">รูปประกอบประชาสัมพันธ์</label>
+                            <div class="news-image-upload-row">
+                                <div id="news-write-image-preview-wrap" class="news-image-preview-wrap hidden">
+                                    <img id="news-write-image-preview" src="" alt="รูปประกอบประชาสัมพันธ์" class="news-image-preview">
+                                    <button type="button" class="news-image-remove-btn" onclick="removeNewsWriteImage()" aria-label="ลบรูป">&times;</button>
+                                </div>
+                                <label class="btn-outline news-image-upload-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="news-image-upload-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V3m0 0l-4.5 4.5M12 3l4.5 4.5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" /></svg>
+                                    <span id="news-write-image-upload-label">อัปโหลดรูป</span>
+                                    <input type="file" id="news-write-image-input" accept="image/*" class="hidden" onchange="handleNewsWriteImageUpload(event)">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="news-write-detail" class="form-label">เนื้อหาประชาสัมพันธ์</label>
+                            <div class="admin-richtext-editor">
+                                <div class="admin-richtext-toolbar">
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                        </svg>
+                                    </button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="admin-textarea admin-richtext" id="news-write-detail" contenteditable="true" data-placeholder="เนื้อหาประชาสัมพันธ์แบบเต็ม (ไม่บังคับ ถ้าเนื้อหาอยู่ในรูปประกอบอยู่แล้ว)"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-outline hidden" id="news-write-cancel-edit-btn" onclick="resetNewsWriteForm()">ยกเลิกการแก้ไข</button>
+                            <button type="submit" class="btn-primary" id="news-write-submit-btn">ส่งประชาสัมพันธ์</button>
+                        </div>
+                        <div id="news-write-form-error" class="admin-field-hint hidden" style="color: var(--rose-600); margin-top: 0.75rem;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================= PAGE: ตรวจสอบสถานะ ================= -->
+        <div id="page-check" class="tab-content">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">ตรวจสอบสถานะ</h1>
+                    <p class="section-subtitle">ประชาสัมพันธ์ทั้งหมดที่คุณเคยส่งเข้ามา พร้อมสถานะการอนุมัติและสถานะการเผยแพร่</p>
+                </div>
+
+                <div class="news-check-list" id="news-check-list" style="max-width: 760px; margin: 0 auto;"></div>
+                <p class="news-empty hidden" id="news-check-empty">ยังไม่มีประชาสัมพันธ์ที่ส่งเข้ามา</p>
+                <div class="pagination-bar hidden" id="news-check-pagination-bar" aria-label="Pagination" style="max-width: 760px; margin-left: auto; margin-right: auto;">
+                    <button type="button" class="pagination-button pagination-prev" id="news-check-pagination-prev">ก่อนหน้า</button>
+                    <div class="pagination-pages" id="news-check-pagination-pages"></div>
+                    <button type="button" class="pagination-button pagination-next" id="news-check-pagination-next">ถัดไป</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ส่วนท้าย (Footer) -->
+    <footer class="main-footer">
+        <div class="max-w-7xl">
+            <div class="footer-grid">
+                <!-- ข้อมูลค่าย -->
+                <div class="footer-info">
+                    <div class="footer-brand">
+                        <div>
+                            <img class="footer-logo-icon" src="../assets/images/logo/logo2.png" alt="logo">
+                        </div>
+                        <span class="footer-title">ค่ายวิชาการพี่ติวน้อง</span>
+                    </div>
+                    <p class="footer-desc">
+                        โครงการคค่ายวิชาการพี่ติวน้องก่อตั้งขึ้นเมื่อปีพุทธศักราช 2540 โดยกลุ่มศิษเก่า <br>
+                        โรงเรียนพิมายดำรงวิทยาคม นำโดย รศ.ดร.อาคม แก้วระวัง ศิษเก่ารุ่นที่ 3
+                    </p>
+                </div>
+
+                <!-- แถบด่วนเพิ่มเติม -->
+                <div class="footer-links">
+                    <h4>การนำทางด่วน</h4>
+                    <div class="footer-link-grid">
+                        <span onclick="window.location.href='/'" class="footer-link">หน้าแรก</span>
+                        <span onclick="switchTab('write')" class="footer-link">เขียนประชาสัมพันธ์</span>
+                        <span onclick="switchTab('check')" class="footer-link">ตรวจสอบสถานะ</span>
+                    </div>
+                </div>
+
+                <!-- ข้อมูลติดต่อ -->
+                <div class="footer-contact">
+                    <h4>ช่องทางการติดต่อ</h4>
+                    <div class="contact-list">
+                        <p>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            044-482794
+                        </p>
+                        <a href="mailto:peetiwnong.web@gmail.com">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            peetiwnong.web@gmail.com
+                        </a>
+                        <a href="https://maps.app.goo.gl/yxLxACkMJEmEgsiZ6" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            โรงเรียนพิมายดำรงวิทยาคม
+                        </a>
+                        <a href="https://www.facebook.com/share/g/1FvUquJ2T9/" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13.5 20.5V13H16l.4-2.8H13.5V7.3c0-.9.2-1.5 1.6-1.5H16V4.2c-.3-.1-1.2-.2-2.3-.2-2.2 0-3.6 1.2-3.6 3.9V10.2H8V13h2.6v7.5h2.9Z"/>
+                            </svg>
+                            ค่าย "พี่ติวน้อง"
+                        </a>
+                        <a href="https://www.instagram.com/pee_tiwnong?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="4" y="4" width="16" height="16" rx="4"/>
+                                <circle cx="12" cy="12" r="3.6"/>
+                                <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
+                            </svg>
+                            pee_tiwnong
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- เครดิตลิขสิทธิ์ -->
+            <div class="footer-bottom">
+                <p style="margin: 0;">&copy; 2026 PEETIWNONG Academics Camp. สงวนลิขสิทธิ์ทั้งหมด.
+                    พัฒนาเว็บไซต์ต้นแบบเชิงวิชาการ · V 1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= MODAL: รายละเอียดข่าว ================= -->
+    <div id="news-detail-modal" class="modal hidden" aria-labelledby="news-detail-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeNewsDetailModal()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box">
+                <div class="modal-close-btn">
+                    <button onclick="closeNewsDetailModal()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide" id="news-detail-modal-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ดูรูปเต็มจอ (คลิกรูปประกอบข่าวเพื่อดูรูปขนาดเต็ม ไม่ถูกครอบตัด) ================= -->
+    <div id="image-lightbox-modal" class="modal hidden image-lightbox-modal" role="dialog" aria-modal="true">
+        <div onclick="closeImageLightbox()" class="modal-backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox-close-btn">
+            <button type="button" onclick="closeImageLightbox()" aria-label="ปิด">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
+    </div>
+
+    <!-- ================= MODAL: กล่องถามลิงก์ (แทน prompt() ของเบราว์เซอร์ ใช้ตอนกดปุ่ม "แทรกลิงก์" ใน rich text editor) ================= -->
+    <div id="link-prompt-modal" class="modal hidden" aria-labelledby="link-prompt-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="linkPromptResolve(null)" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box confirm-box">
+                <div class="modal-content">
+                    <h2 id="link-prompt-title" class="confirm-title">แทรกลิงก์</h2>
+                    <p class="confirm-message">ใส่ลิงก์ที่ต้องการแทรก</p>
+                    <input type="url" id="link-prompt-input" class="form-input" placeholder="https://..." style="margin-bottom: 1.25rem;">
+                    <div class="confirm-actions">
+                        <button type="button" class="confirm-cancel-btn" onclick="linkPromptResolve(null)">ยกเลิก</button>
+                        <button type="button" class="confirm-ok-btn" onclick="linkPromptResolve(document.getElementById('link-prompt-input').value)">ตกลง</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: กล่องยืนยัน (แทน confirm() ของเบราว์เซอร์) ================= -->
+    <div id="confirm-modal" class="modal hidden" aria-labelledby="confirm-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="confirmResolve(false)" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box confirm-box">
+                <div class="modal-content">
+                    <div class="confirm-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                    </div>
+                    <h2 id="confirm-title" class="confirm-title">ยืนยันการดำเนินการ</h2>
+                    <p id="confirm-message" class="confirm-message"></p>
+                    <div class="confirm-actions">
+                        <button type="button" class="confirm-cancel-btn" onclick="confirmResolve(false)">ยกเลิก</button>
+                        <button type="button" class="confirm-ok-btn" id="confirm-ok-btn" onclick="confirmResolve(true)">ยืนยัน</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TOAST ลอย: ผลลัพธ์การบันทึก ================= -->
+    <div id="news-toast" class="welcome-toast"><span class="welcome-toast-message"></span><div class="welcome-toast-bar"></div></div>
+
+    <!-- ================= BUTTON: SCROLL TO TOP ================= -->
+    <button id="scroll-to-top-btn" class="scroll-to-top" onclick="scrollToTop()" title="เลื่อนขึ้นบนสุด">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+    </button>
+
+</body>
+
+</html>

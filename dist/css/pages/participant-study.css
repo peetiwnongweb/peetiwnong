@@ -1,0 +1,781 @@
+/* ==========================================
+   หน้า "การเรียน" ของน้องค่าย: คะแนน / ตารางเรียน
+   ========================================== */
+
+/* แท็บ "ระบบสอบอธิบาย" - สแกน QR ด้วยกล้องเข้าคิวสอบ (ดู startExamScanCamera ใน participant-study.js)
+   การ์ดใช้โครง .exam-checkin-state/.exam-checkin-icon/.exam-checkin-spinner ร่วมกับหน้า exam-checkin.html (ลิงก์ css ไฟล์นั้นไว้ใน study.html แล้ว) เพิ่มแค่ส่วนกล้อง/ปุ่มเฉพาะของแท็บนี้ */
+.exam-scan-card {
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 2.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.exam-scan-idle-icon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--brand-500);
+  margin-bottom: 0.5rem;
+}
+
+.exam-scan-error-text {
+  color: #be123c;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.exam-scan-btn {
+  margin-top: 1.25rem;
+  padding: 0.65rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+/* การ์ด "เข้าร่วมแล้ว" มี 2 ปุ่มเรียงกัน ("สแกนอีกครั้ง"/"ออกจากการสอบ") - ห่อด้วย flex row กึ่งกลาง เว้นระยะบนครั้งเดียวที่ตัวห่อ แทนที่จะให้แต่ละปุ่มเว้นเองแล้วซ้อนกันเป็นสองเท่า */
+.exam-scan-success-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.exam-scan-success-actions .exam-scan-btn {
+  margin-top: 0;
+}
+
+.exam-scan-btn--primary {
+  background-color: var(--brand-500);
+  color: white;
+}
+
+.exam-scan-btn--muted {
+  background-color: white;
+  color: var(--brand-600);
+  font-weight: 500;
+  border: 1.5px solid var(--brand-500);
+}
+
+.exam-scan-btn--muted:hover {
+  background-color: var(--brand-50);
+}
+
+/* วิดีโอกล้องเป็นสี่เหลี่ยมจัตุรัส ครอบด้วยกรอบเล็งสี่มุมแบบสแกนเนอร์ทั่วไป */
+.exam-scan-video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--slate-900);
+}
+
+.exam-scan-video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.exam-scan-frame {
+  position: absolute;
+  inset: 12%;
+  border: 3px solid var(--brand-500);
+  border-radius: 1rem;
+  box-shadow: 0 0 0 999px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+}
+
+/* ประวัติการสอบอธิบาย - อยู่ใต้การ์ดสแกน กว้างเท่ากัน (26rem) ให้ดูเป็นชุดเดียวกัน */
+.exam-history-section {
+  width: 100%;
+  max-width: 26rem;
+  margin: 1.5rem auto 0;
+}
+
+.exam-history-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+.exam-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.exam-history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.75rem;
+}
+
+.exam-history-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.exam-history-subject {
+  display: block;
+  font-weight: 600;
+  color: var(--slate-800);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exam-history-meta {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--slate-400);
+}
+
+.exam-history-status {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  color: var(--slate-500);
+}
+
+.exam-history-status--passed {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.exam-history-status--failed {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+.exam-history-empty {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--slate-400);
+}
+
+/* ตารางเรียนแบบกริดอาจกว้างกว่ากรอบ max-w-7xl ปกติ (1280px) ถ้ามีหลายชั่วโมง/หลายวัน ให้ขยายเต็มพื้นที่หน้า */
+#page-timetable .max-w-7xl {
+  max-width: 100%;
+}
+
+.my-score-grade-wrap {
+  margin-top: 0.75rem;
+}
+
+/* สีป้ายกำหนดด้วย inline style จาก JS (ดู loadMyScores ใน participant-study.js) เพราะเลือกสีได้อิสระผ่านวงล้อสี ไม่ใช่ชุดสีตายตัวอีกต่อไป */
+.grade-badge {
+  display: inline-block;
+  padding: 0.35rem 1.1rem;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+/* ประวัติคะแนนแยกตามวิชา */
+.subject-score-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* แต่ละแถวเดิมมีแค่ชื่อวิชา+คะแนน 2 ชิ้นวางแบบ space-between - พอเพิ่มประวัติสอบอธิบายเป็นชิ้นที่ 3 ต้องห่อชื่อ+คะแนนไว้ในแถวย่อยของตัวเอง แล้วให้แถวนอกเรียงเป็นคอลัมน์แทน ไม่งั้น layout เดิมจะพังเพราะพยายามกระจาย 3 ชิ้นแทน 2 */
+.subject-score-breakdown-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+}
+
+/* ไม่ wrap อีกต่อไป (เดิม flex-wrap:wrap ทำให้ชื่อวิชายาวดันคะแนนตกไปแถวใหม่ ขณะที่ชื่อสั้นคะแนนอยู่แถวเดียวกัน - แถวถัดกันเลยดูสูงไม่เท่ากันไม่เป็นระเบียบ)
+   บังคับอยู่แถวเดียวกันเสมอ แล้วให้ชื่อวิชาเป็นฝ่ายตัดจบด้วย ... แทนถ้ายาวเกิน (ดู .subject-score-breakdown-name) คะแนนฝั่งขวาจึงอยู่ตำแหน่งเดียวกันทุกการ์ด */
+.subject-score-breakdown-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.subject-score-breakdown-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--slate-800);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subject-score-breakdown-scores {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.5rem;
+}
+
+.subject-score-breakdown-item {
+  text-align: center;
+}
+
+.subject-score-breakdown-item-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--slate-400);
+  margin-bottom: 0.15rem;
+}
+
+.subject-score-breakdown-item-value {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+/* คะแนนอธิบาย/คะแนนสอบ คนละสี แยกให้เห็นชัดว่าเป็นคะแนนคนละประเภทกัน (อธิบาย = ส้มเหมือนจุดเด่นอื่น ๆ ของเว็บ, สอบ = ฟ้า เหมือนชิป % ในตารางคะแนนฝั่งพี่ค่าย) */
+.subject-score-breakdown-item--explanation .subject-score-breakdown-item-value {
+  color: var(--brand-600);
+}
+
+.subject-score-breakdown-item--achievement .subject-score-breakdown-item-value {
+  color: #2563eb;
+}
+
+/* ส่วน "/เต็ม" ท้ายคะแนน (เช่น /100) สีเทาจาง ๆ แยกจากตัวเลขคะแนนจริงที่เป็นสีเด่น ไม่ให้แย่งความสนใจ */
+.subject-score-breakdown-item-max {
+  color: var(--slate-400);
+  font-weight: 700;
+}
+
+/* ประวัติสอบอธิบายแยกตามวิชา (ครั้งที่เท่าไหร่ ผ่าน/ไม่ผ่าน) แสดงต่อท้ายแถวคะแนนวิชานั้น ๆ เฉพาะวิชาที่เคยสอบอธิบายมาแล้ว */
+.subject-score-exam-history {
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--slate-100);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.subject-score-exam-history-label {
+  font-size: 0.78rem;
+  color: var(--slate-400);
+  flex-shrink: 0;
+}
+
+.subject-score-exam-history-attempts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.subject-score-exam-attempt-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  color: var(--slate-500);
+  white-space: nowrap;
+}
+
+.subject-score-exam-attempt-badge--passed {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.subject-score-exam-attempt-badge--failed {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+/* ตารางเรียนแบบไทม์ไลน์: แกนตั้ง = วันที่จริง (เรียงเป็นแถว), แกนนอน = เวลาจริงแบบต่อเนื่อง (ตำแหน่ง/ความกว้างคาบคำนวณเป็น % ของเวลา
+   ไม่ใช่ colspan ตามคอลัมน์ชั่วโมง จึงวางตำแหน่งตามนาทีจริงได้ (ครึ่งชั่วโมง/15 นาทีก็ได้) และคาบที่เวลาซ้อนกันจะถูกจัดคนละแถวย่อย (lane) ไม่ทับกัน */
+/* ตั้งแต่ .timetable-grid-wrap ถึง .timetable-day-track: ยกมาจาก staff-academic.css ทั้งชุดให้เหมือนกันเป๊ะ ๆ (ต่างจาก .timetable-entry ลงไปที่อยู่ต่อท้ายไฟล์นี้) */
+.timetable-grid-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--slate-300);
+  border-radius: 0.75rem;
+}
+
+.timetable-timeline {
+  display: block;
+  width: 100%;
+}
+
+.timetable-timeline-header,
+.timetable-day-row {
+  display: flex;
+}
+
+/* สีพื้นหลังต้องใส่ที่ตัว ruler/track เอง (ไม่ใช่ที่แถว .timetable-timeline-header/.timetable-day-row) เพราะกล่องของแถวจะกว้างเท่าที่มองเห็นในกรอบเท่านั้น
+   ไม่ได้ยืดตามลูกที่ overflow ออกไป (ruler/track ใช้ flex:1 + min-width ล้นแถวได้เวลาจอแคบกว่าความกว้างขั้นต่ำ) ถ้าใส่สีที่ตัวแถวจะเลื่อนไปสุดแล้วเจอช่องว่างไม่มีสีตรงส่วนที่ล้น */
+.timetable-timeline-header .timetable-ruler-hour:last-child {
+  border-top-right-radius: 0.75rem;
+}
+
+/* แถบสีสลับให้แต่ละแถววันที่แยกจากกันชัดเจนขึ้น อ่านง่ายขึ้นเวลามีหลายวัน */
+.timetable-day-row:nth-child(even) .timetable-day-track {
+  background-color: var(--slate-50);
+}
+
+/* คอลัมน์วันที่ (พื้นเข้ม) ก็สลับเข้ม-อ่อนตามแถวเดียวกัน - แถวแรกเข้ม (สีพื้นฐาน) แถวถัดไปอ่อนลง สลับกันไป */
+.timetable-day-row:nth-child(odd) .timetable-grid-date-col {
+  background-color: var(--slate-500);
+}
+
+.timetable-grid-date-col {
+  position: sticky;
+  left: 0;
+  flex: 0 0 7.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--slate-700);
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0.5rem;
+  z-index: 1;
+  border-bottom: 1px solid var(--slate-300);
+}
+
+.timetable-timeline-header .timetable-grid-date-col {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  /* กันมุมสี่เหลี่ยมของพื้นหลังสีเข้มโผล่พ้นมุมโค้งของกรอบ .timetable-grid-wrap (border-radius: 0.75rem) */
+  border-top-left-radius: 0.75rem;
+}
+
+.timetable-ruler {
+  display: flex;
+  /* จอกว้างพอ ยืดแบ่งเท่า ๆ กันเต็มพื้นที่ที่เหลือ (flex:1) แต่ไม่หดต่ำกว่าความกว้างขั้นต่ำที่ JS กำหนด (min-width) - จอเล็กล้นแล้วเลื่อนแนวนอนแทน */
+  flex: 1 1 auto;
+  /* เส้นขอบล่างต้องใส่ตรงนี้ (ตัวที่ overflow ออกไปจริง) ไม่ใช่ที่ .timetable-timeline-header เหมือนพื้นหลัง กันเส้นขาดตอนเลื่อนไปสุด */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.timetable-ruler-hour {
+  flex: 1;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--slate-700);
+  padding: 0.75rem 0.25rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+.timetable-day-track {
+  position: relative;
+  flex: 1 1 auto;
+  /* เว้นระยะขอบบน-ล่างให้การ์ดคาบเรียนไม่ชิดเส้นแบ่งแถวจนเกินไป เพิ่มพื้นที่หายใจให้ตารางดูโปร่งสวยขึ้น */
+  padding: 0.5rem 0;
+  background-clip: padding-box;
+  border-bottom: 1px solid var(--slate-300);
+}
+
+/* .timetable-entry ลงมาถึง .timetable-cell-instructor: ยกมาจาก staff-academic.css ทั้งชุดให้เหมือนกันเป๊ะ ๆ (เดิมเป็นเวอร์ชันย่อของตัวเอง ขนาด/สีไม่ตรงกับฝั่งพี่ค่าย) */
+.timetable-entry {
+  position: absolute;
+  top: 0;
+  height: 5.2rem;
+  /* ความกว้างการ์ดต้องตรงกับสัดส่วนเวลาจริงเป๊ะ (ไม่ยืดตามความยาวชื่อ) เหลือ min-width แค่พอกันการ์ดพังตอนคาบสั้นมาก ๆ ชื่อยาวเกินให้ตัดจบด้วย ... แทน */
+  min-width: 2.5rem;
+  box-sizing: border-box;
+  border-radius: 0;
+  padding: 0.45rem 0.6rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.timetable-entry:hover {
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+.timetable-entry--subject {
+  background-color: var(--brand-50);
+  /* หมายเหตุ: var(--brand-200) ไม่เคยถูกกำหนดไว้จริงในไฟล์ variables.css (บั๊กเดิมของหน้านี้ ทำให้การ์ดไม่มีกรอบเลย) ใช้ค่าสีตรง ๆ แทนเหมือนฝั่งพี่ค่าย */
+  border: 1.5px solid #bcd0f0;
+}
+
+.timetable-entry--note {
+  background-color: var(--slate-100);
+  border: 1.5px solid var(--slate-300);
+}
+
+.timetable-cell-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--slate-800);
+  /* การ์ดกว้างตามสัดส่วนเวลาเป๊ะ ชื่อยาวเกินพื้นที่ตัดจบด้วย ... แทนขยายการ์ด */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ตัวเลขเวลาเป็นจุดเด่นของการ์ด ใหญ่และหนาให้เห็นชัดตั้งแต่มองผ่าน ๆ */
+.timetable-cell-time {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1e3a8a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timetable-cell-note,
+.timetable-cell-instructor {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timetable-cell-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.7rem;
+  color: var(--slate-500);
+  font-style: italic;
+}
+
+.timetable-cell-instructor {
+  margin: 0.3rem 0 0;
+  font-size: 0.72rem;
+  color: var(--slate-600);
+  font-weight: 600;
+}
+
+/* กลุ่ม "เอกสารทั่วไป" กับ "เอกสารประกอบการเรียน" แยกกันคนละบล็อก เว้นระยะห่างระหว่างกลุ่มชัดเจน */
+.doc-group + .doc-group {
+  margin-top: 2.5rem;
+}
+
+.doc-group-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+/* ==========================================
+   การ์ดเอกสาร (แท็บ เอกสาร) - เดิมเป็น <a> ครอบทั้งใบสไตล์ inline ล้วน ไม่มีคลาสจริงเลย
+   ========================================== */
+.doc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  /* เว้นขวาเพิ่มกันชื่อเอกสารยาว ๆ ไหลไปทับปุ่มดาวน์โหลดวงกลมที่ลอยอยู่มุมขวาบน (ดู .doc-card-download-btn) */
+  padding: 1.1rem 3.1rem 1.1rem 1.1rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.85rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.doc-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--slate-300);
+  box-shadow: 0 14px 26px -14px rgba(15, 23, 42, 0.25);
+}
+
+.doc-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-bottom: 0.6rem;
+  flex-shrink: 0;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  color: white;
+  box-shadow: 0 6px 14px -6px rgba(216, 104, 29, 0.65);
+}
+
+.doc-card-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.doc-card-title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--slate-900);
+  font-size: 0.9rem;
+}
+
+.doc-card-desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  color: var(--slate-500);
+}
+
+/* ปุ่มดาวน์โหลดลอยมุมขวาบนของการ์ด (ไอคอนล้วน ไม่มีตัวหนังสือ) แยกจากเนื้อหาการ์ดด้านล่างชัดเจนว่ากดตรงนี้เพื่อดาวน์โหลด */
+.doc-card-download-btn {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--brand-500);
+  color: var(--brand-600);
+  background-color: white;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.doc-card-download-btn:hover {
+  background-color: var(--brand-600);
+  color: white;
+}
+
+.doc-card-download-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   ตารางเรียน: แถบเครื่องมือ (พิมพ์/Fullscreen) + popup เต็มจอ + โหมดพิมพ์
+   หน้านี้ไม่ได้โหลด form.css/staff-academic.css ที่นิยามคลาสพวกนี้ไว้ (เอกสาร .btn-outline, .schedule-fullscreen-*, .print-report-*)
+   จึงต้องนิยามซ้ำที่นี่ - พยายามคัดลอกค่าให้ตรงกับต้นฉบับฝั่งพี่ค่ายเป๊ะ ให้หน้าตาตรงกัน (ดู staff-academic.css/staff-academic.js)
+   ========================================== */
+.timetable-toolbar-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--slate-600);
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-outline:hover {
+  background-color: var(--slate-50);
+  border-color: var(--slate-300);
+  color: var(--slate-900);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.schedule-fullscreen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 999px;
+  border: 1.5px dashed #1e3a8a;
+  background-color: #fff;
+  color: #1e3a8a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+}
+
+.schedule-fullscreen-btn:hover {
+  background-color: #eef2fb;
+}
+
+.schedule-fullscreen-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+}
+
+/* ป็อปอัพตารางเรียนเต็มจอ - .modal-wrapper เดิมของเว็บใช้เทคนิค inline-block + vertical-align:middle ซึ่งออกแบบมาสำหรับกล่องเตี้ย ๆ พอกล่องสูงถึง 90vh เทคนิคนี้พังจนกล่องหลุดไปอยู่ใต้จอ เลย override เป็น flexbox แทนเฉพาะ modal นี้ */
+#timetable-fullscreen-modal .modal-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+#timetable-fullscreen-modal .modal-trick {
+  display: none;
+}
+
+.schedule-fullscreen-box {
+  width: 95vw;
+  max-width: 95vw;
+  height: 90vh;
+  max-height: 90vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-fullscreen-box .modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.25rem 1.5rem;
+}
+
+.schedule-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.schedule-fullscreen-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin: 0;
+}
+
+.schedule-fullscreen-close-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--slate-100);
+  color: var(--slate-600);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-fullscreen-close-btn:hover {
+  background-color: var(--slate-200);
+  color: var(--slate-800);
+}
+
+#timetable-fullscreen-grid-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* พิมพ์ / บันทึกเป็น PDF - ปุ่มพิมพ์เติมคลาส printing-schedule ที่ body ก่อน window.print() แล้วลบออกตอน afterprint (ดู timetable-print-btn ใน participant-study.js) */
+.schedule-print-header-hidden {
+  display: none;
+}
+
+@media print {
+  body.printing-schedule>header,
+  body.printing-schedule>footer,
+  body.printing-schedule>#scroll-to-top-btn,
+  body.printing-schedule>#timetable-toast {
+    display: none !important;
+  }
+
+  body.printing-schedule #page-timetable>.max-w-7xl>*:not(#timetable-grid-wrap):not(#timetable-print-header) {
+    display: none !important;
+  }
+
+  /* .page-padding เว้น padding-top ไว้ดันเนื้อหาลงพ้น header ลอย (fixed) ตอนอยู่บนจอ - พอ header ถูกซ่อนไปตอนพิมพ์ ที่เว้นไว้เลยกลายเป็นช่องว่างโล่ง ๆ เหนือโลโก้แทน ไม่ต้องใช้แล้ว */
+  body.printing-schedule #page-timetable>.max-w-7xl {
+    padding: 0 !important;
+  }
+
+  body.printing-schedule #timetable-print-header {
+    display: block !important;
+  }
+
+  body.printing-schedule #timetable-print-header,
+  body.printing-schedule #timetable-print-header * {
+    font-family: 'TH SarabunPSK', 'TH Sarabun New', 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+    color: #000;
+  }
+
+  .print-report-header {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .print-report-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin: 0 auto 0.5rem;
+    display: block;
+  }
+
+  .print-report-header h1 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .print-report-header p {
+    font-size: 16px;
+    margin: 0.2rem 0 0;
+  }
+
+  body.printing-schedule #timetable-grid-wrap {
+    zoom: var(--schedule-print-zoom, 1);
+  }
+
+  /* เบราว์เซอร์ปิดการพิมพ์สีพื้นหลัง/กราฟิกไว้เป็นค่าเริ่มต้น บังคับให้พิมพ์สีเสมอโดยไม่ต้องพึ่งผู้ใช้ไปติ๊กเอง */
+  body.printing-schedule #timetable-grid-wrap,
+  body.printing-schedule #timetable-grid-wrap * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* กันแถวถูกตัดครึ่งคาบขอบหน้ากระดาษ (เห็นเป็นแถวว่าง ๆ ค้างท้ายหน้า) ไม่ใช่การจัดใหม่ แค่เลื่อนจุดตัดหน้าให้ตกระหว่างแถวแทน */
+  body.printing-schedule .timetable-day-row {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: landscape;
+    margin: 1cm;
+  }
+}

@@ -1,0 +1,38 @@
+/* ==========================================
+   CHECK REGISTRATION STATUS Page (id="page-check-status")
+   ========================================== */
+.check-status-result {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+    line-height: 1.6;
+}
+
+.check-status-result.status-pending {
+    background-color: #fffbeb;
+    color: #b45309;
+    border-color: #fde68a;
+}
+
+.check-status-result.status-approved {
+    background-color: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+.check-status-result.status-rejected {
+    background-color: #fff1f2;
+    color: #e11d48;
+    border-color: #fecdd3;
+}
+
+.check-status-result.status-notfound,
+.check-status-result.status-error {
+    background-color: var(--slate-100);
+    color: var(--slate-600);
+    border-color: var(--slate-200);
+}

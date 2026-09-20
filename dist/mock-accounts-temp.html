@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <script src="/js/config.js"></script>
+<meta charset="UTF-8">
+<title>Mock Accounts (ทดสอบเว็บ)</title>
+<style>
+  body { font-family: 'Prompt', 'Sarabun', sans-serif; background: #0f172a; margin: 0; padding: 32px 16px; color: #e2e8f0; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .hint { color: #94a3b8; font-size: 13px; margin-bottom: 24px; }
+  .password-box { background: #1e293b; border: 1px solid #f97316; border-radius: 10px; padding: 14px 18px; margin-bottom: 28px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .password-box .label { font-size: 13px; color: #94a3b8; }
+  .password-box code { font-size: 18px; font-weight: 700; color: #fdba74; background: #0f172a; padding: 4px 10px; border-radius: 6px; }
+  .password-box .note { font-size: 12px; color: #64748b; }
+  .group-title { font-size: 14px; font-weight: 700; color: #fdba74; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid #334155; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr:last-child td { border-bottom: none; }
+  td.email { font-family: 'Consolas', 'Sarabun', monospace; color: #e2e8f0; }
+  td.role { color: #cbd5e1; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; }
+  .badge.staff { background: #1e3a8a; color: #bfdbfe; }
+  .badge.participant { background: #14532d; color: #bbf7d0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>บัญชีทดสอบสำหรับใช้ล็อกอิน (ชุด @ptn.invalid)</h1>
+  <p class="hint">สร้างไว้สำหรับทดสอบเว็บเท่านั้น ทุกบัญชีอนุมัติแล้ว (APPROVED) ล็อกอินได้ทันที</p>
+
+  <div class="password-box">
+    <span class="label">รหัสผ่าน (ใช้เหมือนกันทุกบัญชี):</span>
+    <code>MockTest2026!</code>
+    <span class="note">อีเมลทั้งหมดลงท้าย @ptn.invalid</span>
+  </div>
+
+  <div class="group-title">ผู้บริหารค่าย</div>
+  <table>
+    <thead><tr><th>อีเมล</th><th>ตำแหน่ง</th><th>Role</th></tr></thead>
+    <tbody id="tbl-leadership"></tbody>
+  </table>
+
+  <div class="group-title">ฝ่ายวิชาการ</div>
+  <table><tbody class="tbl-dept" data-dept="academic"></tbody></table>
+
+  <div class="group-title">ฝ่ายกิจกรรมและสันทนาการ</div>
+  <table><tbody class="tbl-dept" data-dept="activities"></tbody></table>
+
+  <div class="group-title">ฝ่ายปกครองบริการและอาคารสถานที่</div>
+  <table><tbody class="tbl-dept" data-dept="discipline"></tbody></table>
+
+  <div class="group-title">ฝ่ายเทคโนโลยีและประชาสัมพันธ์</div>
+  <table><tbody class="tbl-dept" data-dept="tech"></tbody></table>
+
+  <div class="group-title">ฝ่ายงานพยาบาล</div>
+  <table><tbody class="tbl-dept" data-dept="nurse"></tbody></table>
+
+  <div class="group-title">น้องค่าย</div>
+  <table>
+    <thead><tr><th>อีเมล</th><th>ชื่อ</th><th>Role</th></tr></thead>
+    <tbody id="tbl-participant"></tbody>
+  </table>
+</div>
+
+<script>
+const leadership = [
+  { email: 'president@ptn.invalid', title: 'ประธานค่าย' },
+  { email: 'vp@ptn.invalid', title: 'รองประธานค่าย' },
+  { email: 'secretary@ptn.invalid', title: 'เลขานุการ' },
+];
+
+const depts = {
+  academic: [
+    { email: 'head.academic@ptn.invalid', title: 'หัวหน้าฝ่ายวิชาการ' },
+    { email: 'staff.academic@ptn.invalid', title: 'ทีมงานฝ่ายวิชาการ' },
+    { email: 'staff2.academic@ptn.invalid', title: 'ทีมงานฝ่ายวิชาการ 2' },
+  ],
+  activities: [
+    { email: 'head.activities@ptn.invalid', title: 'หัวหน้าฝ่ายกิจกรรมและสันทนาการ' },
+    { email: 'staff.activities@ptn.invalid', title: 'ทีมงานฝ่ายกิจกรรมและสันทนาการ' },
+    { email: 'staff2.activities@ptn.invalid', title: 'ทีมงานฝ่ายกิจกรรมและสันทนาการ 2' },
+  ],
+  discipline: [
+    { email: 'head.discipline@ptn.invalid', title: 'หัวหน้าฝ่ายปกครองบริการและอาคารสถานที่' },
+    { email: 'staff.discipline@ptn.invalid', title: 'ทีมงานฝ่ายปกครองบริการและอาคารสถานที่' },
+    { email: 'staff2.discipline@ptn.invalid', title: 'ทีมงานฝ่ายปกครองบริการและอาคารสถานที่ 2' },
+  ],
+  tech: [
+    { email: 'head.tech@ptn.invalid', title: 'หัวหน้าฝ่ายเทคโนโลยีและประชาสัมพันธ์' },
+    { email: 'staff.tech@ptn.invalid', title: 'ทีมงานฝ่ายเทคโนโลยีและประชาสัมพันธ์' },
+    { email: 'staff2.tech@ptn.invalid', title: 'ทีมงานฝ่ายเทคโนโลยีและประชาสัมพันธ์ 2' },
+  ],
+  nurse: [
+    { email: 'head.nurse@ptn.invalid', title: 'หัวหน้าฝ่ายงานพยาบาล' },
+    { email: 'staff.nurse@ptn.invalid', title: 'ทีมงานฝ่ายงานพยาบาล' },
+    { email: 'staff2.nurse@ptn.invalid', title: 'ทีมงานฝ่ายงานพยาบาล 2' },
+  ],
+};
+
+const participants = [
+  { email: 'participant@ptn.invalid', title: 'น้องค่าย' },
+];
+
+function row(email, title, roleLabel, roleClass) {
+  return `<tr><td class="email">${email}</td><td class="role">${title}</td><td><span class="badge ${roleClass}">${roleLabel}</span></td></tr>`;
+}
+
+document.getElementById('tbl-leadership').innerHTML = leadership.map(p => row(p.email, p.title, 'STAFF', 'staff')).join('');
+document.getElementById('tbl-participant').innerHTML = participants.map(p => row(p.email, p.title, 'PARTICIPANT', 'participant')).join('');
+document.querySelectorAll('.tbl-dept').forEach((tbody) => {
+  const key = tbody.dataset.dept;
+  tbody.innerHTML = depts[key].map(p => row(p.email, p.title, 'STAFF', 'staff')).join('');
+});
+</script>
+</body>
+</html>

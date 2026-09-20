@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <script src="/js/config.js"></script>
+    <script>
+        (function () {
+            if (localStorage.getItem('webmanagerTheme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>ระบบจัดการเว็บ WebManager - PTN Camp</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon.png">
+
+    <link rel="stylesheet" href="../scr/output.css">
+    <link rel="stylesheet" href="../css/base/variables.css">
+    <link rel="stylesheet" href="../css/base/utilities.css">
+    <link rel="stylesheet" href="../css/layout/header.css?v=20260919-1">
+    <link rel="stylesheet" href="../css/layout/modal.css?v=20260920-2">
+    <link rel="stylesheet" href="../css/pages/form.css?v=20260914-42">
+    <link rel="stylesheet" href="../css/pages/staff-activities.css">
+    <link rel="stylesheet" href="css/webmanager.css?v=20260920-1">
+    <link rel="stylesheet" href="css/webmanager-dashboard.css?v=20260917-3">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="admin-shell">
+        <!-- ================= SIDEBAR (ชิดซ้ายสุด, สูงเต็มจอ) ================= -->
+        <aside class="admin-shell-sidebar">
+            <div class="admin-shell-sidebar-inner">
+            <div class="admin-shell-brand" onclick="switchAdminSection('home')">
+                <img class="admin-shell-logo" src="../assets/images/logo/logo1.png" alt="PTN logo">
+                <div class="admin-shell-brand-text">
+                    <span class="admin-shell-brand-title">PEETIWNONG</span>
+                    <span class="admin-shell-brand-sub">WebManager Panel</span>
+                </div>
+            </div>
+
+            <nav class="admin-shell-nav">
+                <button class="admin-shell-nav-parent active" onclick="switchAdminSection('dashboard')" id="section-nav-dashboard">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                    </svg>
+                    <span class="admin-shell-nav-label">แดชบอร์ด</span>
+                </button>
+
+                <div class="admin-shell-nav-divider"></div>
+
+                <span class="admin-shell-nav-group-label">WEB PAGE SETTING</span>
+                <div class="admin-shell-nav-group">
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('home')" id="section-nav-home">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                    <span class="admin-shell-nav-label">Home</span>
+                </button>
+                <div class="admin-shell-nav-collapse collapsed" id="home-subnav">
+                    <div class="admin-shell-nav-children">
+                        <button class="admin-shell-nav-child active" onclick="switchAdminTab('home')" id="admin-tab-home">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                            </svg>
+                            หน้าแรก
+                        </button>
+                        <button class="admin-shell-nav-child" onclick="toggleNewsSubnav()" id="admin-tab-news-toggle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                            </svg>
+                            ประชาสัมพันธ์
+                            <svg class="admin-shell-nav-subcaret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="admin-shell-nav-collapse collapsed" id="news-subnav">
+                            <div class="admin-shell-nav-grandchildren">
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('approve-news')" id="admin-tab-approve-news">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                    </svg>
+                                    การอนุมัติประชาสัมพันธ์
+                                </button>
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('news')" id="admin-tab-news">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                    จัดการประชาสัมพันธ์
+                                </button>
+                            </div>
+                        </div>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('schedule')" id="admin-tab-schedule">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                            </svg>
+                            กำหนดการ
+                        </button>
+                        <button class="admin-shell-nav-child" onclick="toggleHistorySubnav()" id="admin-tab-history-toggle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                            </svg>
+                            ประวัติความเป็นมา
+                            <svg class="admin-shell-nav-subcaret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div class="admin-shell-nav-collapse collapsed" id="history-subnav">
+                            <div class="admin-shell-nav-grandchildren">
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('history-intro')" id="admin-tab-history-intro">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                    </svg>
+                                    ความเป็นมา
+                                </button>
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('gallery')" id="admin-tab-gallery">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                    </svg>
+                                    ประมวลภาพ
+                                </button>
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('committee')" id="admin-tab-committee">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                    </svg>
+                                    ทำเนียบประธานค่าย
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-shell-nav-divider"></div>
+
+                <span class="admin-shell-nav-group-label">CAMP</span>
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('camps')" id="section-nav-camps">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+                    </svg>
+                    <span class="admin-shell-nav-label">จัดการค่าย</span>
+                </button>
+                <div class="admin-shell-nav-collapse collapsed" id="camps-subnav">
+                    <div class="admin-shell-nav-children">
+                        <button class="admin-shell-nav-child active" onclick="switchAdminTab('camp-lifecycle')" id="admin-tab-camp-lifecycle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                            </svg>
+                            ขั้นตอนดำเนินการค่าย
+                        </button>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('camp-backup')" id="admin-tab-camp-backup">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+                            </svg>
+                            สำรองข้อมูล
+                        </button>
+                    </div>
+                </div>
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('camp-history')" id="section-nav-camp-history">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="admin-shell-nav-label">ประวัติค่าย</span>
+                </button>
+
+                <div class="admin-shell-nav-divider"></div>
+
+                <span class="admin-shell-nav-group-label">REGISTRATION</span>
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('approve-registration')" id="section-nav-approve-registration">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                    </svg>
+                    <span class="admin-shell-nav-label">การลงทะเบียน</span>
+                </button>
+                <div class="admin-shell-nav-collapse collapsed" id="approve-registration-subnav">
+                    <div class="admin-shell-nav-children">
+                        <button class="admin-shell-nav-child active" onclick="switchAdminTab('approve-staff')" id="admin-tab-approve-staff">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            พี่ค่าย
+                        </button>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('approve-participant')" id="admin-tab-approve-participant">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                            </svg>
+                            น้องค่าย
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-shell-nav-divider"></div>
+
+                <span class="admin-shell-nav-group-label">USER</span>
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('user')" id="section-nav-user">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                    </svg>
+                    <span class="admin-shell-nav-label">จัดการข้อมูลผู้ใช้</span>
+                </button>
+                <div class="admin-shell-nav-collapse collapsed" id="user-subnav">
+                    <div class="admin-shell-nav-children">
+                        <button class="admin-shell-nav-child active" onclick="switchAdminTab('staff-users')" id="admin-tab-staff-users">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            พี่ค่าย
+                        </button>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('participant-users')" id="admin-tab-participant-users">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                            </svg>
+                            น้องค่าย
+                        </button>
+                    </div>
+                </div>
+
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('create-owner')" id="section-nav-create-owner">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.397-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="admin-shell-nav-label">จัดการบัญชี Owner</span>
+                </button>
+
+                <div class="admin-shell-nav-divider"></div>
+
+                <span class="admin-shell-nav-group-label">LOG</span>
+                <button class="admin-shell-nav-parent" onclick="switchAdminSection('log')" id="section-nav-log">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="admin-shell-nav-label">ประวัติการดำเนินการ</span>
+                </button>
+                <div class="admin-shell-nav-collapse collapsed" id="log-subnav">
+                    <div class="admin-shell-nav-children">
+                        <button class="admin-shell-nav-child active" onclick="switchAdminTab('log-admin')" id="admin-tab-log-admin">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                            </svg>
+                            Log Admin
+                        </button>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('log-user')" id="admin-tab-log-user">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            Log Users
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="admin-shell-sidebar-footer">
+                <div class="admin-shell-nav-divider"></div>
+
+                <button type="button" class="admin-shell-collapse-btn" id="admin-sidebar-toggle" onclick="toggleAdminSidebar()" aria-label="พับ/ขยายเมนู">
+                    <svg class="admin-shell-collapse-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 5.25h16.5M3.75 12h16.5M3.75 18.75h16.5" />
+                    </svg>
+                </button>
+            </div>
+            </div>
+        </aside>
+
+        <!-- ================= MAIN AREA (topbar + content) ================= -->
+        <div class="admin-shell-main">
+            <div class="admin-shell-topbar">
+                <button type="button" class="admin-theme-toggle" id="admin-theme-toggle" onclick="toggleAdminTheme()" aria-label="สลับโหมดมืด/สว่าง">
+                    <svg class="admin-theme-icon admin-theme-icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                    </svg>
+                    <svg class="admin-theme-icon admin-theme-icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                    </svg>
+                </button>
+                <div class="admin-notif-dropdown">
+                    <button type="button" class="admin-notif-btn" id="admin-notif-trigger" onclick="toggleAdminNotifMenu()" aria-label="การแจ้งเตือน">
+                        <svg class="admin-notif-bell-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                        </svg>
+                        <span class="admin-notif-dot hidden" id="admin-notif-dot"></span>
+                    </button>
+                    <div id="admin-notif-menu" class="admin-dropdown-menu admin-notif-menu hidden">
+                        <div class="admin-notif-header">การแจ้งเตือนล่าสุด</div>
+                        <div id="admin-notif-list" class="admin-notif-list"></div>
+                        <button type="button" class="admin-notif-viewall-btn" onclick="viewAllActivityLogs()">ดูทั้งหมด</button>
+                    </div>
+                </div>
+                <div class="admin-user-dropdown">
+                    <button type="button" class="user-chip admin-user-trigger" onclick="toggleAdminUserMenu()">
+                        <div class="user-avatar" id="admin-avatar">A</div>
+                        <span class="user-name" id="admin-username-display"></span>
+                        <svg class="admin-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div id="admin-user-menu" class="admin-dropdown-menu admin-profile-menu hidden">
+                        <div class="admin-profile-menu-header">
+                            <div class="admin-profile-menu-avatar" id="admin-menu-avatar">A</div>
+                            <div class="admin-profile-menu-name" id="admin-menu-username"></div>
+                            <div class="admin-profile-menu-role" id="admin-menu-role">แอดมิน</div>
+                        </div>
+
+                        <div class="admin-dropdown-divider"></div>
+
+                        <button type="button" class="admin-dropdown-item" id="admin-menu-profile-link" onclick="openWebManagerSettings()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                            </svg>
+                            โปรไฟล์
+                        </button>
+                        <div class="admin-dropdown-divider"></div>
+
+                        <button type="button" class="admin-dropdown-item danger" onclick="adminLogout()">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            ออกจากระบบ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <main class="admin-content-area">
+                <div id="admin-toast" class="admin-toast">
+                    <span id="admin-toast-message" class="admin-toast-message"></span>
+                    <button type="button" id="admin-toast-undo-btn" class="admin-toast-undo-btn hidden" onclick="adminToastUndo()">เลิกทำ</button>
+                </div>
+
+                <!-- ================= SECTION: แดชบอร์ด (Dashboard) ================= -->
+                <!-- ทุกแท็บถูก render ด้วย JS จาก /api/dashboard/* (ดู js/webmanager-dashboard.js) ในนี้มีแค่โครง/ที่ว่างให้เติม -->
+                <section id="admin-section-dashboard" class="admin-section active">
+                    <div class="admin-panel-header flex items-center justify-between">
+                        <div>
+                            <h2 class="admin-panel-title">แดชบอร์ด</h2>
+                            <p class="admin-panel-desc">ภาพรวมการดำเนินงานทั้งหมดของค่าย · <span id="dashboard-updated-at">กำลังโหลด...</span></p>
+                        </div>
+                        <div class="dashboard-header-actions">
+                            <button type="button" class="dashboard-refresh-btn" id="dashboard-refresh-btn" onclick="refreshDashboard()" title="โหลดข้อมูลแท็บนี้ใหม่">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                                </svg>
+                                <span>รีเฟรช</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-tabs" role="tablist">
+                        <button type="button" class="dashboard-tab active" data-dashboard-tab="overview" onclick="switchDashboardTab('overview')">ภาพรวม</button>
+                        <button type="button" class="dashboard-tab" data-dashboard-tab="people" onclick="switchDashboardTab('people')">บุคลากร</button>
+                        <button type="button" class="dashboard-tab" data-dashboard-tab="academic" onclick="switchDashboardTab('academic')">งานวิชาการ</button>
+                        <button type="button" class="dashboard-tab" data-dashboard-tab="activities" onclick="switchDashboardTab('activities')">งานกิจกรรม</button>
+                        <button type="button" class="dashboard-tab" data-dashboard-tab="system" onclick="switchDashboardTab('system')">เว็บไซต์ &amp; ระบบ</button>
+                        <button type="button" class="dashboard-tab" data-dashboard-tab="usage" onclick="switchDashboardTab('usage')">การใช้งานเว็บไซต์</button>
+                    </div>
+
+                    <div class="dashboard-panel active" id="dashboard-panel-overview"></div>
+                    <div class="dashboard-panel" id="dashboard-panel-people"></div>
+                    <div class="dashboard-panel" id="dashboard-panel-academic"></div>
+                    <div class="dashboard-panel" id="dashboard-panel-activities"></div>
+                    <div class="dashboard-panel" id="dashboard-panel-system"></div>
+                    <div class="dashboard-panel" id="dashboard-panel-usage"></div>
+                </section>
+
+                <!-- ================= SECTION: หน้าแรก (Committee + News) ================= -->
+                <section id="admin-section-home" class="admin-section">
+                    <!-- หน้าแรก (ภาพรวม) -->
+                    <section id="admin-panel-home" class="admin-panel active">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">หน้าแรก</h2>
+                                <p class="admin-panel-desc">จัดการเนื้อหาส่วน Hero ของหน้าแรกเว็บไซต์หลัก</p>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap home-settings-card">
+                            <div class="admin-toggle-row">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="hero-card-visible-toggle" onchange="submitHeroCardVisible(this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">แสดงการ์ดประธานค่ายล่าสุด</span>
+                                    <p class="admin-field-hint admin-toggle-hint">ปิดเพื่อซ่อนการ์ดรูปภาพประธานค่ายล่าสุด</p>
+                                </div>
+                            </div>
+                            <div class="admin-toggle-row-pair">
+                                <div class="admin-toggle-row">
+                                    <label class="admin-toggle-switch large">
+                                        <input type="checkbox" id="committee-section-visible-toggle" onchange="submitCommitteeSectionVisible(this.checked)">
+                                    </label>
+                                    <div>
+                                        <span class="admin-toggle-label">แสดงส่วนทำเนียบประธานค่าย</span>
+                                        <p class="admin-field-hint admin-toggle-hint">ปิดเพื่อซ่อนส่วนทำเนียบประธานค่ายทั้งหมดที่หน้าแรก ไม่กระทบข้อมูลทำเนียบประธานค่ายที่มีอยู่</p>
+                                    </div>
+                                </div>
+                                <div class="admin-toggle-row">
+                                    <label class="admin-toggle-switch large">
+                                        <input type="checkbox" id="news-section-visible-toggle" onchange="submitNewsSectionVisible(this.checked)">
+                                    </label>
+                                    <div>
+                                        <span class="admin-toggle-label">แสดงส่วนประชาสัมพันธ์ล่าสุด</span>
+                                        <p class="admin-field-hint admin-toggle-hint">ปิดเพื่อซ่อนส่วนประชาสัมพันธ์ล่าสุดที่หน้าแรก ไม่กระทบข้อมูลที่มีอยู่</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap home-preview-card">
+                            <div class="home-preview-header flex items-center justify-between">
+                                <span class="home-preview-title">ตัวอย่างหน้าเว็บหลัก</span>
+                                <button type="button" class="btn-outline" onclick="reloadHomePreview()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                            <iframe id="home-preview-iframe" class="home-preview-iframe" src="/?preview=1" title="ตัวอย่างหน้าเว็บหลัก"></iframe>
+                        </div>
+                    </section>
+
+                    <!-- ความเป็นมา -->
+                    <section id="admin-panel-history-intro" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ความเป็นมา</h2>
+                                <p class="admin-panel-desc">แก้ไขข้อความเล่าที่มาของค่ายที่แสดงในหน้า "ประวัติความเป็นมา"</p>
+                            </div>
+                        </div>
+                        <form id="history-intro-form" class="auth-form">
+                            <div class="form-group">
+                                <label class="form-label" for="history-intro-title">หัวข้อ</label>
+                                <input class="form-input" type="text" id="history-intro-title" placeholder='จุดเริ่มต้นของค่ายวิชาการ "พี่ติวน้อง"'>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="history-intro-body">เนื้อหา</label>
+                                <textarea class="form-input admin-textarea" id="history-intro-body" rows="10" placeholder="เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่"></textarea>
+                            </div>
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-cancel-btn" onclick="loadHeroCardSetting()">ยกเลิก</button>
+                                <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
+                            </div>
+                            <div id="history-intro-form-error" class="admin-form-error hidden"></div>
+                        </form>
+                    </section>
+
+                    <!-- ประมวลภาพ -->
+                    <section id="admin-panel-gallery" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ประมวลภาพ</h2>
+                                <p class="admin-panel-desc">อัปโหลด/ลบรูปบรรยากาศค่ายที่แสดงในหน้า "ประวัติความเป็นมา" — จำกัดสูงสุด <span id="gallery-photo-count">20</span> รูป</p>
+                            </div>
+                        </div>
+                        <div class="gallery-dropzone" id="gallery-dropzone"
+                            ondragover="handleGalleryDragOver(event)"
+                            ondragleave="handleGalleryDragLeave(event)"
+                            ondrop="handleGalleryDrop(event)"
+                            onclick="document.getElementById('gallery-upload-input').click()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="gallery-dropzone-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5V6a2 2 0 012-2h14a2 2 0 012 2v10.5M3 16.5l5.5-5.5a2 2 0 012.8 0L15 14.5m-2-2l1.6-1.6a2 2 0 012.8 0L21 14.5M3 16.5V18a2 2 0 002 2h14a2 2 0 002-2v-1.5" />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                            </svg>
+                            <p class="gallery-dropzone-text">ลากไฟล์รูปมาวางที่นี่ หรือ <span class="gallery-dropzone-link">เลือกไฟล์</span></p>
+                            <input class="hidden" type="file" accept="image/*" multiple id="gallery-upload-input" onchange="uploadGalleryPhoto(event)" onclick="event.stopPropagation()">
+                        </div>
+                        <div class="admin-toolbar-actions gallery-toolbar-actions">
+                            <span class="admin-selected-count hidden" id="gallery-selected-count">เลือกแล้ว 0 รูป</span>
+                            <button type="button" class="btn-outline" id="gallery-select-all-btn" onclick="toggleGallerySelectAll()">เลือกทั้งหมด</button>
+                            <button type="button" class="admin-bulk-delete-btn" id="gallery-bulk-delete-btn" onclick="bulkDeleteGalleryPhotos()" disabled>ลบที่เลือก</button>
+                        </div>
+                        <div class="gallery-photo-grid" id="gallery-photo-grid"></div>
+                        <p id="gallery-empty" class="admin-empty hidden">ยังไม่มีรูปประมวลภาพ</p>
+                    </section>
+
+                    <!-- ทำเนียบประธานค่าย -->
+                    <section id="admin-panel-committee" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ทำเนียบประธานค่าย</h2>
+                                <p class="admin-panel-desc">จัดการรายชื่อประธานค่ายที่แสดงในหน้าแรกและหน้าประวัติ</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="committee-search" class="admin-search-input" placeholder="ค้นหาชื่อ, ชื่อเล่น, ครั้งที่...">
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <span class="admin-selected-count hidden" id="committee-selected-count">เลือกแล้ว 0 รายการ</span>
+                                <button type="button" class="btn-outline" onclick="loadCommittees()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                                <button class="btn-primary" onclick="openCommitteeForm()">เพิ่ม</button>
+                                <button type="button" class="admin-bulk-delete-btn" id="committee-bulk-delete-btn" onclick="bulkDeleteCommittees()" disabled>ลบ</button>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th class="admin-col-checkbox">
+                                            <label class="admin-checkbox-wrap">
+                                                <input type="checkbox" id="committee-select-all" onchange="toggleCommitteeSelectAll(this.checked)">
+                                                <span class="custom-checkbox"></span>
+                                            </label>
+                                        </th>
+                                        <th class="admin-col-image">รูป</th>
+                                        <th class="admin-sortable" onclick="setCommitteeSort('generationNo')">ครั้งที่ <span class="admin-sort-icon" data-sort-icon-committee="generationNo"></span></th>
+                                        <th class="admin-sortable" onclick="setCommitteeSort('fullName')">ชื่อ-นามสกุล <span class="admin-sort-icon" data-sort-icon-committee="fullName"></span></th>
+                                        <th class="admin-sortable" onclick="setCommitteeSort('nickname')">ชื่อเล่น <span class="admin-sort-icon" data-sort-icon-committee="nickname"></span></th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="committee-table-body"></tbody>
+                            </table>
+                            <p id="committee-empty" class="admin-empty hidden">ยังไม่มีข้อมูลประธานค่าย</p>
+                            <p id="committee-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="committee-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="committee-prev-btn" onclick="changeCommitteePage(-1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="committee-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="committee-next-btn" onclick="changeCommitteePage(1)">ถัดไป</button>
+                        </div>
+                    </section>
+
+                    <!-- การอนุมัติประชาสัมพันธ์ -->
+                    <section id="admin-panel-approve-news" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">การอนุมัติประชาสัมพันธ์</h2>
+                                <p class="admin-panel-desc">ตรวจสอบและอนุมัติ/ปฏิเสธประชาสัมพันธ์ที่พี่ค่ายส่งเข้ามา ก่อนเผยแพร่ขึ้นหน้าเว็บจริง</p>
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <button type="button" class="btn-outline" onclick="loadNews()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row-grid">
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="news-auto-approve-toggle" onchange="submitAutoApprove('news', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">
+                                        อนุมัติประชาสัมพันธ์อัตโนมัติ
+                                        <span id="news-auto-approve-status-dot" class="registration-status-dot"></span>
+                                    </span>
+                                    <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายส่งเข้ามาเผยแพร่ขึ้นหน้าเว็บทันทีโดยไม่ต้องรอตรวจสอบ ปิดไว้ = ต้องรอ Admin/Owner กดอนุมัติที่ตารางด้านล่างก่อนเสมอ (ข่าวที่ Admin/Owner เขียนเองอนุมัติทันทีอยู่แล้วไม่ว่าสวิตช์นี้จะเปิดหรือปิด)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>หัวข้อประชาสัมพันธ์</th>
+                                        <th>ผู้เขียน</th>
+                                        <th>ส่งเมื่อ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions admin-col-actions-wide">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="news-approval-table-body"></tbody>
+                            </table>
+                            <p id="news-approval-empty" class="admin-empty hidden">ยังไม่มีประชาสัมพันธ์ที่รอตรวจสอบ</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="news-approval-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="news-approval-prev-btn" onclick="changeNewsApprovalPage(-1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="news-approval-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="news-approval-next-btn" onclick="changeNewsApprovalPage(1)">ถัดไป</button>
+                        </div>
+                    </section>
+
+                    <!-- จัดการประชาสัมพันธ์ -->
+                    <section id="admin-panel-news" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ประชาสัมพันธ์</h2>
+                                <p class="admin-panel-desc">จัดการประชาสัมพันธ์ที่แสดงในหน้าแรกและหน้ารวม</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="news-search" class="admin-search-input" placeholder="ค้นหาหัวข้อ, ประเภทประชาสัมพันธ์...">
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <span class="admin-selected-count hidden" id="news-selected-count">เลือกแล้ว 0 รายการ</span>
+                                <button type="button" class="btn-outline" onclick="loadNews()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                                <button class="btn-primary" onclick="openNewsForm()">เพิ่ม</button>
+                                <button type="button" class="admin-bulk-delete-btn" id="news-bulk-delete-btn" onclick="bulkDeleteNewsItems()" disabled>ลบ</button>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th class="admin-col-checkbox">
+                                            <label class="admin-checkbox-wrap">
+                                                <input type="checkbox" id="news-select-all" onchange="toggleNewsSelectAll(this.checked)">
+                                                <span class="custom-checkbox"></span>
+                                            </label>
+                                        </th>
+                                        <th class="admin-sortable" onclick="setNewsSort('title')">หัวข้อประชาสัมพันธ์ <span class="admin-sort-icon" data-sort-icon-news="title"></span></th>
+                                        <th class="admin-sortable" onclick="setNewsSort('tag')">ประเภท <span class="admin-sort-icon" data-sort-icon-news="tag"></span></th>
+                                        <th class="admin-sortable" onclick="setNewsSort('publishedAt')">วันที่เผยแพร่ <span class="admin-sort-icon" data-sort-icon-news="publishedAt"></span></th>
+                                        <th>สำคัญ</th>
+                                        <th>เผยแพร่</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="news-table-body"></tbody>
+                            </table>
+                            <p id="news-empty" class="admin-empty hidden">ยังไม่มีประชาสัมพันธ์</p>
+                            <p id="news-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="news-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="news-prev-btn" onclick="changeNewsPage(-1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="news-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="news-next-btn" onclick="changeNewsPage(1)">ถัดไป</button>
+                        </div>
+                    </section>
+
+                    <!-- กำหนดการ -->
+                    <section id="admin-panel-schedule" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">กำหนดการ</h2>
+                                <p class="admin-panel-desc">จัดการรายการไทม์ไลน์ที่แสดงในหน้า "กำหนดการ" ของเว็บไซต์หลัก</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="schedule-search" class="admin-search-input" placeholder="ค้นหาหัวข้อ, ป้ายกำกับ...">
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <span class="admin-selected-count hidden" id="schedule-selected-count">เลือกแล้ว 0 รายการ</span>
+                                <button type="button" class="btn-outline" onclick="loadSchedules()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                                <button class="btn-primary" onclick="openScheduleForm()">เพิ่ม</button>
+                                <button type="button" class="admin-bulk-delete-btn" id="schedule-bulk-delete-btn" onclick="bulkDeleteSchedules()" disabled>ลบ</button>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th class="admin-col-checkbox">
+                                            <label class="admin-checkbox-wrap">
+                                                <input type="checkbox" id="schedule-select-all" onchange="toggleScheduleSelectAll(this.checked)">
+                                                <span class="custom-checkbox"></span>
+                                            </label>
+                                        </th>
+                                        <th class="admin-sortable" onclick="setScheduleSort('eventDate')">วันที่ <span class="admin-sort-icon" data-sort-icon-schedule="eventDate"></span></th>
+                                        <th class="admin-sortable" onclick="setScheduleSort('title')">หัวข้อ <span class="admin-sort-icon" data-sort-icon-schedule="title"></span></th>
+                                        <th>ป้ายกำกับ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schedule-table-body"></tbody>
+                            </table>
+                            <p id="schedule-empty" class="admin-empty hidden">ยังไม่มีกำหนดการ</p>
+                            <p id="schedule-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="schedule-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="schedule-prev-btn" onclick="changeSchedulePage(-1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="schedule-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="schedule-next-btn" onclick="changeSchedulePage(1)">ถัดไป</button>
+                        </div>
+                    </section>
+                </section>
+
+                <!-- ================= SECTION: จัดการค่าย (Camp generations) ================= -->
+                <section id="admin-section-camps" class="admin-section">
+                    <!-- ขั้นตอนดำเนินการค่าย -->
+                    <section id="admin-panel-camp-lifecycle" class="admin-panel active">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ขั้นตอนดำเนินการค่าย</h2>
+                                <p class="admin-panel-desc">ลำดับงานขั้นตอนการดำเนินการค่าย</p>
+                            </div>
+                        </div>
+
+                        <div class="lifecycle-wizard">
+                            <ol id="camp-lifecycle-stepper" class="lifecycle-stepper">
+                                <li class="lifecycle-stepper-item" data-step="create" data-state="current">
+                                    <button type="button" class="lifecycle-stepper-btn" disabled>
+                                        <span class="lifecycle-step-marker"><span class="lifecycle-step-number">1</span><svg class="lifecycle-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
+                                        <span class="lifecycle-stepper-label">สร้างค่าย</span>
+                                    </button>
+                                </li>
+                                <li class="lifecycle-stepper-connector"></li>
+                                <li class="lifecycle-stepper-item" data-step="run" data-state="todo">
+                                    <button type="button" class="lifecycle-stepper-btn" disabled>
+                                        <span class="lifecycle-step-marker"><span class="lifecycle-step-number">2</span><svg class="lifecycle-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
+                                        <span class="lifecycle-stepper-label">ดำเนินการค่าย</span>
+                                    </button>
+                                </li>
+                                <li class="lifecycle-stepper-connector"></li>
+                                <li class="lifecycle-stepper-item" data-step="end" data-state="todo">
+                                    <button type="button" class="lifecycle-stepper-btn" disabled>
+                                        <span class="lifecycle-step-marker"><span class="lifecycle-step-number">3</span><svg class="lifecycle-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></span>
+                                        <span class="lifecycle-stepper-label">จบค่าย</span>
+                                    </button>
+                                </li>
+                            </ol>
+
+                            <div id="camp-lifecycle-pages" class="lifecycle-pages">
+                                <div class="lifecycle-page" data-step="create" data-state="current">
+                                    <div class="lifecycle-step-marker"><span class="lifecycle-step-number">1</span><svg class="lifecycle-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></div>
+                                    <div class="lifecycle-step-body">
+                                        <h3 class="lifecycle-step-title">สร้างค่ายใหม่ + แต่งตั้งคณะทำงาน</h3>
+                                        <p class="lifecycle-step-desc">กำหนดครั้งที่ ประธานค่าย รองประธาน เลขานุการ และหัวหน้าฝ่ายทุกฝ่ายในขั้นเดียว ระบบจะสำรองข้อมูลค่ายเก่าขึ้น Google Drive แล้วล้างข้อมูลน้องค่ายให้อัตโนมัติ - ระบบวิชาการ/กิจกรรมยังล็อกอยู่จนกว่าขั้นนี้จะเสร็จ</p>
+                                        <button class="btn-primary" onclick="openCampCreateForm()">สร้างค่ายใหม่</button>
+                                    </div>
+                                </div>
+                                <div class="lifecycle-page" data-step="run" data-state="todo" hidden>
+                                    <div class="lifecycle-step-marker"><span class="lifecycle-step-number">2</span><svg class="lifecycle-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></div>
+                                    <div class="lifecycle-step-body">
+                                        <h3 class="lifecycle-step-title">ดำเนินการค่าย</h3>
+                                        <p class="lifecycle-step-desc">เมื่อสร้างค่ายและกำหนดคณะทำงานครบแล้ว ระบบวิชาการและระบบกิจกรรมจะเปิดให้พี่ค่ายที่มีตำแหน่งใช้งานได้ทันที (ก่อนหน้านั้นทุกคนเป็นทีมงานค่ายปกติ เข้าระบบพวกนี้ไม่ได้) ระบบจะสำรองข้อมูลขึ้น Google Drive อัตโนมัติเป็นระยะ</p>
+                                        <div class="lifecycle-run-status" id="lifecycle-run-status"></div>
+                                        <div class="admin-toggle-row lifecycle-toggle-row">
+                                            <label class="admin-toggle-switch large">
+                                                <input type="checkbox" data-registration-toggle="participant" onchange="submitRegistrationOpen('participant', this.checked)">
+                                            </label>
+                                            <div>
+                                                <span class="admin-toggle-label">
+                                                    เปิดรับลงทะเบียนน้องค่าย (ปุ่ม "ลงทะเบียนน้องค่าย")
+                                                    <span data-registration-status-dot="participant" class="registration-status-dot"></span>
+                                                </span>
+                                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่มมีจุดส้มและกดลงทะเบียนได้ตามปกติ ปิดไว้ = ปุ่มเปลี่ยนข้อความเป็น "ขณะนี้ยังไม่เปิดให้ลงทะเบียน" และกดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lifecycle-page" data-step="end" data-state="todo" hidden>
+                                    <div class="lifecycle-step-marker"><span class="lifecycle-step-number">3</span><svg class="lifecycle-step-check" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4.5 12.75l6 6 9-13.5" /></svg></div>
+                                    <div class="lifecycle-step-body">
+                                        <h3 class="lifecycle-step-title">จบค่าย</h3>
+                                        <p class="lifecycle-step-desc">เก็บข้อมูลน้องค่ายทั้งหมดเป็นไฟล์ขึ้น Google Drive (แยกเป็นไฟล์ของค่ายนี้โดยเฉพาะ) แล้วลบน้องค่ายออกจากฐานข้อมูลถาวร (กู้คืนไม่ได้) จากนั้นรีเซ็ตตำแหน่ง/ฝ่ายของพี่ค่ายทุกคนกลับเป็น "ทีมงานค่าย" - ข้อมูลพี่ค่ายยังใช้งานได้ตามปกติ ต้องตั้งค่า Google Drive ไว้ก่อนถึงจะกดจบค่ายได้</p>
+                                        <button type="button" class="btn-outline" id="camp-end-btn" onclick="endCurrentCamp()" disabled>จบค่ายปัจจุบัน</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lifecycle-page-nav">
+                                <button type="button" class="btn-outline lifecycle-nav-btn-hidden" id="lifecycle-prev-btn" onclick="lifecycleStepNav(-1)" disabled>← ก่อนหน้า</button>
+                                <span class="lifecycle-page-counter" id="lifecycle-page-counter">ขั้นตอนที่ 1 จาก 3</span>
+                                <button type="button" class="btn-outline" id="lifecycle-next-btn" onclick="lifecycleStepNav(1)" disabled>ถัดไป →</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-panel-header" style="margin-top: 1.5rem;">
+                            <div>
+                                <h2 class="admin-panel-title" style="font-size: 1.05rem;">สถานะการสำรองข้อมูล</h2>
+                            </div>
+                        </div>
+                        <div class="backup-status-strip" id="backup-status-strip">
+                            <p class="admin-field-hint" id="backup-status-text">ยังไม่ได้ตั้งค่า Google Drive</p>
+                            <button type="button" class="btn-outline" onclick="triggerManualBackup()">สำรองข้อมูลตอนนี้</button>
+                        </div>
+                    </section>
+
+
+                    <!-- สำรองข้อมูล -->
+                    <section id="admin-panel-camp-backup" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">สำรองข้อมูล</h2>
+                                <p class="admin-panel-desc">ประวัติการสำรองข้อมูลค่ายขึ้น Google Drive ทั้งแบบอัตโนมัติและกดเอง</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-toolbar-actions" style="margin-left: auto;">
+                                <button type="button" class="btn-outline" onclick="loadCampBackups()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                                <button class="btn-primary" onclick="triggerManualBackup()">สำรองข้อมูลตอนนี้</button>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>วันที่เริ่ม</th>
+                                        <th>ครั้งที่</th>
+                                        <th>สาเหตุ</th>
+                                        <th>สถานะ</th>
+                                        <th>จำนวนไฟล์</th>
+                                        <th>หมายเหตุ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="camp-backups-table-body"></tbody>
+                            </table>
+                            <p id="camp-backups-empty" class="admin-empty hidden">ยังไม่มีประวัติการสำรองข้อมูล</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="camp-backups-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="camp-backups-prev-btn" onclick="changeCampBackupsPage(-1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="camp-backups-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="camp-backups-next-btn" onclick="changeCampBackupsPage(1)">ถัดไป</button>
+                        </div>
+                    </section>
+                </section>
+
+                <!-- ================= SECTION: ประวัติค่าย (แยกออกมาเป็นเมนูหลักเดี่ยว ๆ ไม่ซ้อนอยู่ใต้ "จัดการค่าย" อีกต่อไป) ================= -->
+                <section id="admin-section-camp-history" class="admin-section">
+                    <div class="admin-panel-header flex items-center justify-between">
+                        <div>
+                            <h2 class="admin-panel-title">ประวัติค่าย</h2>
+                            <p class="admin-panel-desc">รายชื่อค่ายทั้งหมดที่เคยสร้างพร้อมผู้ดำรงตำแหน่งแต่ละรุ่น</p>
+                        </div>
+                    </div>
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-actions" style="margin-left: auto;">
+                            <button type="button" class="btn-outline" onclick="loadCamps()">
+                                <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                                รีเฟรช
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ครั้งที่</th>
+                                    <th>ประธานค่าย</th>
+                                    <th>รองประธานค่าย</th>
+                                    <th>เลขานุการ</th>
+                                    <th>หัวหน้าฝ่าย</th>
+                                    <th>สถานะ</th>
+                                    <th>สร้างเมื่อ</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="camps-table-body"></tbody>
+                        </table>
+                        <p id="camps-empty" class="admin-empty hidden">ยังไม่มีค่ายในระบบ</p>
+                    </div>
+                </section>
+
+                <!-- ================= SECTION: อนุมัติการลงทะเบียน (Approve Registration) ================= -->
+                <section id="admin-section-approve-registration" class="admin-section">
+                    <!-- พี่ค่าย -->
+                    <section id="admin-panel-approve-staff" class="admin-panel active">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">การลงทะเบียนพี่ค่าย</h2>
+                                <p class="admin-panel-desc">ตรวจสอบและอนุมัติ/ปฏิเสธคำขอลงทะเบียนของพี่ค่ายที่สมัครเข้ามาเอง</p>
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <button type="button" class="btn-outline" onclick="loadUsers('STAFF')">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row admin-toggle-row-standalone">
+                            <label class="admin-toggle-switch large">
+                                <input type="checkbox" data-registration-toggle="staff" onchange="submitRegistrationOpen('staff', this.checked)">
+                            </label>
+                            <div>
+                                <span class="admin-toggle-label">
+                                    เปิดรับลงทะเบียนพี่ค่าย
+                                    <span data-registration-status-dot="staff" class="registration-status-dot"></span>
+                                </span>
+                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่ม "ลงทะเบียนพี่ค่าย" ที่หน้าแรกกดได้ตามปกติ ปิดไว้ = กดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย) — พี่ค่ายรับสมัครได้ตลอดเวลาไม่ผูกกับขั้นตอนดำเนินการค่าย</p>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row-grid">
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="staff-auto-approve-toggle" onchange="submitAutoApprove('staff', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">
+                                        อนุมัติการลงทะเบียนพี่ค่ายอัตโนมัติ
+                                        <span id="staff-auto-approve-status-dot" class="registration-status-dot"></span>
+                                    </span>
+                                    <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = บัญชีพี่ค่ายที่สมัครลงทะเบียนเข้ามาได้รับอนุมัติทันที เข้าสู่ระบบได้เลยโดยไม่ต้องรอตรวจสอบ ปิดไว้ = ต้องรอ Admin/Owner กดอนุมัติเองที่นี่</p>
+                                </div>
+                            </div>
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="check-registration-visible-toggle-staff" onchange="submitCheckRegistrationVisible('staff', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">ตรวจสอบผลการลงทะเบียนพี่ค่าย</span>
+                                    <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนตัวเลือกพี่ค่ายออกจากหน้าตรวจสอบผลการลงทะเบียนของเว็บไซต์หลัก ไม่กระทบข้อมูลการลงทะเบียนที่มีอยู่</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>อีเมล</th>
+                                        <th>สมัครเมื่อ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions admin-col-actions-wide">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approval-table-body-STAFF"></tbody>
+                            </table>
+                            <p id="approval-empty-STAFF" class="admin-empty hidden">ยังไม่มีคำขอลงทะเบียนพี่ค่ายที่รอตรวจสอบ</p>
+                        </div>
+                    </section>
+
+                    <!-- น้องค่าย -->
+                    <section id="admin-panel-approve-participant" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">การลงทะเบียนน้องค่าย</h2>
+                                <p class="admin-panel-desc">ตรวจสอบและอนุมัติ/ปฏิเสธคำขอลงทะเบียนของน้องค่ายที่สมัครเข้ามาเอง</p>
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <button type="button" class="btn-outline" onclick="loadUsers('PARTICIPANT')">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row admin-toggle-row-standalone">
+                            <label class="admin-toggle-switch large">
+                                <input type="checkbox" data-registration-toggle="participant" onchange="submitRegistrationOpen('participant', this.checked)">
+                            </label>
+                            <div>
+                                <span class="admin-toggle-label">
+                                    เปิดรับลงทะเบียนน้องค่าย
+                                    <span data-registration-status-dot="participant" class="registration-status-dot"></span>
+                                </span>
+                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่ม "ลงทะเบียนน้องค่าย" ที่หน้าแรกกดได้ตามปกติ ปิดไว้ = กดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย) เหมือนกับสวิตช์ที่แท็บ "ขั้นตอนดำเนินการค่าย"</p>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row-grid">
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="participant-auto-approve-toggle" onchange="submitAutoApprove('participant', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">
+                                        อนุมัติการลงทะเบียนน้องค่ายอัตโนมัติ
+                                        <span id="participant-auto-approve-status-dot" class="registration-status-dot"></span>
+                                    </span>
+                                    <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = บัญชีน้องค่ายที่สมัครลงทะเบียนเข้ามาได้รับอนุมัติทันที เข้าสู่ระบบได้เลยโดยไม่ต้องรอตรวจสอบ ปิดไว้ = ต้องรอ Admin/Owner กดอนุมัติเองที่นี่</p>
+                                </div>
+                            </div>
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="check-registration-visible-toggle-participant" onchange="submitCheckRegistrationVisible('participant', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">ตรวจสอบผลการลงทะเบียนน้องค่าย</span>
+                                    <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนตัวเลือกน้องค่ายออกจากหน้าตรวจสอบผลการลงทะเบียนของเว็บไซต์หลัก ไม่กระทบข้อมูลการลงทะเบียนที่มีอยู่</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>อีเมล</th>
+                                        <th>สมัครเมื่อ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions admin-col-actions-wide">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approval-table-body-PARTICIPANT"></tbody>
+                            </table>
+                            <p id="approval-empty-PARTICIPANT" class="admin-empty hidden">ยังไม่มีคำขอลงทะเบียนน้องค่ายที่รอตรวจสอบ</p>
+                        </div>
+                    </section>
+                </section>
+
+                <!-- ================= SECTION: จัดการบัญชี Owner (Manage WebManager Accounts) ================= -->
+                <!-- ไม่มีแท็บย่อย จึงไม่ห่อด้วย .admin-panel (switchAdminTab() ที่หน้าอื่นถอด .active ออกจาก .admin-panel ทุกตัวในเอกสาร ถ้าห่อไว้จะหายไปถาวรหลังสลับแท็บที่อื่นครั้งแรก) -->
+                <section id="admin-section-create-owner" class="admin-section">
+                    <div class="admin-panel-header flex items-center justify-between">
+                        <div>
+                            <h2 class="admin-panel-title">จัดการบัญชี Owner</h2>
+                            <p class="admin-panel-desc">เพิ่มอีเมลอีกบัญชีให้มีสิทธิ์ WebManager (Owner) เท่ากับบัญชีนี้ทุกประการ</p>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap create-user-card">
+                        <form id="create-owner-form" class="auth-form" onsubmit="submitCreateOwnerForm(event)">
+                            <div class="create-user-section">
+                                <h3 class="create-user-section-title">บัญชีเข้าสู่ระบบ</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="create-owner-email">อีเมล</label>
+                                        <input class="form-input" type="email" id="create-owner-email" required>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="create-owner-password">รหัสผ่าน</label>
+                                        <div class="password-field-wrap">
+                                            <input class="form-input" type="password" id="create-owner-password" required placeholder="อย่างน้อย 8 ตัวอักษร" oninput="updateCreateOwnerPasswordChecklist()">
+                                            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('create-owner-password', this)">
+                                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <ul class="password-checklist" id="create-owner-password-checklist">
+                                            <li data-rule="length">อย่างน้อย 8 ตัวอักษร</li>
+                                        </ul>
+                                        <p class="password-checklist-hint">และผ่านอย่างน้อย 3 ใน 4 ข้อต่อไปนี้</p>
+                                        <ul class="password-checklist" id="create-owner-password-checklist-categories">
+                                            <li data-rule="lower">ตัวพิมพ์เล็ก (a-z)</li>
+                                            <li data-rule="upper">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                                            <li data-rule="number">ตัวเลข (0-9)</li>
+                                            <li data-rule="special">อักขระพิเศษ (เช่น ! @ # $)</li>
+                                        </ul>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="create-owner-confirm-password">ยืนยันรหัสผ่าน</label>
+                                        <div class="password-field-wrap">
+                                            <input class="form-input" type="password" id="create-owner-confirm-password" required placeholder="พิมพ์รหัสผ่านอีกครั้ง">
+                                            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('create-owner-confirm-password', this)">
+                                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="admin-form-actions">
+                                <button type="button" class="admin-cancel-btn" onclick="resetCreateOwnerForm()">ล้างฟอร์ม</button>
+                                <button type="submit" class="submit-btn admin-submit-btn">เพิ่มบัญชี Owner</button>
+                            </div>
+                            <div id="create-owner-form-error" class="admin-form-error hidden"></div>
+                        </form>
+                    </div>
+
+                    <div class="admin-panel-header flex items-center justify-between" style="margin-top: 1.75rem;">
+                        <div>
+                            <h2 class="admin-panel-title" style="font-size: 1.05rem;">บัญชี Owner ทั้งหมด</h2>
+                            <p class="admin-panel-desc">ลบได้ทุกบัญชียกเว้นบัญชีที่ล็อกอินอยู่ตอนนี้</p>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>อีเมล</th>
+                                    <th>สร้างเมื่อ</th>
+                                    <th class="admin-col-actions">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="owner-table-body"></tbody>
+                        </table>
+                        <p id="owner-empty" class="admin-empty hidden">ยังไม่มีบัญชี Owner อื่นนอกจากบัญชีนี้</p>
+                    </div>
+                </section>
+
+                <!-- ================= SECTION: จัดการบัญชีผู้ใช้ (Manage User) ================= -->
+                <section id="admin-section-user" class="admin-section">
+                    <!-- พี่ค่าย -->
+                    <section id="admin-panel-staff-users" class="admin-panel active">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">จัดการพี่ค่าย</h2>
+                                <p class="admin-panel-desc">บัญชีทีมงานพี่ค่าย (STAFF)</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="user-search-STAFF" class="admin-search-input" placeholder="ค้นหาชื่อผู้ใช้, อีเมล...">
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <span class="admin-selected-count hidden" id="user-selected-count-STAFF">เลือกแล้ว 0 รายการ</span>
+                                <button type="button" class="btn-outline" onclick="loadUsers('STAFF')">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                                <button class="btn-primary" onclick="openUserForm(null, 'STAFF')">เพิ่ม</button>
+                                <button type="button" class="admin-bulk-delete-btn" id="user-bulk-delete-btn-STAFF" onclick="bulkDeleteUsers('STAFF')" disabled>ลบ</button>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th class="admin-col-checkbox">
+                                            <label class="admin-checkbox-wrap">
+                                                <input type="checkbox" id="user-select-all-STAFF" onchange="toggleUserSelectAll('STAFF', this.checked)">
+                                                <span class="custom-checkbox"></span>
+                                            </label>
+                                        </th>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>ชื่อเล่น</th>
+                                        <th>ตำแหน่ง</th>
+                                        <th>ฝ่ายงาน</th>
+                                        <th>สิทธิ์แอดมิน</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body-STAFF"></tbody>
+                            </table>
+                            <p id="user-empty-STAFF" class="admin-empty hidden">ยังไม่มีบัญชีพี่ค่าย</p>
+                            <p id="user-no-match-STAFF" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="user-pagination-STAFF">
+                            <button type="button" class="admin-page-nav-btn" id="user-prev-btn-STAFF" onclick="changeUserPage('STAFF', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="user-page-numbers-STAFF"></div>
+                            <button type="button" class="admin-page-nav-btn" id="user-next-btn-STAFF" onclick="changeUserPage('STAFF', 1)">ถัดไป</button>
+                        </div>
+                    </section>
+
+                    <!-- น้องค่าย -->
+                    <section id="admin-panel-participant-users" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">จัดการน้องค่าย</h2>
+                                <p class="admin-panel-desc">บัญชีผู้เข้าค่าย (PARTICIPANT)</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="user-search-PARTICIPANT" class="admin-search-input" placeholder="ค้นหาชื่อผู้ใช้, อีเมล...">
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <span class="admin-selected-count hidden" id="user-selected-count-PARTICIPANT">เลือกแล้ว 0 รายการ</span>
+                                <button type="button" class="btn-outline" onclick="loadUsers('PARTICIPANT')">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                                <button class="btn-primary" onclick="openUserForm(null, 'PARTICIPANT')">เพิ่ม</button>
+                                <button type="button" class="admin-bulk-delete-btn" id="user-bulk-delete-btn-PARTICIPANT" onclick="bulkDeleteUsers('PARTICIPANT')" disabled>ลบ</button>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th class="admin-col-checkbox">
+                                            <label class="admin-checkbox-wrap">
+                                                <input type="checkbox" id="user-select-all-PARTICIPANT" onchange="toggleUserSelectAll('PARTICIPANT', this.checked)">
+                                                <span class="custom-checkbox"></span>
+                                            </label>
+                                        </th>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>ชื่อเล่น</th>
+                                        <th>คอร์สเรียน</th>
+                                        <th>กลุ่ม</th>
+                                        <th class="admin-col-actions">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body-PARTICIPANT"></tbody>
+                            </table>
+                            <p id="user-empty-PARTICIPANT" class="admin-empty hidden">ยังไม่มีบัญชีน้องค่าย</p>
+                            <p id="user-no-match-PARTICIPANT" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="user-pagination-PARTICIPANT">
+                            <button type="button" class="admin-page-nav-btn" id="user-prev-btn-PARTICIPANT" onclick="changeUserPage('PARTICIPANT', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="user-page-numbers-PARTICIPANT"></div>
+                            <button type="button" class="admin-page-nav-btn" id="user-next-btn-PARTICIPANT" onclick="changeUserPage('PARTICIPANT', 1)">ถัดไป</button>
+                        </div>
+                    </section>
+                </section>
+
+                <!-- ================= SECTION: ประวัติการดำเนินการ (Activity Log) ================= -->
+                <section id="admin-section-log" class="admin-section">
+                    <!-- ของ Admin (รวมถึง Owner) -->
+                    <section id="admin-panel-log-admin" class="admin-panel active">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ประวัติการดำเนินการของ Admin</h2>
+                                <p class="admin-panel-desc">บันทึกการเพิ่ม/แก้ไข/ลบข้อมูลโดย Admin และ Owner (WebManager) ย้อนหลัง 200 รายการล่าสุด</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="log-admin-search" class="admin-search-input" placeholder="ค้นหาผู้ดำเนินการ, ประเภท, รายละเอียด...">
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>เวลา</th>
+                                        <th>ผู้ดำเนินการ</th>
+                                        <th>การกระทำ</th>
+                                        <th>ประเภทข้อมูล</th>
+                                        <th>รายละเอียด</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="log-admin-table-body"></tbody>
+                            </table>
+                            <p id="log-admin-empty" class="admin-empty hidden">ยังไม่มีประวัติการดำเนินการ</p>
+                            <p id="log-admin-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="log-admin-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="log-admin-prev-btn" onclick="changeActivityLogPage('admin', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="log-admin-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="log-admin-next-btn" onclick="changeActivityLogPage('admin', 1)">ถัดไป</button>
+                        </div>
+                    </section>
+
+                    <!-- ของผู้ใช้ -->
+                    <section id="admin-panel-log-user" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ประวัติการดำเนินการของผู้ใช้</h2>
+                                <p class="admin-panel-desc">บันทึกทุกอย่างที่เกี่ยวข้องกับการแก้ไขข้อมูลในฐานข้อมูลโดยผู้ใช้ (พี่ค่าย/น้องค่าย) ย้อนหลัง 200 รายการล่าสุด</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="log-user-search" class="admin-search-input" placeholder="ค้นหาผู้ดำเนินการ, ประเภท, รายละเอียด...">
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>เวลา</th>
+                                        <th>ผู้ดำเนินการ</th>
+                                        <th>การกระทำ</th>
+                                        <th>ประเภทข้อมูล</th>
+                                        <th>รายละเอียด</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="log-user-table-body"></tbody>
+                            </table>
+                            <p id="log-user-empty" class="admin-empty hidden">ยังไม่มีประวัติการดำเนินการ</p>
+                            <p id="log-user-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="log-user-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="log-user-prev-btn" onclick="changeActivityLogPage('user', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="log-user-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="log-user-next-btn" onclick="changeActivityLogPage('user', 1)">ถัดไป</button>
+                        </div>
+                    </section>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ฟอร์มประธานค่าย ================= -->
+    <div id="committee-modal" class="modal hidden" aria-labelledby="committee-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeCommitteeForm()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeCommitteeForm()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="committee-modal-title" class="admin-modal-title">เพิ่มประธานค่าย</h2>
+                    <form id="committee-form" class="auth-form">
+                        <input type="hidden" id="committee-id">
+                        <div class="form-grid">
+                            <div class="committee-left-fields">
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-generationNo-add-input">ครั้งที่</label>
+                                    <div class="generation-chip-list" id="committee-generationNos-chips"></div>
+                                    <div class="generation-chip-add-row">
+                                        <input class="form-input" type="number" id="committee-generationNo-add-input" min="1" onkeydown="handleCommitteeGenerationInputKeydown(event)">
+                                        <button type="button" class="generation-chip-add-btn" onclick="addCommitteeGenerationChip()" aria-label="เพิ่มครั้งที่">
+                                            <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <p class="admin-field-hint">คนเดียวกันดำรงตำแหน่งหลายครั้งได้ ใส่ทีละครั้งแล้วกด + เพื่อเพิ่ม ไม่ต้องสร้างข้อมูลซ้ำ</p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-fullName">ชื่อ-นามสกุล</label>
+                                    <input class="form-input" type="text" id="committee-fullName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-nickname">ชื่อเล่น</label>
+                                    <input class="form-input" type="text" id="committee-nickname" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-university">มหาวิทยาลัย</label>
+                                    <input class="form-input" type="text" id="committee-university" placeholder="มหาวิทยาลัยราชภัฏชัยภูมิ">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-faculty">คณะ</label>
+                                    <input class="form-input" type="text" id="committee-faculty" placeholder="คณะครุศาสตร์">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-major">สาขาวิชา</label>
+                                    <input class="form-input" type="text" id="committee-major" placeholder="สาขาวิชาการศึกษา วิชาเอกสังคมศึกษา">
+                                </div>
+                                <p class="admin-field-hint">ข้อมูลมหาวิทยาลัย/คณะ/สาขา จะแสดงในการ์ดเด่นหน้าแรก (Hero) เฉพาะรุ่นล่าสุด (ครั้งที่สูงสุด) เท่านั้น</p>
+                            </div>
+                            <div class="committee-right-fields">
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-imageUrl">รูปภาพ</label>
+                                    <div class="news-image-upload">
+                                        <div class="committee-photo-preview hidden" id="committee-imageUrl-preview">
+                                            <img id="committee-imageUrl-preview-img" src="" alt="ตัวอย่างรูปภาพประธานค่าย">
+                                        </div>
+                                        <input class="form-input" type="text" id="committee-imageUrl" placeholder="/backend/uploads/presidents/xxx.jpg" oninput="updateCommitteeImagePreview()">
+                                        <input class="admin-file-input" type="file" accept="image/*" id="committee-imageUrl-file" onchange="openImageCropModal(event, 'committee-imageUrl')">
+                                        <p class="admin-field-hint hidden" id="committee-imageUrl-status"></p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="committee-universityLogoUrl">โลโก้มหาวิทยาลัย</label>
+                                    <div class="news-image-upload">
+                                        <div class="committee-logo-preview hidden" id="committee-universityLogoUrl-preview">
+                                            <img id="committee-universityLogoUrl-preview-img" src="" alt="ตัวอย่างโลโก้มหาวิทยาลัย">
+                                        </div>
+                                        <input class="form-input" type="text" id="committee-universityLogoUrl" placeholder="/backend/uploads/presidents/xxx-logo.png" oninput="updateCommitteeLogoPreview()">
+                                        <input class="admin-file-input" type="file" accept="image/*" id="committee-universityLogoUrl-file" onchange="uploadCommitteeUniversityLogo(event)">
+                                        <p class="admin-field-hint hidden" id="committee-universityLogoUrl-status"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row">
+                            <label class="admin-toggle-switch">
+                                <input type="checkbox" id="committee-isVisible" checked>
+                            </label>
+                            <div>
+                                <span class="admin-toggle-label">แสดงผลบนหน้าเว็บไซต์หลัก</span>
+                                <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนจากหน้าเว็บโดยไม่ต้องลบข้อมูล</p>
+                            </div>
+                        </div>
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeCommitteeForm()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
+                        </div>
+                        <div id="committee-form-error" class="admin-form-error hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ฟอร์มสร้างค่ายใหม่ ================= -->
+    <div id="camp-create-modal" class="modal hidden" aria-labelledby="camp-create-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeCampCreateForm()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeCampCreateForm()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="camp-create-modal-title" class="admin-modal-title">สร้างค่ายใหม่</h2>
+                    <p class="admin-panel-desc" style="margin-bottom: 1rem;">การสร้างค่ายใหม่จะลบข้อมูลน้องค่ายทั้งหมดในระบบอย่างถาวร และมอบตำแหน่ง/ฝ่ายให้พี่ค่ายที่เลือกทันที</p>
+                    <form id="camp-create-form" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="camp-generationNo">ครั้งที่</label>
+                            <input class="form-input camp-generationNo-input" type="number" id="camp-generationNo" min="1" required>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">ประธานค่าย</label>
+                                <div class="staff-select" id="camp-president-select"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">เลขานุการ</label>
+                                <div class="staff-select" id="camp-secretary-select"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">รองประธานค่าย (เพิ่ม/ลดจำนวนได้)</label>
+                            <div class="generation-chip-list" id="camp-vice-presidents-chips"></div>
+                            <div class="staff-select-add-row">
+                                <div class="staff-select" id="camp-vice-president-add-select"></div>
+                                <button type="button" class="generation-chip-add-btn" id="camp-vice-president-add-btn" onclick="addPendingCampVicePresident()" aria-label="เพิ่มรองประธาน" disabled>
+                                    <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="admin-field-hint">ค้นหาแล้วเลือกชื่อ แล้วกด + เพื่อเพิ่มเป็นรองประธาน เพิ่มได้มากกว่า 1 คน</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">หัวหน้าฝ่าย (ต้องเลือกให้ครบทุกฝ่าย)</label>
+                            <div id="camp-department-heads-rows" class="camp-department-head-rows"></div>
+                        </div>
+
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeCampCreateForm()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">สร้างค่าย</button>
+                        </div>
+                        <div id="camp-create-form-error" class="admin-form-error hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ครอบตัดรูปภาพให้เป็นสี่เหลี่ยมจตุรัส ================= -->
+    <div id="image-crop-modal" class="modal hidden" aria-labelledby="image-crop-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box auth-box">
+                <div class="modal-content">
+                    <h2 id="image-crop-title" class="admin-modal-title">ครอบตัดรูปภาพให้เป็นสี่เหลี่ยมจตุรัส</h2>
+                    <p class="admin-panel-desc" style="margin-bottom: 1rem;">ลากรูปเพื่อจัดตำแหน่ง และเลื่อนแถบเพื่อซูมเข้า-ออก</p>
+                    <div class="crop-viewport" id="crop-viewport">
+                        <img id="crop-image" alt="ตัวอย่างรูปที่จะครอบตัด" draggable="false">
+                    </div>
+                    <input type="range" id="crop-zoom" class="crop-zoom-slider" min="1" max="3" step="0.01" value="1">
+                    <div class="crop-modal-actions">
+                        <button type="button" class="btn-outline" onclick="cancelImageCrop()">ยกเลิก</button>
+                        <button type="button" class="submit-btn admin-submit-btn" id="crop-confirm-btn" onclick="confirmImageCrop()">ยืนยันครอบตัด</button>
+                    </div>
+                    <p class="admin-field-hint hidden" id="crop-status"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ฟอร์มข่าวสาร ================= -->
+    <div id="news-modal" class="modal hidden" aria-labelledby="news-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeNewsForm()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeNewsForm()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="news-modal-title" class="admin-modal-title">เพิ่มประชาสัมพันธ์</h2>
+                    <form id="news-form" class="auth-form">
+                        <input type="hidden" id="news-id">
+                        <div class="form-grid-wide">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label" for="news-tag">ประเภทประชาสัมพันธ์</label>
+                                    <select class="form-input" id="news-tag">
+                                        <option value="ANNOUNCE">ประกาศค่าย</option>
+                                        <option value="ACTIVITY">ประชาสัมพันธ์การรับสมัคร</option>
+                                        <option value="SCHOLAR">กิจกรรม</option>
+                                        <option value="OTHER">อื่น ๆ</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="news-publishedAt">วันที่เผยแพร่</label>
+                                    <div id="news-publishedAt-selects"></div>
+                                    <input type="hidden" id="news-publishedAt">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="news-imageUrl">รูปภาพ</label>
+                                    <div class="news-image-upload">
+                                        <div class="news-image-preview hidden" id="news-imageUrl-preview">
+                                            <img id="news-imageUrl-preview-img" src="" alt="ตัวอย่างรูปภาพประกอบประชาสัมพันธ์">
+                                        </div>
+                                        <input class="form-input" type="text" id="news-imageUrl" placeholder="/backend/uploads/news/xxx.jpg" oninput="updateNewsImagePreview()">
+                                        <input class="admin-file-input" type="file" accept="image/*" id="news-imageUrl-file" onchange="uploadNewsImage(event)">
+                                        <p class="admin-field-hint hidden" id="news-imageUrl-status"></p>
+                                    </div>
+                                </div>
+                                <div class="checkbox-group">
+                                    <label class="ios-checkbox">
+                                        <input type="checkbox" id="news-isHot">
+                                        <div class="checkbox-wrapper">
+                                            <div class="checkbox-bg"></div>
+                                            <svg class="checkbox-icon" viewBox="0 0 24 24" fill="none">
+                                                <path class="check-path" d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </label>
+                                    <label for="news-isHot" class="checkbox-label">ติดป้าย "สำคัญ" (ประกาศเด่น)</label>
+                                </div>
+                                <div class="admin-toggle-row">
+                                    <label class="admin-toggle-switch">
+                                        <input type="checkbox" id="news-isVisible" checked>
+                                    </label>
+                                    <div>
+                                        <span class="admin-toggle-label">แสดงผลบนหน้าเว็บไซต์หลัก</span>
+                                        <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนจากหน้าเว็บโดยไม่ต้องลบข้อมูล</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label" for="news-title">หัวข้อประชาสัมพันธ์</label>
+                                    <input class="form-input" type="text" id="news-title" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="news-summary">สรุปย่อ</label>
+                                    <textarea class="form-input admin-textarea" id="news-summary" rows="3" style="min-height: 0;" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="news-detail">รายละเอียด</label>
+                            <div class="admin-richtext-editor">
+                                <div class="admin-richtext-toolbar">
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                        </svg>
+                                    </button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="admin-textarea admin-richtext" id="news-detail" contenteditable="true" data-placeholder="พิมพ์รายละเอียดประชาสัมพันธ์..."></div>
+                            </div>
+                        </div>
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeNewsForm()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
+                        </div>
+                        <div id="news-form-error" class="admin-form-error hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ฟอร์มกำหนดการ ================= -->
+    <div id="schedule-modal" class="modal hidden" aria-labelledby="schedule-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeScheduleForm()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeScheduleForm()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="schedule-modal-title" class="admin-modal-title">เพิ่มกำหนดการ</h2>
+                    <form id="schedule-form" class="auth-form">
+                        <input type="hidden" id="schedule-id">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="schedule-eventDate">วันที่เริ่ม (สำหรับเรียงลำดับ) <span class="required-mark">*</span></label>
+                                <div id="schedule-eventDate-selects"></div>
+                                <input type="hidden" id="schedule-eventDate" onchange="autoFillScheduleDateText()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="schedule-endDate">วันที่สิ้นสุด (ถ้ามีหลายวัน)</label>
+                                <div id="schedule-endDate-selects"></div>
+                                <input type="hidden" id="schedule-endDate" onchange="autoFillScheduleDateText()">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="schedule-badgeColor">สีป้ายกำกับ</label>
+                                <select class="form-input" id="schedule-badgeColor">
+                                    <option value="EMERALD">เขียว</option>
+                                    <option value="ROSE">แดง</option>
+                                    <option value="BRAND">ส้ม</option>
+                                    <option value="INDIGO">น้ำเงิน</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="schedule-badgeLabel">ข้อความป้ายกำกับ</label>
+                                <input class="form-input" type="text" id="schedule-badgeLabel" placeholder="เปิดรับ">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="schedule-dateText">วันที่แสดงผล (แบบสั้น)</label>
+                                <input class="form-input" type="text" id="schedule-dateText" placeholder="1 ก.ค. 2569" required>
+                                <p class="admin-field-hint">เติมอัตโนมัติจากวันที่ด้านบน แก้ไขเพิ่มเติมเองได้</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="schedule-mobileDate">วันที่แสดงผล (แบบเต็ม บนมือถือ)</label>
+                                <input class="form-input" type="text" id="schedule-mobileDate" placeholder="1 กรกฎาคม 2569 (เปิดรับสมัคร)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="schedule-title">หัวข้อ</label>
+                            <input class="form-input" type="text" id="schedule-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="schedule-description">รายละเอียด</label>
+                            <textarea class="form-input admin-textarea" id="schedule-description" rows="4" required></textarea>
+                        </div>
+                        <div class="admin-toggle-row">
+                            <label class="admin-toggle-switch">
+                                <input type="checkbox" id="schedule-isVisible" checked>
+                            </label>
+                            <div>
+                                <span class="admin-toggle-label">แสดงผลบนหน้าเว็บไซต์หลัก</span>
+                                <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนจากหน้าเว็บโดยไม่ต้องลบข้อมูล</p>
+                            </div>
+                        </div>
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeScheduleForm()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
+                        </div>
+                        <div id="schedule-form-error" class="admin-form-error hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ฟอร์มผู้ใช้งาน ================= -->
+    <div id="user-modal" class="modal hidden" aria-labelledby="user-modal-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeUserForm()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeUserForm()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="user-modal-title" class="admin-modal-title">เพิ่มผู้ใช้งาน</h2>
+                    <form id="user-form" class="auth-form">
+                        <input type="hidden" id="user-id">
+                        <input type="hidden" id="user-current-role-tab">
+
+                        <div class="dashboard-tabs" id="user-form-tabs">
+                            <button type="button" class="dashboard-tab active" data-user-form-tab="account" onclick="switchUserFormTab('account')">บัญชี</button>
+                            <button type="button" class="dashboard-tab" data-user-form-tab="personal" onclick="switchUserFormTab('personal')" id="user-form-tab-personal-label">ข้อมูลส่วนตัว</button>
+                            <button type="button" class="dashboard-tab" data-user-form-tab="work" onclick="switchUserFormTab('work')" id="user-form-tab-work-label">เกี่ยวกับค่าย</button>
+                        </div>
+
+                        <div class="create-user-tab-panel" id="user-form-panel-account">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-email">อีเมล</label>
+                                    <input class="form-input" type="email" id="user-email" required>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-password">รหัสผ่าน</label>
+                                    <div class="password-field-wrap">
+                                        <input class="form-input" type="password" id="user-password" placeholder="อย่างน้อย 8 ตัวอักษร" oninput="updateUserPasswordChecklist()">
+                                        <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('user-password', this)">
+                                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <ul class="password-checklist" id="user-password-checklist">
+                                        <li data-rule="length">อย่างน้อย 8 ตัวอักษร</li>
+                                    </ul>
+                                    <p class="password-checklist-hint">และผ่านอย่างน้อย 3 ใน 4 ข้อต่อไปนี้</p>
+                                    <ul class="password-checklist" id="user-password-checklist-categories">
+                                        <li data-rule="lower">ตัวพิมพ์เล็ก (a-z)</li>
+                                        <li data-rule="upper">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                                        <li data-rule="number">ตัวเลข (0-9)</li>
+                                        <li data-rule="special">อักขระพิเศษ (เช่น ! @ # $)</li>
+                                    </ul>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="user-confirm-password">ยืนยันรหัสผ่าน</label>
+                                    <div class="password-field-wrap">
+                                        <input class="form-input" type="password" id="user-confirm-password" placeholder="พิมพ์รหัสผ่านอีกครั้ง">
+                                        <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('user-confirm-password', this)">
+                                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="user-role-group">
+                                <label class="form-label" for="user-role">บทบาท (Role)</label>
+                                <select class="form-input" id="user-role" onchange="handleUserRoleChange()">
+                                    <option value="STAFF">พี่ค่าย</option>
+                                    <option value="PARTICIPANT">น้องค่าย</option>
+                                </select>
+                                <p class="admin-field-hint">บทบาทถูกกำหนดตั้งแต่ลงทะเบียน ไม่สามารถเปลี่ยนภายหลังได้</p>
+                            </div>
+                        </div>
+
+                        <div class="create-user-tab-panel hidden" id="user-form-panel-personal">
+                            <div id="user-staff-personal-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-prefix">คำนำหน้า</label>
+                                        <select class="form-input" id="user-staff-prefix">
+                                            <option value="">-- เลือกคำนำหน้า --</option>
+                                            <option value="นาย">นาย</option>
+                                            <option value="นาง">นาง</option>
+                                            <option value="นางสาว">นางสาว</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-academicTitle">คำนำหน้าทางวิชาการ</label>
+                                        <input class="form-input" type="text" id="user-staff-academicTitle" placeholder="เช่น ดร., รศ.ดร.">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-firstName">ชื่อ</label>
+                                        <input class="form-input" type="text" id="user-staff-firstName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-lastName">นามสกุล</label>
+                                        <input class="form-input" type="text" id="user-staff-lastName">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-nickname">ชื่อเล่น</label>
+                                        <input class="form-input" type="text" id="user-staff-nickname">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-birthDate">วันเกิด</label>
+                                        <div id="user-staff-birthDate-selects"></div>
+                                        <input type="hidden" id="user-staff-birthDate">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-phone">เบอร์โทรศัพท์</label>
+                                        <input class="form-input" type="tel" id="user-staff-phone" placeholder="0XX-XXX-XXXX" oninput="handleUserPhoneInput(event)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-occupationStatus">สถานะ</label>
+                                        <select class="form-input" id="user-staff-occupationStatus" onchange="handleUserStaffOccupationStatusChange()">
+                                            <option value="">-- เลือกสถานะ --</option>
+                                            <option value="working">ประกอบอาชีพ</option>
+                                            <option value="studying">กำลังศึกษา (ระดับอุดมศึกษา)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-grid hidden" id="user-staff-affiliation-group">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-affiliation">สังกัด</label>
+                                        <input class="form-input" type="text" id="user-staff-affiliation" placeholder="เช่น มหาวิทยาลัยราชภัฏชัยภูมิ คณะครุศาสตร์">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-occupation">อาชีพ</label>
+                                        <input class="form-input" type="text" id="user-staff-occupation">
+                                    </div>
+                                </div>
+                                <div class="form-grid hidden" id="user-staff-student-group">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-faculty">คณะ / สำนักวิชา</label>
+                                        <input class="form-input" type="text" id="user-staff-faculty" placeholder="เช่น คณะครุศาสตร์">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-major">สาขาวิชา</label>
+                                        <input class="form-input" type="text" id="user-staff-major" placeholder="เช่น คณิตศาสตร์">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden" id="user-participant-personal-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-prefix">คำนำหน้า</label>
+                                        <select class="form-input" id="user-participant-prefix">
+                                            <option value="">-- เลือกคำนำหน้า --</option>
+                                            <option value="นาย">นาย</option>
+                                            <option value="นาง">นาง</option>
+                                            <option value="นางสาว">นางสาว</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-birthDate">วันเกิด</label>
+                                        <div id="user-participant-birthDate-selects"></div>
+                                        <input type="hidden" id="user-participant-birthDate">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-firstName">ชื่อ</label>
+                                        <input class="form-input" type="text" id="user-participant-firstName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-lastName">นามสกุล</label>
+                                        <input class="form-input" type="text" id="user-participant-lastName">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-nickname">ชื่อเล่น</label>
+                                        <input class="form-input" type="text" id="user-participant-nickname">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-phone">เบอร์โทรศัพท์</label>
+                                        <input class="form-input" type="tel" id="user-participant-phone" placeholder="0XX-XXX-XXXX" oninput="handleUserPhoneInput(event)">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-parentPhone">เบอร์โทรผู้ปกครอง</label>
+                                        <input class="form-input" type="tel" id="user-participant-parentPhone" placeholder="0XX-XXX-XXXX" oninput="handleUserPhoneInput(event)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="create-user-tab-panel hidden" id="user-form-panel-work">
+                            <div id="user-staff-work-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-department">ฝ่ายงาน</label>
+                                        <select class="form-input" id="user-staff-department">
+                                            <option value="">-- เลือกฝ่ายงาน --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-position">ตำแหน่ง</label>
+                                        <select class="form-input" id="user-staff-position">
+                                            <option value="">-- เลือกตำแหน่ง --</option>
+                                        </select>
+                                        <div class="admin-toggle-row hidden" id="user-isadmin-row">
+                                            <label class="admin-toggle-switch">
+                                                <input type="checkbox" id="user-isAdmin">
+                                            </label>
+                                            <div>
+                                                <span class="admin-toggle-label">มอบสิทธิ์ผู้ดูแลระบบ (Admin)</span>
+                                                <p class="admin-field-hint admin-toggle-hint">Admin สามารถดูภาพรวมและแก้ไขข้อมูลเกี่ยวกับค่ายได้</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden" id="user-participant-study-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-courseFormat">รูปแบบคอร์สเรียน</label>
+                                        <select class="form-input" id="user-participant-courseFormat">
+                                            <option value="">-- เลือกรูปแบบคอร์ส --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-group">กลุ่ม</label>
+                                        <select class="form-input" id="user-participant-group">
+                                            <option value="">-- เลือกกลุ่ม --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-studyPlan">แผนการเรียน</label>
+                                        <select class="form-input" id="user-participant-studyPlan" onchange="syncStudyPlanOtherVisibility('user-participant-studyPlan', 'user-participant-studyPlanOther-group')">
+                                            <option value="">-- เลือกแผนการเรียน --</option>
+                                            <option value="SCIENCE_MATH">วิทย์-คณิต</option>
+                                            <option value="ARTS_MATH">ศิลป์-คำนวณ</option>
+                                            <option value="ARTS_LANGUAGE">ศิลป์-ภาษา</option>
+                                            <option value="ARTS_SOCIAL">ศิลป์-สังคม</option>
+                                            <option value="OTHER">อื่น ๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group hidden" id="user-participant-studyPlanOther-group">
+                                        <label class="form-label" for="user-participant-studyPlanOther">ระบุแผนการเรียน</label>
+                                        <input class="form-input" type="text" id="user-participant-studyPlanOther" placeholder="เช่น ศิลป์ - กีฬา">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-interestSubjectGroup">กลุ่มวิชาที่สนใจ (เลือกได้มากกว่า 1 ข้อ)</label>
+                                        <select class="form-input" id="user-participant-interestSubjectGroup" multiple size="5" onchange="syncInterestOtherVisibility('user-participant-interestSubjectGroup', 'user-participant-interestSubjectGroupOther-group')">
+                                            <option value="ENGINEERING_TECH">วิศวกรรมศาสตร์</option>
+                                            <option value="SCIENCE">วิทยาศาสตร์</option>
+                                            <option value="HEALTH">สุขภาพ</option>
+                                            <option value="EDUCATION">ศึกษาศาสตร์</option>
+                                            <option value="HUMANITIES_SOCIAL">มนุษยศาสตร์และสังคม</option>
+                                            <option value="ART_DESIGN">ศิลปกรรมศาสตร์</option>
+                                            <option value="MEDIA_DIGITAL_TECH">สื่อและเทคโนโลยีดิจิทัล</option>
+                                            <option value="BUSINESS">บริหารธุรกิจ</option>
+                                            <option value="OTHER">อื่น ๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group hidden" id="user-participant-interestSubjectGroupOther-group">
+                                        <label class="form-label" for="user-participant-interestSubjectGroupOther">ระบุกลุ่มวิชาที่สนใจ</label>
+                                        <input class="form-input" type="text" id="user-participant-interestSubjectGroupOther" placeholder="เช่น นิติศาสตร์">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-dreamInstitution">สถาบัน/คณะในฝัน</label>
+                                        <input class="form-input" type="text" id="user-participant-dreamInstitution">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeUserForm()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
+                        </div>
+                        <div id="user-form-error" class="admin-form-error hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: รายละเอียดการลงทะเบียน (ก่อนอนุมัติ) ================= -->
+    <div id="approval-detail-modal" class="modal hidden" aria-labelledby="approval-detail-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeApprovalDetail()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeApprovalDetail()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="approval-detail-title" class="admin-modal-title">รายละเอียดการลงทะเบียน</h2>
+                    <div class="approval-detail-grid" id="approval-detail-grid"></div>
+                    <div class="admin-confirm-actions" style="margin-top: 1.5rem;">
+                        <button type="button" class="admin-approve-btn" id="approval-detail-approve-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">อนุมัติ</button>
+                        <button type="button" class="admin-reject-btn" id="approval-detail-reject-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">ปฏิเสธ</button>
+                        <button type="button" class="admin-delete-btn hidden" id="approval-detail-delete-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">ลบ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: รายละเอียดข่าว (ก่อนอนุมัติ) ================= -->
+    <div id="news-approval-detail-modal" class="modal hidden" aria-labelledby="news-approval-detail-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeNewsApprovalDetail()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeNewsApprovalDetail()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="news-approval-detail-title" class="admin-modal-title">ตัวอย่างประชาสัมพันธ์</h2>
+                    <p class="admin-panel-desc" id="news-approval-detail-subtitle" style="margin: 0.15rem 0 1rem;">แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก หากกดอนุมัติ</p>
+                    <div class="approval-detail-grid" id="news-approval-detail-grid"></div>
+                    <!-- กรอบเส้นประ = พื้นที่ที่ render ด้วย markup/คลาสเดียวกับหน้ารายละเอียดข่าวจริง (ดู viewNewsDetail() ใน js/pages/news.js) ให้เหมือนจริงที่สุด ไม่ใช่แค่ list ข้อมูลดิบ -->
+                    <div class="news-live-preview-frame" id="news-approval-detail-preview"></div>
+                    <div class="admin-confirm-actions" id="news-approval-detail-actions" style="margin-top: 1.5rem;">
+                        <button type="button" class="admin-approve-btn" id="news-approval-detail-approve-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">อนุมัติ</button>
+                        <button type="button" class="admin-reject-btn" id="news-approval-detail-reject-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">ปฏิเสธ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ดูรูปเต็มจอ (คลิกรูปในตัวอย่างประชาสัมพันธ์เพื่อดูรูปขนาดเต็ม ไม่ถูกครอบตัด) ================= -->
+    <div id="image-lightbox-modal" class="modal hidden image-lightbox-modal" role="dialog" aria-modal="true">
+        <div onclick="closeImageLightbox()" class="modal-backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox-close-btn">
+            <button type="button" onclick="closeImageLightbox()" aria-label="ปิด">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
+    </div>
+
+    <!-- ================= MODAL: กล่องถามลิงก์ (แทน prompt() ของเบราว์เซอร์ ใช้ตอนกดปุ่ม "แทรกลิงก์" ใน rich text editor) ================= -->
+    <div id="link-prompt-modal" class="modal hidden" aria-labelledby="link-prompt-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="linkPromptResolve(null)" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box confirm-box">
+                <div class="modal-content">
+                    <h2 id="link-prompt-title" class="confirm-title">แทรกลิงก์</h2>
+                    <p class="confirm-message">ใส่ลิงก์ที่ต้องการแทรก</p>
+                    <input type="url" id="link-prompt-input" class="form-input" placeholder="https://..." style="margin-bottom: 1.25rem;">
+                    <div class="confirm-actions">
+                        <button type="button" class="confirm-cancel-btn" onclick="linkPromptResolve(null)">ยกเลิก</button>
+                        <button type="button" class="confirm-ok-btn" onclick="linkPromptResolve(document.getElementById('link-prompt-input').value)">ตกลง</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ยืนยันการทำรายการ ================= -->
+    <div id="admin-confirm-modal" class="modal hidden" aria-labelledby="admin-confirm-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div class="modal-backdrop" onclick="adminConfirmResolve(false)" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box admin-confirm-box">
+                <div class="modal-content">
+                    <div class="admin-confirm-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                    </div>
+                    <h2 id="admin-confirm-title" class="admin-confirm-title">ยืนยันการลบ</h2>
+                    <p id="admin-confirm-message" class="admin-confirm-message"></p>
+                    <div class="admin-confirm-actions">
+                        <button type="button" class="admin-confirm-cancel-btn" onclick="adminConfirmResolve(false)">ยกเลิก</button>
+                        <button type="button" class="admin-confirm-ok-btn" id="admin-confirm-ok-btn" onclick="adminConfirmResolve(true)">ยืนยัน</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: โปรไฟล์บัญชี (WebManager) ================= -->
+    <div id="webmanager-settings-modal" class="modal hidden" aria-labelledby="webmanager-settings-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeWebManagerSettings()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box auth-box">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeWebManagerSettings()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <h2 id="webmanager-settings-title" class="admin-modal-title">โปรไฟล์บัญชี</h2>
+
+                    <form id="webmanager-email-form" class="auth-form" onsubmit="submitWebManagerEmailForm(event)">
+                        <h3 class="admin-panel-title" style="font-size: 0.95rem;">อีเมล</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="webmanager-settings-email">อีเมลเข้าสู่ระบบ</label>
+                            <input class="form-input" type="email" id="webmanager-settings-email" required>
+                        </div>
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeWebManagerSettings()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">บันทึกอีเมล</button>
+                        </div>
+                        <div id="webmanager-email-form-error" class="admin-form-error hidden"></div>
+                    </form>
+
+                    <div class="admin-shell-nav-divider" style="margin: 1.5rem 0;"></div>
+
+                    <form id="webmanager-password-form" class="auth-form" onsubmit="submitWebManagerPasswordForm(event)">
+                        <h3 class="admin-panel-title" style="font-size: 0.95rem;">เปลี่ยนรหัสผ่าน</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="webmanager-current-password">รหัสผ่านปัจจุบัน</label>
+                            <div class="password-field-wrap">
+                                <input class="form-input" type="password" id="webmanager-current-password" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('webmanager-current-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="webmanager-new-password">รหัสผ่านใหม่</label>
+                            <div class="password-field-wrap">
+                                <input class="form-input" type="password" id="webmanager-new-password" required placeholder="••••••••" oninput="handleWebManagerSettingsPasswordInput()">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('webmanager-new-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p id="webmanager-settings-password-hint" class="password-hint">อย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลข</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="webmanager-confirm-password">ยืนยันรหัสผ่านใหม่</label>
+                            <div class="password-field-wrap">
+                                <input class="form-input" type="password" id="webmanager-confirm-password" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('webmanager-confirm-password', this)">
+                                    <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-form-actions">
+                            <button type="button" class="admin-cancel-btn" onclick="closeWebManagerSettings()">ยกเลิก</button>
+                            <button type="submit" class="submit-btn admin-submit-btn">เปลี่ยนรหัสผ่าน</button>
+                        </div>
+                        <div id="webmanager-password-form-error" class="admin-form-error hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
+    <script src="../js/layout/loader.js?v=20260920-1"></script>
+    <script src="../js/layout/date-select.js?v=20260916-1"></script>
+    <script src="js/webmanager.js?v=20260920-6"></script>
+    <script src="js/webmanager-dashboard.js?v=20260919-1"></script>
+</body>
+
+</html>

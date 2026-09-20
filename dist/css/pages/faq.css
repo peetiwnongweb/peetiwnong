@@ -1,0 +1,152 @@
+/* ==========================================
+   HISTORY Page (id="page-faq")
+   ========================================== */
+.history-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.history-intro-card,
+.history-card {
+  background-color: white;
+  border-radius: 1.5rem;
+  border: 1px solid var(--slate-200);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+.history-intro-card {
+  padding: 2rem;
+}
+
+.history-intro-card p {
+  color: var(--slate-600);
+  line-height: 1.9;
+}
+
+/* .history-gallery-grid layout: class="columns-2 sm:columns-3 lg:columns-4 gap-4" (Tailwind) — จัดแบบ masonry ความสูงหลากหลาย */
+
+.history-gallery-grid img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* .history-gallery-placeholder layout: class="flex items-center justify-center break-inside-avoid mb-4" (Tailwind) ความสูงกำหนดต่อชิ้นด้วย Tailwind h-* */
+.history-gallery-placeholder {
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  position: relative;
+  overflow: hidden;
+  color: white;
+}
+
+.history-gallery-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.25), transparent 55%);
+}
+
+.gallery-placeholder-icon {
+  width: 3rem;
+  height: 3rem;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.gallery-bg-1 {
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+}
+
+.gallery-bg-2 {
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+}
+
+.gallery-bg-3 {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.gallery-bg-4 {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+}
+
+.history-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.history-card {
+  padding: 1.5rem;
+}
+
+.history-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.85rem;
+  color: var(--slate-900);
+  font-size: 1.15rem;
+}
+
+.history-card p {
+  margin: 0;
+  color: var(--slate-600);
+  line-height: 1.8;
+}
+
+.history-presidents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.history-presidents-grid .track-card {
+  background-color: white;
+}
+
+.president-item strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--slate-900);
+}
+
+.president-item span {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: var(--slate-500);
+  font-size: 0.9rem;
+}
+
+.president-item p {
+  margin: 0;
+  color: var(--slate-600);
+  line-height: 1.75;
+}
+
+/* ==========================================
+   FAQ: Mobile-specific overrides (max-width: 480px)
+   หมายเหตุ: .faq-question / .faq-answer / .faq-btn ไม่มี base rule และไม่มี element
+   ใน HTML ปัจจุบันที่ใช้คลาสเหล่านี้ (หน้า page-faq ถูกเปลี่ยนเป็น History แล้ว)
+   คงไว้เพื่อไม่ให้ตกหล่นจาก main.css เดิม แต่ถือเป็น dead CSS ที่ไม่มีผลกับหน้าจอจริง
+   ========================================== */
+@media (max-width: 480px) {
+  .faq-question {
+    font-size: 0.8rem;
+  }
+
+  .faq-answer {
+    font-size: 0.8rem;
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  .faq-btn {
+    padding: 0.75rem 1rem;
+  }
+}

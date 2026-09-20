@@ -1,0 +1,315 @@
+/* ==========================================
+   PROFILE PAGE STYLES (ตั้งค่าโปรไฟล์ / ความปลอดภัย / เกี่ยวกับค่าย)
+   ========================================== */
+
+.profile-card {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* ปุ่ม Help (คู่มือการแก้ไขข้อมูล) ลอยไว้มุมขวาบนของการ์ด - ใช้ position:absolute เพื่อไม่ให้ไปดันรูปโปรไฟล์/ปุ่มเปลี่ยนรูปที่อยู่แถวบนสุด */
+.profile-help-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+}
+
+@media (min-width: 640px) {
+  .profile-card {
+    padding: 2.5rem;
+  }
+}
+
+/* จอเล็กการ์ดแคบลง ปุ่ม Help ที่ลอยอยู่มุมขวาบนเลยทับกับแถวรูปโปรไฟล์/หัวข้อแรกของการ์ดพอดี
+   เว้นที่ด้านบนเพิ่มให้เนื้อหาเริ่มต่ำกว่าปุ่ม (ความสูงปุ่ม ~2.25rem + ระยะจากขอบ 1rem + ช่องไฟ) */
+@media (max-width: 639px) {
+  .profile-card {
+    padding-top: 4.25rem;
+  }
+}
+
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--slate-100);
+}
+
+.profile-avatar-preview {
+  width: 5rem;
+  height: 5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+  color: white;
+  font-weight: 800;
+  font-size: 1.75rem;
+}
+
+.profile-avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.profile-avatar-hint {
+  font-size: 0.75rem;
+  color: var(--slate-400);
+}
+
+.form-input[readonly] {
+  background-color: var(--slate-50);
+  color: var(--slate-500);
+  cursor: not-allowed;
+}
+
+.profile-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0 0 0.35rem 0;
+}
+
+.profile-section-desc {
+  font-size: 0.85rem;
+  color: var(--slate-500);
+  margin: 0 0 1.5rem 0;
+}
+
+/* เกี่ยวกับค่าย */
+/* ==========================================
+   แท็บ "เกี่ยวกับค่าย": การ์ดช่องทางติดต่อ แยกใบละช่องทาง
+   ========================================== */
+.about-contact-heading {
+  max-width: 880px;
+  margin: 0 auto 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+/* ใช้ flex-wrap แทน grid เพราะมี 5 ใบ ถ้าเป็น grid แถวสุดท้ายจะเหลือ 2 ใบชิดซ้ายแล้วว่างข้างขวา
+   flex + justify-content:center ทำให้แถวที่ไม่เต็มถูกจัดกึ่งกลางเสมอ และจอเล็กก็ยุบเหลือใบเดียวต่อแถวเอง */
+.about-contact-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 880px;
+  margin: 0 auto 1.5rem;
+}
+
+.about-contact-card {
+  display: flex;
+  flex: 1 1 15rem;
+  max-width: 17rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 1.25rem;
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+  text-decoration: none;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.about-contact-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--slate-300);
+  box-shadow: 0 14px 26px -14px rgba(15, 23, 42, 0.35);
+}
+
+/* หัวการ์ด: โลโก้กับชื่อช่องทางอยู่บรรทัดเดียวกัน ส่วนค่าจริงอยู่บรรทัดล่าง */
+.about-contact-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.about-contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 0.9rem;
+}
+
+.about-contact-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+/* แต่ละช่องทางใช้สีแบรนด์จริงเต็มกรอบ ไอคอนเป็นสีขาว เหมือนปุ่มโซเชียลทั่วไป เห็นแล้วรู้ทันทีว่าช่องทางไหน
+   (Facebook/Instagram ใช้เครื่องหมายโลโก้จริงและสีจริงของแบรนด์) */
+.about-contact-card .about-contact-icon {
+  color: white;
+}
+
+.contact-phone .about-contact-icon {
+  background: linear-gradient(135deg, #34d399, #059669);
+  box-shadow: 0 6px 14px -6px rgba(5, 150, 105, 0.65);
+}
+
+.contact-email .about-contact-icon {
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  box-shadow: 0 6px 14px -6px rgba(216, 104, 29, 0.65);
+}
+
+.contact-map .about-contact-icon {
+  background: linear-gradient(135deg, #fb7185, #e11d48);
+  box-shadow: 0 6px 14px -6px rgba(225, 29, 72, 0.6);
+}
+
+.contact-facebook .about-contact-icon {
+  background: #1877f2;
+  box-shadow: 0 6px 14px -6px rgba(24, 119, 242, 0.7);
+}
+
+/* ไล่สีชุดเดียวกับโลโก้ Instagram จริง (เหลือง-ชมพู-ม่วง) */
+.contact-instagram .about-contact-icon {
+  background: linear-gradient(45deg, #f9ce34 0%, #ee2a7b 50%, #6228d7 100%);
+  box-shadow: 0 6px 14px -6px rgba(238, 42, 123, 0.65);
+}
+
+/* โลโก้ Facebook/Instagram ใช้ไฟล์ .svg ของจริงจาก Simple Icons (สัญญาอนุญาต CC0) ที่เก็บไว้ใน assets/icons/brands/
+   ไฟล์ต้นฉบับเป็นรูปทึบสีเดียว จึงวาดด้วย mask แล้วเทสีขาวทับ เพื่อให้เป็นโลโก้ขาวบนพื้นสีแบรนด์ได้
+   (ถ้าใช้ <img> ตรง ๆ จะเปลี่ยนเป็นสีขาวไม่ได้ เพราะสีถูกฝังมาในไฟล์แล้ว) */
+.contact-facebook .about-contact-icon::before,
+.contact-instagram .about-contact-icon::before {
+  content: '';
+  width: 1.35rem;
+  height: 1.35rem;
+  background-color: white;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.contact-facebook .about-contact-icon::before {
+  -webkit-mask-image: url('/assets/icons/brands/facebook.svg');
+  mask-image: url('/assets/icons/brands/facebook.svg');
+}
+
+.contact-instagram .about-contact-icon::before {
+  -webkit-mask-image: url('/assets/icons/brands/instagram.svg');
+  mask-image: url('/assets/icons/brands/instagram.svg');
+}
+
+.about-contact-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--slate-900);
+}
+
+/* ค่าบางอันยาว (อีเมล) ต้องตัดขึ้นบรรทัดใหม่ได้ ไม่งั้นจะดันการ์ดจนกริดเสียทรง */
+.about-contact-value {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--slate-500);
+  overflow-wrap: anywhere;
+}
+
+.about-contact-card:hover .about-contact-value {
+  color: var(--slate-700);
+}
+
+/* ==========================================
+   MODAL: เปลี่ยนรูปโปรไฟล์ (เลือกจากคลัง หรือใส่ URL เอง)
+   ========================================== */
+.avatar-picker-box {
+  max-width: 30rem;
+}
+
+.avatar-picker-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.avatar-picker-preview {
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-500), var(--indigo-600));
+  color: white;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.avatar-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.25rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+
+.avatar-gallery-item {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  background-color: var(--slate-100);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.avatar-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-gallery-item:hover {
+  transform: scale(1.06);
+}
+
+.avatar-gallery-item.selected {
+  border-color: var(--brand-500);
+}
+
+.avatar-picker-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  color: var(--slate-400);
+  font-size: 0.8rem;
+}
+
+.avatar-picker-divider::before,
+.avatar-picker-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--slate-200);
+}

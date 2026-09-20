@@ -1,0 +1,320 @@
+/* ==========================================
+   เขียนข่าว / เช็คข่าว (พี่ค่ายทุกฝ่ายเขียนข่าวส่งเข้ามาได้ ต้องรออนุมัติก่อนเผยแพร่จริง)
+   ========================================== */
+
+.news-write-card {
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .news-write-card {
+    padding: 2.5rem;
+  }
+}
+
+.news-write-mode-label {
+  margin: 0 0 1.25rem;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--brand-600);
+  display: none;
+}
+
+/* ช่อง "เนื้อหาประชาสัมพันธ์" เป็น rich text editor (พิมพ์ตัวหนา/เอียง/หัวข้อย่อย + Enter ขึ้นบรรทัดใหม่จริงได้) แทน textarea ธรรมดา
+   คัดลอกมาจาก .admin-richtext-* ในแผง WebManager (fontend/webmanager/css/webmanager.css) ทุกประการ - หน้านี้ไม่ได้โหลด CSS ชุดนั้นจึงต้องมีสำเนาของตัวเอง */
+.admin-textarea {
+  resize: vertical;
+  min-height: 8rem;
+  font-family: inherit;
+}
+
+.admin-richtext-editor {
+  border: 1.5px solid var(--slate-200);
+  border-radius: 0.75rem;
+  background-color: var(--slate-50);
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-richtext-editor:focus-within {
+  border-color: var(--slate-400);
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12);
+}
+
+.admin-richtext-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem;
+  background-color: white;
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.admin-richtext-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0.3rem;
+  background-color: var(--slate-200);
+}
+
+.admin-richtext-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: var(--slate-600);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-richtext-btn svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.admin-richtext-btn:hover {
+  background-color: var(--slate-100);
+  color: var(--slate-900);
+}
+
+.admin-richtext-btn.active {
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.admin-richtext {
+  overflow-y: auto;
+  cursor: text;
+  line-height: 1.6;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  color: var(--slate-900);
+  background-color: transparent;
+  outline: none;
+}
+
+.admin-richtext:empty::before {
+  content: attr(data-placeholder);
+  color: var(--slate-400);
+}
+
+.admin-richtext ul {
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.admin-richtext a {
+  color: var(--brand-600);
+  text-decoration: underline;
+}
+
+.news-write-mode-label.show {
+  display: block;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.news-image-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.news-image-upload-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.news-image-upload-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+.news-image-preview-wrap {
+  position: relative;
+  width: 6rem;
+  height: 6rem;
+  flex-shrink: 0;
+}
+
+.news-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  border: 1px solid var(--slate-200);
+}
+
+.news-image-remove-btn {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: var(--rose-600);
+  color: white;
+  border: 2px solid white;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================
+   รายการข่าวที่ส่งไปแล้ว (แท็บ เช็คข่าว)
+   ========================================== */
+.news-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.news-item-card {
+  background-color: white;
+  border: 1px solid var(--slate-200);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.news-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.news-item-title {
+  font-weight: 700;
+  color: var(--slate-900);
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+
+.news-item-meta {
+  margin: 0;
+  color: var(--slate-500);
+  font-size: 0.83rem;
+}
+
+.news-item-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.news-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.news-status-badge.status-approved {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.news-status-badge.status-pending {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+.news-status-badge.status-rejected {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+.news-status-badge.status-visible {
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.news-status-badge.status-hidden {
+  background-color: var(--slate-100);
+  color: var(--slate-500);
+}
+
+/* "ดูรายละเอียด" อยู่ซ้าย (ไม่ทำลายข้อมูล เปิดดูได้เรื่อย ๆ) แยกจาก "แก้ไข"/"ลบ" ที่จัดกลุ่มไว้ขวา (แก้ไข/ทำลายข้อมูล) ให้เห็นชัดว่าเป็นคนละกลุ่มการกระทำ */
+.news-item-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.news-item-actions-right {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ปุ่มลบเป็นสีแดงแยกจากปุ่มอื่น (เตือนว่าทำลายข้อมูล) - โทนสีเดียวกับ #oral-exam-fail-btn ในหน้าจัดการคะแนน */
+.news-delete-btn {
+  border-color: var(--rose-600);
+  color: var(--rose-600);
+}
+
+.news-delete-btn:hover {
+  background-color: var(--rose-50);
+  border-color: var(--rose-600);
+  color: var(--rose-600);
+}
+
+.news-empty {
+  text-align: center;
+  color: var(--slate-500);
+  font-size: 0.9rem;
+  padding: 2rem 1rem;
+}
+
+/* ==========================================
+   โมดัลรายละเอียดข่าว (เช็คข่าว)
+   ========================================== */
+.news-detail-image {
+  width: 100%;
+  max-height: 16rem;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.news-detail-body {
+  color: var(--slate-600);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.news-detail-body a {
+  color: var(--brand-600);
+  text-decoration: underline;
+  font-weight: 600;
+  word-break: break-word;
+}

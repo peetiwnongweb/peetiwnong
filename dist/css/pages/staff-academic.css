@@ -1,0 +1,1908 @@
+/* ==========================================
+   งานวิชาการ: จัดการคะแนน / จัดการรายวิชา / จัดการตารางเรียน
+   ========================================== */
+
+/* หัวข้อ/คำอธิบายย่อยของแต่ละส่วนในการ์ด (เช่น "สัดส่วนคะแนนโดยรวม", "ตั้งค่าเกณฑ์ผลการประเมิน") - หน้านี้ไม่ได้โหลด profile.css ที่นิยามคลาสนี้ไว้ จึงต้องนิยามซ้ำที่นี่ */
+.profile-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0 0 0.5rem 0;
+}
+
+.profile-section-desc {
+  font-size: 0.85rem;
+  color: var(--slate-500);
+  margin: 0 0 1.5rem 0;
+}
+
+/* กล่องลากไฟล์วางสำหรับอัปโหลดเอกสาร (โครงเดียวกับ .gallery-dropzone ใน webmanager.css แต่หน้านี้ไม่ได้โหลด stylesheet นั้น) */
+.gallery-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem 1.5rem;
+  margin-top: 1rem;
+  border: 2px dashed var(--slate-300);
+  border-radius: 1rem;
+  background-color: var(--slate-50);
+  color: var(--slate-500);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.gallery-dropzone:hover {
+  border-color: var(--brand-500);
+  color: var(--slate-600);
+}
+
+.gallery-dropzone.dragging {
+  border-color: var(--brand-600);
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.gallery-dropzone-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.gallery-dropzone-text {
+  font-size: 0.85rem;
+}
+
+.gallery-dropzone-link {
+  color: var(--brand-600);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ปุ่มสลับคอร์สเรียน (คอร์สปรับพื้นฐาน / คอร์สเตรียมสอบ) */
+.course-tab-bar {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.course-tab-btn {
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--slate-200);
+  border-radius: 9999px;
+  background-color: white;
+  color: var(--slate-600);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.course-tab-btn:hover {
+  border-color: var(--brand-300);
+  color: var(--brand-600);
+}
+
+.course-tab-btn.active {
+  background-color: var(--brand-600);
+  border-color: var(--brand-600);
+  color: white;
+}
+
+/* ตารางคะแนนกว้างมาก (5 วิชา x 2 คอลัมน์ต่อวิชา) ขยายพื้นที่ทั้งหน้าให้เกินกรอบ max-w-7xl (1280px) เดิม
+   เพื่อให้การ์ดตารางคะแนน (max-width: 100% ของ container) กว้างเต็มจอจริง ๆ ไม่ใช่แค่เต็มกรอบแคบ ๆ
+   ส่วนแถบคอร์ส/ฟอร์มน้ำหนักคะแนนยังอยู่กึ่งกลางความกว้างเท่าเดิมเพราะมี max-width ของตัวเองกำกับอยู่แล้ว */
+#page-scores .max-w-7xl,
+#page-schedule .max-w-7xl {
+  max-width: 100%;
+}
+
+/* ตารางคะแนนหลายวิชา แนวนอนยาว ต้อง scroll ได้ */
+.score-table-card {
+  padding: 2rem;
+}
+
+.score-table-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.score-table-header-row .btn-outline {
+  flex-shrink: 0;
+}
+
+/* คำอธิบายใต้หัวข้อ "ตารางคะแนน" ไม่ต้องเว้นล่าง 1.5rem เหมือนการ์ดอื่น เพราะจอที่แถวเครื่องมือ (ค้นหา/พิมพ์) ตกลงมาอยู่ใต้หัวข้อ
+   (มือถือและแท็บเล็ต ซึ่งแถวนี้กว้างเกินจะอยู่ข้างหัวข้อได้) ระยะนี้จะไปบวกกับ gap ของแถวจนช่องค้นหาห่างจากหัวข้อเกินไป - ใช้ gap ของแถวเป็นตัวเว้นระยะอย่างเดียวพอ */
+.score-table-header-row .profile-section-desc {
+  margin-bottom: 0;
+}
+
+.score-table-search-input {
+  width: 14rem;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.875rem;
+}
+
+#score-table-search-input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+}
+
+.score-export-csv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.6rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #16a34a;
+  background-color: white;
+  border: 1.5px solid #16a34a;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.score-export-csv-btn:hover {
+  background-color: #f0fdf4;
+}
+
+/* ไอคอนซ่อนไว้บนจอปกติ (ปุ่มเป็นตัวหนังสือล้วนเหมือนเดิม) โผล่มาแทนที่ตัวหนังสือเฉพาะจอเล็กเท่านั้น (ดู media query ด้านล่าง) - ใช้กับปุ่ม "พิมพ์ / บันทึกเป็น PDF" ด้วย */
+.score-export-csv-icon,
+.score-print-icon {
+  display: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* จอเล็ก: ช่องค้นหา/ปุ่มพิมพ์/ปุ่มนำออก CSV เรียงต่อกันแล้วเกินความกว้างจอ ต้องขึ้นบรรทัดใหม่ทีละอัน กินพื้นที่แนวตั้งเยอะเกินไป
+   ย้ายปุ่ม "นำออกเป็น CSV" และ "พิมพ์ / บันทึกเป็น PDF" ออกจากแถวเครื่องมือ ไปลอยไว้มุมขวาบนของการ์ดแทน (ตำแหน่งเดียวกับหัวข้อ "ตารางคะแนน")
+   ย่อเป็นปุ่มกลมแสดงแค่ไอคอน ไม่ต้องมีตัวหนังสือ - ปุ่มพิมพ์อยู่ซ้าย ปุ่ม CSV สีเขียวอยู่ขวาสุด เหลือในแถวเครื่องมือแค่ช่องค้นหา */
+@media (max-width: 480px) {
+  .score-table-header-row {
+    position: relative;
+    /* เผื่อที่ให้ปุ่มกลม 2 ปุ่ม (2.25rem x 2) + ช่องไฟระหว่างปุ่ม 0.5rem + ช่องไฟจากหัวข้อ */
+    padding-right: 5.75rem;
+  }
+
+  .score-export-csv-btn,
+  .score-table-header-row .score-print-btn {
+    position: absolute;
+    top: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+  }
+
+  .score-export-csv-btn {
+    right: 0;
+  }
+
+  .score-table-header-row .score-print-btn {
+    right: 2.75rem;
+  }
+
+  .score-export-csv-icon,
+  .score-print-icon {
+    display: inline-block;
+  }
+
+  .score-export-csv-btn-label,
+  .score-print-btn-label {
+    display: none;
+  }
+}
+
+/* จอโทรศัพท์แนวตั้ง (กว้างไม่ถึง 640px) แสดงตารางคะแนนไม่ได้จริง: คอลัมน์รหัส+ชื่อที่ปักหมุด (sticky) ไว้ทางซ้ายกว้างรวมกัน ~290px
+   กินเต็มความกว้างการ์ดพอดี ช่องคะแนนที่เลื่อนอยู่ข้างหลังจึงถูกบังหมด เลื่อนยังไงก็ไม่เห็น - ซ่อนตาราง (และช่องค้นหาที่ไม่มีอะไรให้ค้นแล้ว) แล้วบอกให้หมุนจอเป็นแนวนอน/ใช้คอมแทน
+   ทำเฉพาะตอนมีตารางจริง (.has-score-table ตั้งโดย renderScoreTable) ถ้าคอร์สยังไม่มีน้องค่าย/วิชา ให้ข้อความ "ยังไม่มีน้องค่าย..." เดิมแสดงตามปกติ ไม่ต้องบอกให้หมุนจอ
+   จอแนวนอนของโทรศัพท์ทั่วไปกว้าง 640px ขึ้นไป (เช่น iPhone SE = 667px) จึงกลับมาเห็นตารางเลื่อนได้ตามปกติ */
+.score-table-rotate-notice {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2rem 1.25rem;
+  text-align: center;
+  border: 2px dashed var(--slate-300);
+  border-radius: 0.75rem;
+  background-color: var(--slate-50);
+}
+
+.score-table-rotate-notice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 50%;
+  color: var(--brand-600);
+  background-color: var(--brand-50);
+}
+
+.score-table-rotate-notice-icon svg {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.score-table-rotate-notice-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--slate-700);
+}
+
+.score-table-rotate-notice-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--slate-500);
+}
+
+@media (max-width: 639px) {
+  .score-table-card.has-score-table .score-table-rotate-notice {
+    display: flex;
+  }
+
+  .score-table-card.has-score-table .subject-score-table-outer,
+  .score-table-card.has-score-table .score-table-search-input,
+  .score-table-card.has-score-table #subject-score-search-empty {
+    display: none;
+  }
+}
+
+/* มุมโค้งของกรอบตารางย้ายมาไว้ที่ div ครอบชั้นนอกนี้แทน (overflow:hidden) เพราะ scrollbar ที่ปุ่มลูกศรเป็นเหลี่ยมจะไม่ถูกมุมโค้งของ div ที่มี overflow-x:auto ตัดขอบให้ (บั๊กที่รู้จักกันดีของเบราว์เซอร์) ทำให้มุมดูเหมือนหายไปตอนมีปุ่มลูกศร */
+.subject-score-table-outer {
+  overflow: hidden;
+  border: 2px solid var(--slate-300);
+  border-radius: 0.75rem;
+}
+
+.subject-score-table-wrap {
+  overflow-x: auto;
+}
+
+.subject-score-table-wrap::-webkit-scrollbar {
+  height: 11px;
+}
+
+.subject-score-table-wrap::-webkit-scrollbar-track {
+  background: var(--slate-50);
+}
+
+.subject-score-table-wrap::-webkit-scrollbar-thumb {
+  background-color: var(--slate-300);
+  border-radius: 9999px;
+}
+
+.subject-score-table-wrap::-webkit-scrollbar-thumb:hover {
+  background-color: var(--slate-400);
+}
+
+/* พอกำหนดสไตล์ thumb/track เอง เบราว์เซอร์เลิกวาดปุ่มลูกศรที่หัวท้ายให้อัตโนมัติ ต้องวาดเป็นรูปสามเหลี่ยม (SVG) กำหนดเองแทน */
+.subject-score-table-wrap::-webkit-scrollbar-button {
+  display: block;
+  width: 15px;
+  height: 11px;
+  background-color: var(--slate-50);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 10px 10px;
+}
+
+.subject-score-table-wrap::-webkit-scrollbar-button:single-button:horizontal:decrement,
+.subject-score-table-wrap::-webkit-scrollbar-button:double-button:horizontal:start:decrement {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='7,1 7,9 1,5' fill='%2394a3b8'/%3E%3C/svg%3E");
+}
+
+.subject-score-table-wrap::-webkit-scrollbar-button:single-button:horizontal:increment,
+.subject-score-table-wrap::-webkit-scrollbar-button:double-button:horizontal:end:increment {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpolygon points='3,1 3,9 9,5' fill='%2394a3b8'/%3E%3C/svg%3E");
+}
+
+/* โหมด double-button ของเบราว์เซอร์จะมีปุ่มลูกศรทิศตรงข้ามโผล่มาคู่กันที่ปลายเดียวกันด้วย (เช่น ปุ่มเลื่อนขวาไปโผล่ที่ฝั่งซ้าย) ซ่อนปุ่มที่ผิดทิศทิ้ง เหลือแค่ปุ่มที่ถูกต้องข้างละ 1 อัน */
+.subject-score-table-wrap::-webkit-scrollbar-button:double-button:horizontal:start:increment,
+.subject-score-table-wrap::-webkit-scrollbar-button:double-button:horizontal:end:decrement {
+  display: none;
+  width: 0;
+}
+
+.subject-score-table-wrap::-webkit-scrollbar-button:hover {
+  background-color: var(--slate-100);
+}
+
+.subject-score-table {
+  /* border-collapse:collapse ทำให้เส้นขอบของคอลัมน์ sticky (รหัส/ชื่อ) หายไปตอนเลื่อนตาราง (บั๊กที่รู้จักกันดีของ sticky cell + collapsed border) เปลี่ยนเป็น separate ให้แต่ละเซลล์วาดขอบของตัวเองแยกกัน เส้นจะไม่หายเวลาเลื่อน */
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.subject-score-table th,
+.subject-score-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 2px solid var(--slate-200);
+  text-align: center;
+}
+
+.subject-score-table thead th {
+  background-color: var(--slate-50);
+  color: var(--slate-600);
+  font-weight: 700;
+  border-bottom: 2px solid var(--slate-300);
+}
+
+/* สลับสีพื้นแถวเข้ม-อ่อนให้อ่านง่ายขึ้นเวลามีหลายแถว (ตั้งที่ td โดยตรง ไม่ใช่ tr เพราะคอลัมน์ sticky รหัส/ชื่อ กำหนด background-color ของตัวเองไว้แล้ว ต้องทับด้วย specificity ที่สูงกว่า) */
+.subject-score-table tbody tr:nth-child(even) td {
+  background-color: var(--slate-50);
+}
+
+.subject-score-table thead tr:first-child th {
+  border-top: 2px solid var(--slate-300);
+}
+
+.subject-score-subject-header,
+.subject-score-group-start,
+.subject-score-action-col {
+  border-left: 2px solid var(--slate-300);
+}
+
+.subject-score-max-hint {
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--slate-400);
+}
+
+.subject-score-subcol {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--slate-400);
+}
+
+/* รหัสประจำตัว + ชื่อ ปักหมุดไว้ด้วยกันทางซ้ายตอนเลื่อนตารางแนวนอน (มีวิชาเยอะจนล้นจอ) - name-col ต้องเลื่อน left ตามความกว้างของ code-col พอดี ไม่งั้นซ้อนทับกัน */
+.subject-score-code-col {
+  position: sticky;
+  left: 0;
+  background-color: white;
+  width: 6rem;
+  border-right: 2px solid var(--slate-300);
+}
+
+.subject-score-name-col {
+  position: sticky;
+  /* --score-name-col-left ตั้งค่าจริงด้วย JS หลัง render (ดู renderScoreTable) ให้ตรงกับความกว้างจริงของคอลัมน์รหัส ค่า 6rem ไว้แค่กันพังก่อน JS รันเสร็จ */
+  left: var(--score-name-col-left, 6rem);
+  background-color: white;
+  min-width: 10rem;
+}
+
+.subject-score-table td.subject-score-name-col {
+  text-align: left;
+}
+
+.subject-score-table thead .subject-score-code-col,
+.subject-score-table thead .subject-score-name-col {
+  background-color: var(--slate-50);
+  z-index: 1;
+}
+
+/* ช่องกรอกคะแนนดิบ + % ที่คะแนนนี้ได้จากคะแนนรวม (อัปเดตสดตอนพิมพ์ ดู recomputeRowPreview) - % อยู่ขวามือของช่องกรอก */
+.subject-score-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.subject-score-percent {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #2563eb;
+  min-width: 2.5rem;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  border: 1.5px solid var(--slate-200);
+  border-radius: 0.4rem;
+  background-color: #eff6ff;
+}
+
+.subject-score-input {
+  width: 3.5rem;
+  padding: 0.35rem;
+  text-align: center;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.4rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.subject-score-input:focus {
+  outline: none;
+  border-color: var(--brand-500);
+  box-shadow: 0 0 0 3px rgba(255, 114, 32, 0.1);
+}
+
+/* ไฮไลต์ช่องที่แก้ไว้แล้วแต่ยังไม่กดบันทึก (ค่าต่างจาก data-saved-value) ให้เห็นชัดว่าอันไหนเปลี่ยนไปบ้าง */
+.subject-score-input--dirty {
+  border-color: var(--brand-500);
+  background-color: var(--brand-50);
+  box-shadow: 0 0 0 2px rgba(255, 114, 32, 0.15);
+}
+
+.subject-score-summary-cell {
+  font-weight: 700;
+  color: var(--slate-700);
+}
+
+.subject-score-grandtotal {
+  font-size: 0.95rem;
+}
+
+/* สีตัวเลขคะแนนรวมตามผลการประเมินที่ได้ - เลือกสีได้อิสระผ่านวงล้อสี (เก็บเป็น hex ตรง ๆ) จึง render ด้วย inline style ใน JS แทน CSS class ตายตัว ไม่มีชุดสีคงที่ให้ประกาศไว้ล่วงหน้าแล้ว */
+
+/* ป้ายผลการประเมิน - พื้นหลัง/สีตัวหนังสือกำหนดด้วย inline style จาก JS เช่นกัน (ดู gradeBadgeStyle ใน staff-academic.js) */
+.grade-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* แท็บจัดการคะแนน: รายการช่วงคะแนนที่แก้ไขได้ (ตั้งค่าเกณฑ์ผลการประเมิน) เพิ่ม/ลบแถวได้ไม่จำกัดจำนวน */
+.grade-band-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+/* "+ เพิ่มช่วงคะแนน" ชิดซ้าย "บันทึกเกณฑ์" ชิดขวาเสมอ (ค่าเริ่มต้นของ .form-actions อยู่แล้ว) แค่ลดช่องว่างด้านบนลง */
+#grade-band-form .form-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.grade-band-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.grade-band-row .grade-band-min-input,
+.grade-band-row .grade-band-max-input {
+  width: 6rem;
+  flex-shrink: 0;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+  text-align: center;
+}
+
+.grade-band-sep {
+  flex-shrink: 0;
+  color: var(--slate-400);
+}
+
+/* จอแคบ (เช่นมือถือ) ช่องคะแนนต่ำสุด/สูงสุด + สี + ปุ่มลบ รวมกันแล้วแทบเต็มความกว้างแถวอยู่แล้ว
+   ถ้ายังคง min-width:0 ช่องชื่อผลการประเมินจะถูกบีบจนเหลือกว้างไม่กี่พิกเซล มองไม่เห็นตัวหนังสือ/placeholder เลย
+   ให้มี min-width ที่พอมองเห็นได้จริง ถ้าที่ในแถวไม่พอ (ผสมกับ flex-wrap ด้านบน) จะตกลงไปขึ้นบรรทัดใหม่แทน */
+.grade-band-row .grade-band-label-input {
+  flex: 1;
+  min-width: 8rem;
+}
+
+/* วงล้อสีของเบราว์เซอร์ (input type="color") เลือกสีป้ายของแต่ละช่วงคะแนนได้อิสระ ไม่จำกัดชุดสีตายตัวอีกต่อไป - ปรับแค่ขนาด/ทรงกลมให้เข้ากับแถว ตัด border/padding เริ่มต้นของ input ออก */
+.grade-band-color-input {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--slate-200);
+}
+
+.grade-band-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.grade-band-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+/* แท็บจัดการคะแนน: ตารางคะแนนสอบอธิบายตามครั้งที่สอบ (ครั้งที่ N มาจากตำแหน่งแถวเสมอ ไม่ใช่กรอกเอง) */
+.oral-exam-band-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+#oral-exam-band-form .form-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.oral-exam-band-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.oral-exam-band-index {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  color: var(--slate-600);
+}
+
+/* ช่องหน่วยกิตในฟอร์ม "จัดการรายวิชาของตัวเอง" (ฝั่งผู้สอน) - โชว์ค่าให้เห็นแต่แก้ไม่ได้ (แก้ได้เฉพาะหัวหน้าฝ่ายวิชาการที่แท็บ "จัดการรายวิชา") ทำให้ดูเป็นสีเทาชัดเจนว่ากดไม่ได้ ไม่ใช่แค่ disabled เฉย ๆ ที่ยังดูเหมือนแก้ได้ */
+.form-input-readonly:disabled {
+  background-color: var(--slate-100);
+  color: var(--slate-400);
+  border-color: var(--slate-200);
+  cursor: not-allowed;
+}
+
+.oral-exam-band-row .oral-exam-band-percent-input {
+  width: 6rem;
+  flex-shrink: 0;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+  text-align: center;
+}
+
+.oral-exam-band-percent-suffix {
+  flex-shrink: 0;
+  color: var(--slate-400);
+}
+
+/* สวิตช์เปิด/ปิด "ต้องเก็บคะแนน" ในฟอร์มเพิ่ม/แก้ไขรายวิชา - ทรงแคปซูลลื่นไถล ไม่ใช้เช็คบ็อกซ์เปล่า ๆ ของเบราว์เซอร์ */
+.toggle-switch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--slate-700);
+}
+
+.toggle-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.5rem;
+  background-color: var(--slate-200);
+  border: none;
+  border-radius: 9999px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.toggle-switch:checked {
+  background-color: var(--brand-600);
+}
+
+.toggle-switch:checked::before {
+  transform: translateX(1.25rem);
+}
+
+.toggle-switch:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+/* ตัวเลือก "ต้องเก็บคะแนน" ในฟอร์ม "รายวิชาของฉัน" (ฝั่งผู้สอน) - โชว์สถานะให้เห็นแต่แก้ไม่ได้ (แก้ได้เฉพาะหัวหน้าฝ่ายวิชาการที่แท็บ "จัดการรายวิชา") แพทเทิร์นเดียวกับ .form-input-readonly:disabled */
+.toggle-switch-label--readonly {
+  cursor: not-allowed;
+}
+
+.toggle-switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* การ์ดตั้งค่ากลาง 2 ใบ (สัดส่วนคะแนน+เกณฑ์การประเมิน, ตารางคะแนนสอบอธิบาย) วางข้างกันในหน้า "จัดการคะแนน" - wrap ลงมาซ้อนกันเองบนจอแคบ (min-width กันบีบจนอ่านไม่ออก) */
+.scores-settings-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 auto 1.5rem;
+  max-width: 1340px;
+}
+
+.scores-settings-row .activity-card {
+  flex: 1 1 640px;
+  min-width: 320px;
+  max-width: 640px;
+  margin: 0;
+}
+
+/* ฟอร์ม "สัดส่วนคะแนนโดยรวม" มีแค่ 2 ช่อง + ปุ่มบันทึก จัดเป็นแถวเดียวต่อกัน (label ชิดซ้ายของ input ตัวเอง) แทน form-grid + form-actions เดิม ที่แยกป้าย/ช่องกรอก/ปุ่มเป็นคนละแถวและเปลืองพื้นที่แนวตั้ง */
+.score-weight-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.score-weight-field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: text;
+}
+
+.score-weight-field .form-label {
+  white-space: nowrap;
+}
+
+.score-weight-field .form-input {
+  width: 5.5rem;
+  flex-shrink: 0;
+}
+
+.score-weight-row .btn-primary {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* คั่นระหว่าง "สัดส่วนคะแนนโดยรวม" กับ "ตั้งค่าเกณฑ์ผลการประเมิน" ที่รวมมาอยู่การ์ดเดียวกัน (ทั้งสองเรื่องเกี่ยวกับการตั้งค่าคำนวณคะแนนเหมือนกัน) */
+.card-section-divider {
+  border-top: 1px solid var(--slate-100);
+  margin: 1.25rem 0 1rem;
+}
+
+/* ตารางเรียนแบบไทม์ไลน์: แกนตั้ง = วันที่จริง (เรียงเป็นแถว), แกนนอน = เวลาจริงแบบต่อเนื่อง (ตำแหน่ง/ความกว้างคาบคำนวณเป็น % ของเวลา
+   ไม่ใช่ colspan ตามคอลัมน์ชั่วโมง จึงวางตำแหน่งตามนาทีจริงได้ (ครึ่งชั่วโมง/15 นาทีก็ได้) และคาบที่เวลาซ้อนกันจะถูกจัดคนละแถวย่อย (lane) ไม่ทับกัน */
+.timetable-grid-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--slate-300);
+  border-radius: 0.75rem;
+}
+
+.timetable-timeline {
+  display: block;
+  width: 100%;
+}
+
+.timetable-timeline-header,
+.timetable-day-row {
+  display: flex;
+}
+
+/* สีพื้นหลังต้องใส่ที่ตัว ruler/track เอง (ไม่ใช่ที่แถว .timetable-timeline-header/.timetable-day-row) เพราะกล่องของแถวจะกว้างเท่าที่มองเห็นในกรอบเท่านั้น
+   ไม่ได้ยืดตามลูกที่ overflow ออกไป (ruler/track ใช้ flex:1 + min-width ล้นแถวได้เวลาจอแคบกว่าความกว้างขั้นต่ำ) ถ้าใส่สีที่ตัวแถวจะเลื่อนไปสุดแล้วเจอช่องว่างไม่มีสีตรงส่วนที่ล้น */
+.timetable-timeline-header .timetable-ruler-hour:last-child {
+  border-top-right-radius: 0.75rem;
+}
+
+/* แถบสีสลับให้แต่ละแถววันที่แยกจากกันชัดเจนขึ้น อ่านง่ายขึ้นเวลามีหลายวัน */
+.timetable-day-row:nth-child(even) .timetable-day-track {
+  background-color: var(--slate-50);
+}
+
+/* คอลัมน์วันที่ (พื้นเข้ม) ก็สลับเข้ม-อ่อนตามแถวเดียวกัน - แถวแรกเข้ม (สีพื้นฐาน) แถวถัดไปอ่อนลง สลับกันไป */
+.timetable-day-row:nth-child(odd) .timetable-grid-date-col {
+  background-color: var(--slate-500);
+}
+
+.timetable-grid-date-col {
+  position: sticky;
+  left: 0;
+  flex: 0 0 7.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--slate-700);
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0.5rem;
+  z-index: 1;
+  border-bottom: 1px solid var(--slate-300);
+}
+
+.timetable-timeline-header .timetable-grid-date-col {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  /* กันมุมสี่เหลี่ยมของพื้นหลังสีเข้มโผล่พ้นมุมโค้งของกรอบ .timetable-grid-wrap (border-radius: 0.75rem) */
+  border-top-left-radius: 0.75rem;
+}
+
+.timetable-ruler {
+  display: flex;
+  /* จอกว้างพอ ยืดแบ่งเท่า ๆ กันเต็มพื้นที่ที่เหลือ (flex:1) แต่ไม่หดต่ำกว่าความกว้างขั้นต่ำที่ JS กำหนด (min-width) - จอเล็กล้นแล้วเลื่อนแนวนอนแทน */
+  flex: 1 1 auto;
+  /* เส้นขอบล่างต้องใส่ตรงนี้ (ตัวที่ overflow ออกไปจริง) ไม่ใช่ที่ .timetable-timeline-header เหมือนพื้นหลัง กันเส้นขาดตอนเลื่อนไปสุด */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.timetable-ruler-hour {
+  flex: 1;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--slate-700);
+  padding: 0.75rem 0.25rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+.timetable-day-track {
+  position: relative;
+  flex: 1 1 auto;
+  /* เว้นระยะขอบบน-ล่างให้การ์ดคาบเรียนไม่ชิดเส้นแบ่งแถวจนเกินไป เพิ่มพื้นที่หายใจให้ตารางดูโปร่งสวยขึ้น */
+  padding: 0.5rem 0;
+  background-clip: padding-box;
+  border-bottom: 1px solid var(--slate-300);
+}
+
+.timetable-entry {
+  position: absolute;
+  top: 0;
+  height: 5.2rem;
+  /* ความกว้างการ์ดต้องตรงกับสัดส่วนเวลาจริงเป๊ะ (ไม่ยืดตามความยาวชื่อ) เหลือ min-width แค่พอกันปุ่มลบพังตอนคาบสั้นมาก ๆ ชื่อยาวเกินให้ตัดจบด้วย ... แทน */
+  min-width: 2.5rem;
+  box-sizing: border-box;
+  border-radius: 0;
+  padding: 0.45rem 0.6rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.timetable-entry:hover {
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
+}
+
+.timetable-entry--subject {
+  background-color: var(--brand-50);
+  /* หมายเหตุ: var(--brand-200) ไม่เคยถูกกำหนดไว้จริงในไฟล์ variables.css ทำให้ shorthand border นี้ใช้ไม่ได้ทั้งเส้น (การ์ดไม่มีกรอบเลย) ใช้ค่าสีตรง ๆ แทน */
+  border: 1.5px solid #bcd0f0;
+}
+
+.timetable-entry--note {
+  background-color: var(--slate-100);
+  border: 1.5px solid var(--slate-300);
+}
+
+.timetable-cell-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--slate-800);
+  /* การ์ดกว้างตามสัดส่วนเวลาเป๊ะ ชื่อยาวเกินพื้นที่ตัดจบด้วย ... แทนขยายการ์ด */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* กันชื่อวิชายาว ๆ ไปโดนปุ่มลบ (มุมขวาบน) - เว้นที่ว่างฝั่งขวาไว้ให้ข้อความ ellipsis ตัดจบก่อนถึงปุ่ม */
+.timetable-entry--editable .timetable-cell-title {
+  padding-right: 1.4rem;
+}
+
+/* ตัวเลขเวลาเป็นจุดเด่นของการ์ด ใหญ่และหนาให้เห็นชัดตั้งแต่มองผ่าน ๆ */
+.timetable-cell-time {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1e3a8a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timetable-cell-note,
+.timetable-cell-instructor {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timetable-cell-note {
+  margin: 0.2rem 0 0;
+  font-size: 0.7rem;
+  color: var(--slate-500);
+  font-style: italic;
+}
+
+.timetable-cell-instructor {
+  margin: 0.3rem 0 0;
+  font-size: 0.72rem;
+  color: var(--slate-600);
+  font-weight: 600;
+}
+
+.timetable-cell-delete-btn {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  color: var(--slate-500);
+  cursor: pointer;
+}
+
+.timetable-cell-delete-btn:hover {
+  background-color: var(--rose-50);
+  color: var(--rose-600);
+}
+
+.timetable-cell-delete-btn svg {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+/* ช่องชื่อกิจกรรม: หน้าตาเหมือนช่องเลือกวิชา (ไอคอนลูกศรลง) แต่ยังเป็น input พิมพ์เองได้
+   ใช้ dropdown ที่ทำเอง (ไม่ใช้ <input list>/<datalist> ของเบราว์เซอร์) เพราะ Chrome ใส่ลูกศรของตัวเองให้ input[list]
+   มาซ้อนกับไอคอนที่ทำเอง ซ่อนไม่ได้แน่นอนข้ามเบราว์เซอร์ */
+#schedule-activity-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+/* วิชา/กิจกรรมเลือกได้อย่างใดอย่างหนึ่ง - ฝั่งที่ไม่ได้เลือกจะถูก disable ไว้ */
+#schedule-subject-select:disabled,
+#schedule-activity-input:disabled {
+  background-color: var(--slate-50);
+  color: var(--slate-400);
+  cursor: not-allowed;
+}
+
+.activity-combobox {
+  position: relative;
+}
+
+.activity-combobox-list {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+  max-height: 12rem;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.activity-combobox-list.hidden {
+  display: none;
+}
+
+.activity-combobox-option {
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  color: var(--slate-700);
+  cursor: pointer;
+}
+
+.activity-combobox-option:hover,
+.activity-combobox-option.active {
+  background-color: var(--slate-50);
+}
+
+.schedule-fullscreen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: 999px;
+  border: 1.5px dashed #1e3a8a;
+  background-color: #fff;
+  color: #1e3a8a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+}
+
+.schedule-fullscreen-btn:hover {
+  background-color: #eef2fb;
+}
+
+.schedule-fullscreen-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+}
+
+/* ป็อปอัพตารางเรียนเต็มจอ - กล่อง modal ใหญ่เกือบเต็มวิวพอร์ต ให้เห็นตารางกว้าง ๆ ชัด ๆ โดยไม่ต้องเลื่อนแนวนอนบ่อยเท่าในหน้าปกติ
+   .modal-wrapper เดิมของเว็บใช้เทคนิค inline-block + vertical-align:middle จัดกึ่งกลาง ซึ่งออกแบบมาสำหรับกล่องเตี้ย ๆ (เช่น confirm/auth) พอกล่องสูงถึง 90vh เทคนิคนี้พังจนกล่องหลุดไปอยู่ใต้จอ
+   เลยต้อง override เป็น flexbox จัดกึ่งกลางแทนเฉพาะ modal นี้ */
+#schedule-fullscreen-modal .modal-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+#schedule-fullscreen-modal .modal-trick {
+  display: none;
+}
+
+.schedule-fullscreen-box {
+  width: 95vw;
+  max-width: 95vw;
+  height: 90vh;
+  max-height: 90vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-fullscreen-box .modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.25rem 1.5rem;
+}
+
+.schedule-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.schedule-fullscreen-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  margin: 0;
+}
+
+.schedule-fullscreen-close-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--slate-100);
+  color: var(--slate-600);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.schedule-fullscreen-close-btn:hover {
+  background-color: var(--slate-200);
+  color: var(--slate-800);
+}
+
+#schedule-fullscreen-grid-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* จัดการผู้สอนรวมอยู่ในการ์ดวิชา (แท็บ "จัดการรายวิชา") แต่ละใบแสดงผู้สอนปัจจุบันเป็น chip เอาออกได้ + ดรอปดาวเลือกเพิ่ม */
+.instructor-assign-item {
+  align-items: flex-start;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--slate-100);
+}
+
+/* แถวชื่อวิชา + ปุ่มแก้ไข/ลบ ในการ์ดวิชา (แทนที่ display:flex ของ .activity-item เดิม เพราะตอนนี้ .activity-item มีลูกเดียวคือกล่องครอบทั้งหมด ไม่ใช่ 2 ฝั่งซ้าย-ขวาแบบเดิมแล้ว) */
+.activity-item-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.instructor-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.instructor-assign-empty-hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+  color: var(--slate-400);
+}
+
+.instructor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background-color: var(--brand-50);
+  border: 1px solid var(--brand-200);
+  color: var(--brand-700);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.instructor-chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--brand-600);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.instructor-chip-remove:hover {
+  background-color: var(--brand-200);
+  color: var(--brand-700);
+}
+
+.instructor-assign-add-row {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.instructor-assign-add-row .instructor-assign-add-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.instructor-assign-add-row .instructor-assign-add-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+}
+
+/* แท็บ "ระบบสอบอธิบาย": เลือกวิชา + เปิดรอบสอบ */
+.oral-exam-subject-picker-row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+/* แต่ละช่องมีหัวข้อย่อย (label) กำกับอยู่ด้านบนของ select/input เอง */
+.oral-exam-picker-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.oral-exam-picker-field select {
+  width: 100%;
+}
+
+/* เลือกวิชาไม่ใช่ input ที่ผูกกับสีแบรนด์ส้มแบบ .form-input:focus ปกติ (ดูภาพหน้าจอผู้ใช้) ทำเงาโฟกัสเป็นสีเทาแทน */
+.oral-exam-subject-picker-row select:focus {
+  border-color: var(--slate-300) !important;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.15) !important;
+}
+
+/* ช่องจำนวนผู้เข้าสอบสูงสุด (บังคับกรอก) แคบกว่า select วิชาเพราะกรอกแค่ตัวเลขสั้น ๆ */
+/* กว้างพอให้หัวข้อย่อย "ระบุจำนวนผู้เข้าสอบ" อยู่บรรทัดเดียวไม่ตัดคำ (แคบกว่านี้ label จะตกบรรทัด ดูภาพหน้าจอผู้ใช้) */
+.oral-exam-picker-field-count {
+  flex: none;
+  width: 6.5rem;
+}
+
+.oral-exam-picker-field-count .form-label {
+  white-space: nowrap;
+}
+
+.oral-exam-picker-field-count input[type="number"] {
+  width: 100%;
+}
+
+/* จอเล็ก: 3 ช่อง (คอร์ส/รายวิชา/จำนวน) เรียงแถวเดียวแคบเกินไป สลับเป็นเรียงซ้อนเต็มความกว้างแทน */
+@media (max-width: 639px) {
+  .oral-exam-subject-picker-row {
+    flex-direction: column;
+  }
+
+  .oral-exam-picker-field-count {
+    width: 100%;
+  }
+}
+
+/* ปุ่ม "เปิดรอบสอบ" ย้ายมาไว้แถวล่างสุดแยกจาก select/input เต็มความกว้างการ์ด (เดิมอยู่ในแถวเดียวกับ .oral-exam-subject-picker-row) - สีส้มอ่อนโปร่งแสง+เส้นขอบ/ตัวหนังสือส้มเข้ม เป็นสไตล์ปกติ (ทับ .btn-primary พื้นส้มทึบเดิม) */
+#oral-exam-open-btn {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.75rem;
+  border-radius: 0.6rem;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  background-color: rgba(255, 114, 32, 0.1);
+  border: 2px solid var(--brand-600);
+  color: var(--brand-600);
+  box-shadow: none;
+}
+
+#oral-exam-open-btn:hover {
+  background-color: rgba(255, 114, 32, 0.18);
+  border-color: var(--brand-600);
+  color: var(--brand-600);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ปุ่ม "เปิดรอบสอบ" ตอนยังกดไม่ได้ (ยังไม่เลือกวิชา/ยังไม่กรอกจำนวน ดู updateOralExamOpenButtonState) ต้องดูเป็นสีเทาชัดเจน ไม่ใช่สีส้ม .btn-primary ปกติที่ทำให้เข้าใจผิดว่ากดได้ */
+#oral-exam-open-btn:disabled {
+  background-color: var(--slate-200);
+  border-color: var(--slate-200);
+  color: var(--slate-400);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#oral-exam-open-btn:disabled:hover {
+  background-color: var(--slate-200);
+  border-color: var(--slate-200);
+  transform: none;
+  box-shadow: none;
+}
+
+.oral-exam-session-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.oral-exam-session-header-row .profile-section-title {
+  margin-bottom: 0;
+}
+
+/* ปุ่มรีเฟรชรายชื่อผู้เข้าสอบด้วยตัวเอง (ข้าง ๆ หัวข้อ "รายชื่อผู้เข้าสอบ") มีไอคอน + คำว่า "กดเพื่อรีเฟรช" กำกับไว้เสมอ (ไม่ใช่แค่ tooltip) หมุนไอคอนระหว่างกำลังโหลดด้วยคลาส is-spinning (ดู handleOralExamRefreshClick) */
+.oral-exam-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--slate-200);
+  border-radius: 9999px;
+  background: none;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-500);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.oral-exam-refresh-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.oral-exam-refresh-btn:hover {
+  color: var(--brand-600);
+  border-color: var(--brand-500);
+}
+
+.oral-exam-refresh-btn.is-spinning svg {
+  animation: oral-exam-refresh-spin 0.7s linear infinite;
+}
+
+@keyframes oral-exam-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ปุ่ม "ยกเลิก"/"เริ่ม" คู่กัน (ปุ่ม "เริ่ม" โชว์เฉพาะช่วงรับเช็คอินอยู่ ดู applyOralExamPhaseUI) */
+.oral-exam-header-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* ย้ายมาไว้ล่างสุดของการ์ดแทนแถวหัวข้อ ให้ห่างจากเนื้อหาด้านบน (คิว/ปุ่มประเมิน) ชัดเจน - ปุ่มเป็นทรงสี่เหลี่ยมยาวเต็มความกว้างแทนทรงแคปซูลปกติของ .btn-outline/.btn-primary */
+.oral-exam-footer-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--slate-100);
+}
+
+.oral-exam-footer-actions button {
+  flex: 1;
+  justify-content: center;
+  border-radius: 0.6rem;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+/* ปุ่ม "ยกเลิกรอบสอบ" ใช้ .btn-outline สีเทาเดิม แค่ทำเส้นขอบให้เข้มขึ้นกว่า slate-200 ปกติ (จางเกินไปมองไม่ค่อยเห็น) */
+#oral-exam-close-btn {
+  border-color: var(--slate-400);
+}
+
+#oral-exam-close-btn:hover {
+  border-color: var(--slate-500);
+}
+
+/* ปุ่ม "เริ่มการสอบอธิบาย" พื้นหลังส้มอ่อนโปร่งแสง เส้นขอบ/ตัวหนังสือส้มเข้ม (สไตล์เดียวกับ #oral-exam-open-btn ตอนกดได้) */
+#oral-exam-start-btn {
+  background-color: rgba(255, 114, 32, 0.1);
+  border: 2px solid var(--brand-600);
+  color: var(--brand-600);
+  box-shadow: none;
+}
+
+#oral-exam-start-btn:hover {
+  background-color: rgba(255, 114, 32, 0.18);
+  border-color: var(--brand-600);
+  color: var(--brand-600);
+  box-shadow: none;
+}
+
+/* แถบขั้นตอน 1.เลือกวิชา 2.เปิดรับเช็คอิน 3.ประเมินผล เหนือการ์ด - แค่โชว์สถานะ (ไม่คลิกได้) อัปเดตโดย applyOralExamPhaseUI, ทรง/สีเลียนแบบ .lifecycle-stepper ของ webmanager */
+.oral-exam-stepper {
+  display: flex;
+  align-items: flex-start;
+  list-style: none;
+  padding: 0;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.oral-exam-stepper-item {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: 5.5rem;
+}
+
+.oral-exam-stepper-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--slate-500);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.oral-exam-stepper-connector {
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 1.25rem;
+  background-color: var(--slate-200);
+  margin-top: 1.15rem;
+}
+
+.oral-exam-step-marker {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  color: var(--slate-500);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.oral-exam-step-check {
+  display: none;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.oral-exam-stepper-item[data-state="current"] .oral-exam-stepper-label {
+  color: var(--brand-600);
+}
+
+.oral-exam-stepper-item[data-state="current"] .oral-exam-step-marker {
+  background-color: var(--brand-600);
+  color: white;
+}
+
+.oral-exam-stepper-item[data-state="done"] .oral-exam-step-marker {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.oral-exam-stepper-item[data-state="done"] .oral-exam-step-number {
+  display: none;
+}
+
+.oral-exam-stepper-item[data-state="done"] .oral-exam-step-check {
+  display: block;
+}
+
+.oral-exam-stepper-item[data-state="todo"] .oral-exam-stepper-label {
+  opacity: 0.7;
+}
+
+:root[data-theme="dark"] .oral-exam-stepper-item[data-state="done"] .oral-exam-step-marker {
+  background-color: rgba(5, 150, 105, 0.18);
+  color: #34d399;
+}
+
+/* จำนวนคนที่เช็คอินแล้ว/จำกัดสูงสุด เช่น "(3/10 คน)" ต่อท้ายหัวข้อ "รายชื่อผู้เข้าสอบ" - ว่างเปล่าถ้าไม่ได้ตั้งจำกัดจำนวนไว้ (ดู updateOralExamQueueCount) */
+.oral-exam-queue-count {
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-400);
+}
+
+.oral-exam-queue-count--full {
+  color: #be123c;
+}
+
+/* QR + ลิงก์เช็คอินของรอบสอบที่เปิดอยู่ */
+.oral-exam-qr-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.oral-exam-qr-image {
+  width: 320px;
+  height: 320px;
+  border: 3px solid var(--slate-300);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background-color: white;
+}
+
+/* ครอบ QR ด้วยปุ่มเปล่า ๆ ให้กดขยายเต็มจอได้ (ดู openOralExamQrFullscreen) - ไม่มีกรอบ/พื้นหลังของปุ่มเอง ให้เห็นแค่ QR ข้างในตามปกติ */
+.oral-exam-qr-image-btn {
+  position: relative;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: zoom-in;
+  border-radius: 0.75rem;
+  transition: transform 0.15s;
+}
+
+.oral-exam-qr-image-btn:hover {
+  transform: scale(1.03);
+}
+
+/* ป้ายบอกคำแนะนำ "กดเพื่อขยาย" ซ้อนทับ QR ตอนเอาเมาส์ไปวาง (โปร่งแสงดำ) เห็นชัดกว่า title tooltip ของเบราว์เซอร์เฉย ๆ */
+.oral-exam-qr-image-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgba(15, 23, 42, 0.35);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.oral-exam-qr-image-hint-icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.oral-exam-qr-image-btn:hover .oral-exam-qr-image-hint {
+  opacity: 1;
+}
+
+/* ป็อปอัพ QR เต็มจอ - ใช้แพทเทิร์นเดียวกับ #schedule-fullscreen-modal (override .modal-wrapper เป็น flexbox จัดกึ่งกลาง เพราะกล่องนี้ไม่ใช่กล่องเตี้ย ๆ แบบ confirm/auth เดิม) */
+#oral-exam-qr-fullscreen-modal .modal-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+#oral-exam-qr-fullscreen-modal .modal-trick {
+  display: none;
+}
+
+.oral-exam-qr-fullscreen-box {
+  width: auto;
+  max-width: 90vw;
+  margin: 0;
+}
+
+.oral-exam-qr-fullscreen-box .modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.oral-exam-qr-fullscreen-box .schedule-fullscreen-header {
+  width: 100%;
+}
+
+.oral-exam-qr-fullscreen-image {
+  width: min(75vw, 75vh);
+  height: min(75vw, 75vh);
+  border: 3px solid var(--slate-300);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background-color: white;
+}
+
+/* ช่องลิงก์ (input) ถูกซ่อนไว้ (display:none ที่ HTML) เหลือแค่ปุ่ม "คัดลอกลิงก์" - ยังอ่านค่าจาก input ที่ซ่อนอยู่ได้ปกติตอนกดคัดลอก (ดู handleOralExamCopyLinkClick) */
+.oral-exam-link-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.oral-exam-link-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--slate-500);
+}
+
+.oral-exam-link-row button {
+  flex-shrink: 0;
+}
+
+/* คิวผู้เข้าสอบที่สแกน QR เข้ามา - ปุ่ม "ผ่าน"/"ไม่ผ่าน" ประเมินทุกคนที่ยังรอผลในคิวพร้อมกันเสมอ ไม่มีการเลือกเป็นรายคน */
+.oral-exam-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.oral-exam-queue-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.6rem;
+}
+
+.oral-exam-queue-row--passed,
+.oral-exam-queue-row--failed {
+  opacity: 0.7;
+}
+
+/* แถวของคนที่เพิ่งสแกนเข้าคิวใหม่ (ตรวจจับได้ทั้งตอน poll พื้นหลังทุก 4 วิ และตอนกดปุ่มรีเฟรชเอง ดู renderOralExamQueue) เด้งเข้ามาให้เห็นชัดแทนที่จะโผล่เงียบ ๆ ปนกับแถวเดิม */
+.oral-exam-queue-row--pop-in {
+  animation: oral-exam-queue-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes oral-exam-queue-pop-in {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+    background-color: var(--brand-50);
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.oral-exam-queue-code {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--slate-500);
+  width: 4.5rem;
+}
+
+.oral-exam-queue-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.oral-exam-queue-attempt {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: var(--slate-400);
+}
+
+.oral-exam-queue-status {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  background-color: var(--slate-100);
+  color: var(--slate-500);
+}
+
+.oral-exam-queue-row--passed .oral-exam-queue-status {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.oral-exam-queue-row--failed .oral-exam-queue-status {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+.oral-exam-evaluate-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--slate-100);
+}
+
+/* ปุ่มทรงสี่เหลี่ยมยาวเต็มความกว้างเหมือนปุ่ม "ยกเลิกรอบสอบ"/"เริ่มการสอบอธิบาย" (ดู .oral-exam-footer-actions button) */
+.oral-exam-evaluate-actions button {
+  flex: 1;
+  justify-content: center;
+  border-radius: 0.6rem;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+/* ปุ่ม "ไม่ผ่าน"/"ผ่าน" แบบเส้นขอบสไตล์เดียวกับปุ่ม "ยกเลิกรอบสอบ"/"เริ่มการสอบอธิบาย" - พื้นหลังขาว มีแค่เส้นขอบกับตัวหนังสือที่เป็นสี */
+#oral-exam-fail-btn,
+#oral-exam-pass-btn {
+  background-color: white;
+}
+
+#oral-exam-fail-btn {
+  border-color: var(--rose-600);
+  color: var(--rose-600);
+}
+
+#oral-exam-fail-btn:hover {
+  background-color: rgba(225, 29, 72, 0.08);
+  border-color: var(--rose-600);
+  color: var(--rose-600);
+}
+
+#oral-exam-pass-btn {
+  border: 2px solid #059669;
+  color: #059669;
+  box-shadow: none;
+}
+
+#oral-exam-pass-btn:hover {
+  background-color: #ecfdf5;
+  border-color: #059669;
+  color: #059669;
+  box-shadow: none;
+}
+
+/* ประวัติรอบสอบที่ปิดไปแล้ว (การ์ด #oral-exam-history-card) - แต่ละรอบเป็นบล็อกแยก มีเส้นขอบล้อมรอบทั้งหัวข้อวันที่/จำนวนคน+ปุ่มลบ และรายชื่อผู้เข้าสอบในรอบนั้น */
+.oral-exam-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.oral-exam-history-item {
+  border: 1px solid var(--slate-200);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.oral-exam-history-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.oral-exam-history-item-date {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--slate-600);
+}
+
+.oral-exam-history-item-count {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--slate-400);
+}
+
+.oral-exam-history-item .oral-exam-queue-list {
+  gap: 0.4rem;
+}
+
+.oral-exam-history-empty-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--slate-400);
+  text-align: center;
+}
+
+/* หน้า "จัดการรายวิชาของตัวเอง" (instructor): #score-table-section ถูกย้ายมาต่อท้าย my-subject-list ด้วย JS (relocateScoreTableSection)
+   เว้นระยะห่างจากรายการวิชาด้านบน + ใส่เส้นคั่นให้เห็นขอบเขตชัดเจนว่าเป็นคนละส่วนกัน (แพทเทิร์นเดียวกับ .card-section-divider) */
+#page-mysubject #score-table-section {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--slate-200);
+}
+
+/* พิมพ์ / บันทึกเป็น PDF ผ่านกล่องพิมพ์ของเบราว์เซอร์ (window.print() ใน staff-academic.js)
+   ใช้ window.print() แทนไลบรารีสร้าง PDF เพราะเบราว์เซอร์เรนเดอร์ฟอนต์ไทยได้ถูกต้องเสมอ ไม่ต้องฝังฟอนต์เอง
+   #score-report-print เป็นรายงานอ่านอย่างเดียวที่สร้างสดตอนกดพิมพ์ (ดู buildScoreReportHtml) แยกจากตารางแก้ไขจริงบนจอ - ซ่อนทุกอย่างใน body ยกเว้น div นี้ */
+#score-report-print {
+  display: none;
+}
+
+@media print {
+
+  /* ต้องเช็คไม่ให้ทำงานตอนพิมพ์ตารางเรียนด้วย (body.printing-schedule) ไม่งั้นกฎนี้จะซ่อน <main> ทั้งก้อน (เป็นลูก body ที่ไม่ใช่ #score-report-print)
+     ทับ #schedule-grid-wrap ที่ซ้อนอยู่ข้างในไปด้วย ทั้งที่กฎ body.printing-schedule ด้านล่างตั้งใจจะโชว์ไว้ - ลูกที่มี display:none ตกทอดลงมาบัง descendant ทุกตัวไม่ว่า descendant จะตั้ง display ยังไงก็ตาม */
+  body:not(.printing-schedule)>*:not(#score-report-print) {
+    display: none !important;
+  }
+
+  #score-report-print {
+    display: block !important;
+  }
+
+  /* เอกสารทางการใช้ฟอนต์ไทยมาตรฐาน TH SarabunPSK แทนฟอนต์เว็บ (Prompt/Sarabun) - ต้องลงฟอนต์นี้ไว้ในเครื่องที่พิมพ์เอง (ไม่ใช่ Google Font ฝังในเว็บ) เผื่อไว้ด้วย Sarabun/Segoe UI ถ้าเครื่องไหนไม่มี
+     สีดำล้วนตลอดทั้งเอกสาร (ไม่ใช้โทนสีเทา/น้ำเงินของเว็บ) ตามธรรมเนียมเอกสารราชการ/ทางการ */
+  #score-report-print,
+  #score-report-print * {
+    font-family: 'TH SarabunPSK', 'TH Sarabun New', 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+    color: #000;
+  }
+
+  .print-report-page {
+    page-break-after: always;
+  }
+
+  .print-report-page:last-child {
+    page-break-after: avoid;
+  }
+
+  .print-report-meta {
+    text-align: right;
+    font-size: 12px;
+    margin-bottom: 0.5rem;
+  }
+
+  .print-report-header {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .print-report-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    margin: 0 auto 0.5rem;
+    display: block;
+  }
+
+  .print-report-header h1 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .print-report-header p {
+    font-size: 16px;
+    margin: 0.2rem 0 0;
+  }
+
+  .print-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .print-report-table th,
+  .print-report-table td {
+    border: 1px solid #000;
+    padding: 0.3rem;
+    text-align: center;
+  }
+
+  .print-report-name-col {
+    text-align: left !important;
+  }
+
+  .print-report-hint {
+    font-weight: normal;
+  }
+
+  .print-report-signatures {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 3rem;
+    font-size: 16px;
+  }
+
+  /* "ลงชื่อ" [เส้นว่างความกว้างคงที่] [ตำแหน่ง] อยู่แถวเดียวกัน แล้วชื่อในวงเล็บวางอิงตำแหน่งอยู่ใต้เฉพาะช่วงเส้นว่างตรงกลาง (ไม่ใช่กึ่งกลางของทั้งบรรทัดที่รวมป้ายกำกับซ้าย-ขวาด้วย) */
+  .print-report-signature-box {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+
+  .print-report-signature-blank {
+    position: relative;
+    display: inline-block;
+    /* flex: 0 0 200px แทน width เฉย ๆ เพราะเป็นลูกโดยตรงของ .print-report-signature-box ที่เป็น inline-flex - flex item ปกติไม่ยอมหดเล็กกว่าเนื้อหาข้างในต่อให้ตั้ง width ไว้ (auto min-width) ต้องล็อกด้วย flex-basis ตรง ๆ ถึงจะได้ความกว้างคงที่จริง */
+    flex: 0 0 200px;
+    width: 200px;
+    height: 1em;
+    vertical-align: bottom;
+    /* ห้ามใส่ overflow:hidden ไว้ตรงนี้ - .print-report-signature-name เป็นลูก position:absolute ของ element นี้ ถ้า element นี้มี overflow:hidden จะโดนบังไปด้วยทั้งที่ position:absolute ปกติควรหลุดจาก flow ได้ (บั๊กที่เจอจริง: ชื่อหายไปเงียบ ๆ เพราะจุดนี้) เอา overflow:hidden ไปไว้ที่ .print-report-signature-dots-clip แทน ซึ่งเป็นแค่ลูกคนละสายกับชื่อ */
+  }
+
+  .print-report-signature-dots-clip {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .print-report-signature-name {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 0.3rem;
+    text-align: center;
+  }
+
+  /* ความกว้าง 200px เท่ากับ .print-report-signature-dots-clip เป๊ะ (วงเล็บ ( ) อยู่นอก span นี้ ไม่ได้แย่งพื้นที่จุดไข่ปลา) ให้จำนวนจุดที่เห็นจริงเท่ากันทั้งสองเส้น */
+  .print-report-signature-name-dots-clip {
+    display: inline-block;
+    width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  @page {
+    size: landscape;
+    margin: 1cm;
+  }
+}
+
+/* พิมพ์ตารางเรียนตรง ๆ จากที่เห็นบนจอ ไม่แปลงรูปแบบ/โครงสร้างใด ๆ (ไม่ทำเป็นรายงานแบบตารางคะแนน) - แค่ซ่อนส่วนอื่นของหน้ารอบ ๆ ออก แล้วย่อทั้งก้อน (zoom) ให้พอดีความกว้างกระดาษเท่านั้น
+   กันตารางที่กว้างกว่าหน้ากระดาษ (min-width รวมกันเกิน 1000px+) โดนตัดขอบขวาหายไปเฉย ๆ พร้อม scrollbar ที่กดไม่ได้ติดมาในกระดาษด้วย (ปัญหาที่เจอตอนไม่ย่อเลย)
+   ค่า zoom คำนวณสดจาก JS ตอนกดปุ่มพิมพ์ (ดู --schedule-print-zoom ใน staff-academic.js) ไม่ hardcode เพราะความกว้างจริงเปลี่ยนได้ตามจำนวนคาบ/ความยาวชื่อวิชา
+   ปุ่มพิมพ์เติมคลาส printing-schedule ที่ body ก่อน window.print() แล้วลบออกตอน afterprint (ดู staff-academic.js)
+   ใช้คลาสแยกจาก #score-report-print เพราะ body>*:not(#score-report-print) ของโหมดพิมพ์ตารางคะแนนจะซ่อน main ทั้งก้อนทับ #schedule-grid-wrap ที่ซ้อนอยู่ข้างในไปด้วย ถ้าใช้กฎเดียวกัน */
+/* หัวกระดาษ (โลโก้/ชื่อตาราง/คอร์ส) โชว์เฉพาะตอนพิมพ์ตารางเรียนเท่านั้น เติมข้อความสดตอนกดปุ่มพิมพ์ (ดู schedule-print-btn ใน staff-academic.js) */
+.schedule-print-header-hidden {
+  display: none;
+}
+
+@media print {
+  body.printing-schedule > header,
+  body.printing-schedule > footer,
+  body.printing-schedule > #scroll-to-top-btn,
+  body.printing-schedule > #activities-toast {
+    display: none !important;
+  }
+
+  body.printing-schedule #page-schedule > .max-w-7xl > *:not(#schedule-grid-wrap):not(#schedule-print-header) {
+    display: none !important;
+  }
+
+  /* .page-padding เว้น padding-top ไว้ดันเนื้อหาลงพ้น header ลอย (fixed) ตอนอยู่บนจอ - พอ header ถูกซ่อนไปตอนพิมพ์ ที่เว้นไว้เลยกลายเป็นช่องว่างโล่ง ๆ เหนือโลโก้แทน ไม่ต้องใช้แล้ว */
+  body.printing-schedule #page-schedule > .max-w-7xl {
+    padding: 0 !important;
+  }
+
+  body.printing-schedule #schedule-print-header {
+    display: block !important;
+  }
+
+  body.printing-schedule #schedule-print-header,
+  body.printing-schedule #schedule-print-header * {
+    font-family: 'TH SarabunPSK', 'TH Sarabun New', 'Sarabun', 'Segoe UI', Tahoma, sans-serif;
+    color: #000;
+  }
+
+  /* ปุ่มลบเป็นเครื่องมือแก้ไขบนจอ ไม่เกี่ยวกับเอกสารที่พิมพ์ออกมา ซ่อนออก พร้อมคืนที่ว่างฝั่งขวาของชื่อวิชาที่เผื่อไว้ให้ปุ่มด้วย */
+  body.printing-schedule .timetable-cell-delete-btn {
+    display: none !important;
+  }
+
+  body.printing-schedule .timetable-cell-title {
+    padding-right: 0 !important;
+  }
+
+  body.printing-schedule #schedule-grid-wrap {
+    zoom: var(--schedule-print-zoom, 1);
+  }
+
+  /* เบราว์เซอร์ปิดการพิมพ์สีพื้นหลัง/กราฟิกไว้เป็นค่าเริ่มต้น (ต้องกดติ๊ก "กราฟิกพื้นหลัง" ในกล่องตั้งค่าพิมพ์เอง) ทำให้แถบเวลาสีเข้ม/การ์ดสีต่าง ๆ หายเป็นขาวล้วนตอนพิมพ์จริง
+     บังคับให้พิมพ์สีเสมอโดยไม่ต้องพึ่งผู้ใช้ไปติ๊กเอง */
+  body.printing-schedule #schedule-grid-wrap,
+  body.printing-schedule #schedule-grid-wrap * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* กันแถวถูกตัดครึ่งคาบขอบหน้ากระดาษ (เห็นเป็นแถวว่าง ๆ ค้างท้ายหน้า) ไม่ใช่การจัดใหม่ แค่เลื่อนจุดตัดหน้าให้ตกระหว่างแถวแทน */
+  body.printing-schedule .timetable-day-row {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: landscape;
+    margin: 1cm;
+  }
+}

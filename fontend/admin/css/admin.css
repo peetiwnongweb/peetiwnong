@@ -650,6 +650,58 @@ body {
   transition: transform 0.2s ease !important;
 }
 
+.admin-shell-nav-grandchildren {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0.15rem 0 0.35rem 0.85rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--slate-200);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.admin-shell-nav-grandchild {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--slate-500);
+  background: transparent;
+  border: none;
+  border-radius: 0.45rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-shell-nav-grandchild svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+  color: var(--slate-400);
+  transition: color 0.15s ease;
+}
+
+.admin-shell-nav-grandchild:hover {
+  background-color: var(--slate-100);
+  color: var(--brand-600);
+}
+
+.admin-shell-nav-grandchild.active {
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+  font-weight: 700;
+}
+
+.admin-shell-nav-grandchild.active svg {
+  color: var(--brand-600);
+}
+
+
 
 .admin-shell-nav-child:hover {
   background-color: var(--slate-100);

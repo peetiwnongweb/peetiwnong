@@ -241,8 +241,8 @@ function viewNewsDetail(newsId) {
             </div>
             ${news.imageUrl ? `
             <div class="news-detail-image-wrap" style="position: relative;">
-                <img src="${news.imageUrl}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${news.imageUrl}')">
-                <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${news.imageUrl}')" aria-label="ดูรูปเต็ม">
+                <img src="${window.PTN_MEDIA_URL(news.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${window.PTN_MEDIA_URL(news.imageUrl)}')">
+                <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${window.PTN_MEDIA_URL(news.imageUrl)}')" aria-label="ดูรูปเต็ม">
                     <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
                     </svg>

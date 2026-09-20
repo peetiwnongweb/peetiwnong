@@ -72,6 +72,13 @@ function loadAdminUser() {
             return res.json();
         })
         .then(({ user }) => {
+            // หน้านี้เข้าได้เฉพาะ WEBMANAGER (Owner) เท่านั้น
+            // ถ้า role อื่น (ประธานค่าย / ผู้ดูแลระบบ / พี่ค่าย / น้องค่าย) copy URL มาเปิด → redirect กลับหน้าของตัวเอง
+            if (user.role !== 'WEBMANAGER') {
+                window.location.href = '/';
+                return;
+            }
+
             currentAdminUserId = user.id;
             const isPrivilegedStaff = user.role === 'STAFF' && user.isAdmin;
             const roleLabel = ACTIVITY_ROLE_LABELS[user.role] || user.role;
@@ -96,12 +103,12 @@ function loadAdminUser() {
             if (menuUsername) menuUsername.textContent = nameLine;
             if (menuRole) menuRole.textContent = subLabel;
 
-            // เก็บไว้ใช้ตอนเปิดหน้าต่าง "โปรไฟล์" (พรีฟิลอีเมล) - หน้านี้เข้าได้เฉพาะ WEBMANAGER อยู่แล้วจึงไม่ต้องเช็ค role ซ้ำ
+            // เก็บไว้ใช้ตอนเปิดหน้าต่าง "โปรไฟล์" (พรีฟิลอีเมล)
             currentWebManagerUser = user;
 
         })
         .catch(() => {
-            window.location.href = '/webmanager/login';
+            window.location.href = '/webmanager/login.html';
         });
 }
 
@@ -218,10 +225,11 @@ async function adminLogout() {
     const confirmed = await adminConfirm('ต้องการออกจากระบบใช่หรือไม่?', { title: 'ยืนยันออกจากระบบ', confirmText: 'ออกจากระบบ' });
     if (!confirmed) return;
 
-    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-        try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
-        window.location.href = '/webmanager/login';
-    });
+    // ยิง API logout แบบ fire-and-forget (ไม่รอ response) แล้ว redirect ทันที
+    // ป้องกันกรณี CORS error หรือ network issue ทำให้ finally() ไม่ทำงาน
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
+    window.location.href = '/webmanager/login.html';
 }
 
 function toggleAdminUserMenu() {

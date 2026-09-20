@@ -72,6 +72,13 @@ function loadAdminUser() {
             return res.json();
         })
         .then(({ user }) => {
+            // หน้านี้เข้าได้เฉพาะ WEBMANAGER (Owner) เท่านั้น
+            // ถ้า role อื่น (ประธานค่าย / ผู้ดูแลระบบ / พี่ค่าย / น้องค่าย) copy URL มาเปิด → redirect กลับหน้าของตัวเอง
+            if (user.role !== 'WEBMANAGER') {
+                window.location.href = '/';
+                return;
+            }
+
             currentAdminUserId = user.id;
             const isPrivilegedStaff = user.role === 'STAFF' && user.isAdmin;
             const roleLabel = ACTIVITY_ROLE_LABELS[user.role] || user.role;
@@ -96,12 +103,12 @@ function loadAdminUser() {
             if (menuUsername) menuUsername.textContent = nameLine;
             if (menuRole) menuRole.textContent = subLabel;
 
-            // เก็บไว้ใช้ตอนเปิดหน้าต่าง "โปรไฟล์" (พรีฟิลอีเมล) - หน้านี้เข้าได้เฉพาะ WEBMANAGER อยู่แล้วจึงไม่ต้องเช็ค role ซ้ำ
+            // เก็บไว้ใช้ตอนเปิดหน้าต่าง "โปรไฟล์" (พรีฟิลอีเมล)
             currentWebManagerUser = user;
 
         })
         .catch(() => {
-            window.location.href = '/webmanager/login';
+            window.location.href = '/webmanager/login.html';
         });
 }
 
@@ -218,10 +225,11 @@ async function adminLogout() {
     const confirmed = await adminConfirm('ต้องการออกจากระบบใช่หรือไม่?', { title: 'ยืนยันออกจากระบบ', confirmText: 'ออกจากระบบ' });
     if (!confirmed) return;
 
-    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
-        try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
-        window.location.href = '/webmanager/login';
-    });
+    // ยิง API logout แบบ fire-and-forget (ไม่รอ response) แล้ว redirect ทันที
+    // ป้องกันกรณี CORS error หรือ network issue ทำให้ finally() ไม่ทำงาน
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
+    window.location.href = '/webmanager/login.html';
 }
 
 function toggleAdminUserMenu() {
@@ -626,6 +634,7 @@ function adminConfirmResolve(result) {
 // ==========================================
 const COMMITTEE_PAGE_SIZE = 20;
 let committeeItems = [];
+let committeeDataLoaded = false;
 let committeeCurrentPage = 1;
 let committeeSelectedIds = new Set();
 let committeeSortColumn = 'generationNo';
@@ -690,6 +699,7 @@ const DEFAULT_HISTORY_BODY = 'ค่ายวิชาการพี่ติ�
 function updateHeroToggleAvailability() {
     const cardToggle = document.getElementById('hero-card-visible-toggle');
     if (!cardToggle) return;
+    if (!committeeDataLoaded) return;
     const hasCommitteeData = committeeItems.length > 0;
     cardToggle.disabled = !hasCommitteeData;
     cardToggle.title = hasCommitteeData ? '' : 'ยังไม่มีข้อมูลทำเนียบประธานค่าย เพิ่มข้อมูลก่อนถึงจะเปิดได้';
@@ -701,6 +711,7 @@ function updateHeroToggleAvailability() {
 function updateCommitteeSectionToggleAvailability() {
     const toggle = document.getElementById('committee-section-visible-toggle');
     if (!toggle) return;
+    if (!committeeDataLoaded) return;
     const hasCommitteeData = committeeItems.length > 0;
     toggle.disabled = !hasCommitteeData;
     toggle.title = hasCommitteeData ? '' : 'ยังไม่มีข้อมูลทำเนียบประธานค่าย เพิ่มข้อมูลก่อนถึงจะเปิดได้';
@@ -712,6 +723,7 @@ function updateCommitteeSectionToggleAvailability() {
 function updateNewsSectionToggleAvailability() {
     const toggle = document.getElementById('news-section-visible-toggle');
     if (!toggle) return;
+    if (!newsDataLoaded) return;
     const hasVisibleNews = newsItems.some((item) => item.isVisible);
     toggle.disabled = !hasVisibleNews;
     toggle.title = hasVisibleNews ? '' : 'ยังไม่มีประชาสัมพันธ์ที่แสดงอยู่ เพิ่มก่อนถึงจะเปิดได้';
@@ -938,6 +950,7 @@ function loadCommittees() {
         })
         .then((items) => {
             committeeItems = items;
+            committeeDataLoaded = true;
             committeeCurrentPage = 1;
             committeeSelectedIds.clear();
             renderCommitteeTable();
@@ -2579,6 +2592,7 @@ async function bulkDeleteGalleryPhotos() {
 const NEWS_PAGE_SIZE = 20;
 const NEWS_SORTABLE_COLUMNS = ['title', 'tag', 'publishedAt'];
 let newsItems = [];
+let newsDataLoaded = false;
 let newsCurrentPage = 1;
 let newsSelectedIds = new Set();
 let newsSortColumn = 'publishedAt';
@@ -2595,6 +2609,7 @@ function loadNews() {
         .then((items) => {
             // ตารางนี้ ("ประชาสัมพันธ์") คือของที่อนุมัติ/เผยแพร่จริงแล้วเท่านั้น รายการที่รออนุมัติ/ถูกปฏิเสธอยู่ในแท็บ "การอนุมัติประชาสัมพันธ์" แยกต่างหาก
             newsItems = items.filter((item) => item.approvalStatus === 'APPROVED');
+            newsDataLoaded = true;
             newsCurrentPage = 1;
             newsSelectedIds.clear();
             renderNewsTable();

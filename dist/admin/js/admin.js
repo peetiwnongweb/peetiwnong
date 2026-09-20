@@ -147,19 +147,19 @@ function loadAdminUser() {
         });
 }
 
-// Admin (พี่ค่ายที่ isAdmin) มีสิทธิ์ในกลุ่ม "Home" แค่ ประชาสัมพันธ์ กับ กำหนดการ - หน้าแรก (Hero) กับ ทำเนียบประธานค่าย เป็นของ WebManager เท่านั้น
+// Admin (พี่ค่ายที่ isAdmin) มีสิทธิ์ในกลุ่ม "Home" แค่ ประชาสัมพันธ์ กับ กำหนดการ - ทำเนียบประธานค่ายเป็นของ WebManager เท่านั้น
 // (WebManager ที่แวะเข้า /admin ยังเห็นครบทุกแท็บเหมือนเดิม)
 function applyAdminHomeNavAccess(user) {
     const isWebManager = !!(user && user.role === 'WEBMANAGER');
-    ['home', 'committee'].forEach((tab) => {
+    ['committee'].forEach((tab) => {
         const navChild = document.getElementById(`admin-tab-${tab}`);
         if (navChild) navChild.classList.toggle('hidden', !isWebManager);
     });
     if (isWebManager) return;
 
-    // ถ้าแท็บที่เปิดอยู่ตอนนี้ดันเป็นแท็บที่เพิ่งถูกซ่อน (เช่น "หน้าแรก" ที่ active เป็นค่าเริ่มต้นตอนโหลดหน้า) ให้สลับไปแท็บที่ Admin เข้าได้แทน
+    // ถ้าแท็บที่เปิดอยู่ตอนนี้ดันเป็นแท็บที่เพิ่งถูกซ่อน ให้สลับไปแท็บที่ Admin เข้าได้แทน
     const activeTab = document.querySelector('#home-subnav .admin-shell-nav-child.active');
-    if (activeTab && (activeTab.id === 'admin-tab-home' || activeTab.id === 'admin-tab-committee')) {
+    if (activeTab && activeTab.id === 'admin-tab-committee') {
         switchAdminTab('news');
     }
 }

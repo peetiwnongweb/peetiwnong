@@ -426,12 +426,23 @@ function switchAdminSection(section) {
     }
 }
 
+function expandNestedSubnavForTab(tab) {
+    const btn = document.getElementById(`admin-tab-${tab}`);
+    if (!btn) return;
+    const nestedSubnav = btn.closest('.admin-shell-nav-collapse');
+    if (!nestedSubnav || !nestedSubnav.classList.contains('collapsed')) return;
+    nestedSubnav.classList.remove('collapsed');
+    const toggleBtn = document.getElementById(`admin-tab-${nestedSubnav.id.replace('-subnav', '')}-toggle`);
+    if (toggleBtn) toggleBtn.classList.add('expanded');
+}
+
 function switchAdminTab(tab) {
     document.querySelectorAll('.admin-panel').forEach((panel) => panel.classList.remove('active'));
-    document.querySelectorAll('.admin-shell-nav-child').forEach((btn) => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-shell-nav-child, .admin-shell-nav-grandchild').forEach((btn) => btn.classList.remove('active'));
 
     document.getElementById(`admin-panel-${tab}`).classList.add('active');
     document.getElementById(`admin-tab-${tab}`).classList.add('active');
+    expandNestedSubnavForTab(tab);
     const loadKeys = ADMIN_TAB_LOAD_KEYS[tab];
     if (loadKeys) loadAdminLazyKeys(loadKeys);
 }

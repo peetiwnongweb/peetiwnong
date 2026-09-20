@@ -2615,21 +2615,14 @@ function renderUserTable(role = 'ALL') {
     pageItems.forEach((item) => {
         const row = document.createElement('tr');
         const checked = userSelectedIds[role].has(item.id);
-        const createdDate = new Date(item.createdAt).toLocaleDateString('th-TH', {
-            day: 'numeric', month: 'short', year: 'numeric',
-        });
-        
-        const adminBadgeCell = (role === 'STAFF' || role === 'ALL')
+        const adminBadgeCell = role === 'STAFF'
             ? `<td>${item.isAdmin ? '<span class="admin-bool-badge admin-bool-badge--yes">✓</span>' : '<span class="admin-bool-badge admin-bool-badge--no">✕</span>'}</td>`
             : '';
-            
-        let roleBadgeCell = '';
-        if (role === 'ALL') {
-            const roleLabel = ACTIVITY_ROLE_LABELS[item.role] || item.role;
-            const badgeClass = item.role === 'STAFF' ? 'admin-badge-update' : (item.role === 'WEBMANAGER' ? 'admin-badge-create' : 'admin-badge-neutral');
-            roleBadgeCell = `<td><span class="admin-badge ${badgeClass}">${roleLabel}</span></td>`;
-        }
-
+        const fullName = [item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ') || '-';
+        const nameInfoCells = `<td>${fullName}</td><td>${item.nickname || '-'}</td>`;
+        const roleWorkCells = role === 'STAFF'
+            ? `<td>${item.position?.name || '-'}</td><td>${item.department?.name || '-'}</td>`
+            : `<td>${item.courseFormat?.name || '-'}</td><td>${item.group?.name || '-'}</td>`;
         row.innerHTML = `
             <td>
                 <label class="admin-checkbox-wrap">
@@ -2637,9 +2630,8 @@ function renderUserTable(role = 'ALL') {
                     <span class="custom-checkbox"></span>
                 </label>
             </td>
-            <td class="admin-cell-strong">${item.email}</td>
-            ${roleBadgeCell}
-            <td>${createdDate}</td>
+            ${nameInfoCells}
+            ${roleWorkCells}
             ${adminBadgeCell}
             <td>${adminActionButtonsHtml()}</td>
         `;

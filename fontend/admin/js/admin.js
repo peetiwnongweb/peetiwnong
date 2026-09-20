@@ -354,6 +354,8 @@ const ADMIN_LAZY_LOADERS = {
     'approve-staff': () => loadUsers('STAFF'),
     'approve-participant': () => loadUsers('PARTICIPANT'),
     'approve-news': () => loadNews(),
+    'staff-users': () => loadUsers('STAFF'),
+    'participant-users': () => loadUsers('PARTICIPANT'),
     users: () => loadUsers('ALL'),
 };
 
@@ -363,8 +365,8 @@ const ADMIN_TAB_LOAD_KEYS = {
     committee: ['committee'],
     'approve-staff': ['approve-staff'],
     'approve-participant': ['approve-participant'],
-    'staff-users': ['approve-staff'],
-    'participant-users': ['approve-participant'],
+    'staff-users': ['staff-users'],
+    'participant-users': ['participant-users'],
     'approve-news': ['approve-news'],
     users: ['users'],
 };
@@ -378,10 +380,7 @@ function loadAdminLazyKeys(keys) {
 }
 
 // Sections ที่ไม่มี subnav แต่ต้อง load ข้อมูลเมื่อเปิด
-
-const ADMIN_SECTION_LOAD_KEYS = {
-    user: ['users'],
-};
+const ADMIN_SECTION_LOAD_KEYS = {};
 
 function switchAdminSection(section) {
     const sidebar = document.querySelector('.admin-shell-sidebar');

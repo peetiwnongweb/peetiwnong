@@ -83,89 +83,6 @@ app.use(session({
 // เก็บสถิติการใช้งาน (นับใน memory เขียนลง DB ทุก 1 นาที) ต้องอยู่หลัง session ถึงจะรู้ role ของผู้ใช้ และก่อน static เพื่อนับการเปิดหน้าเว็บด้วย
 app.use(usageTracker)
 
-// WebManager ยังเข้า /admin ได้เสมอ (สิทธิ์สูงสุด) ต่างจาก /staff กับ /participant ที่ตอนนี้กันไม่ให้ Owner ค้างอยู่แล้ว (ดู requireStaffPage/requireParticipantPage) เพราะ /admin ไม่ใช่หน้าตัวตนของพี่ค่ายคนใดคนหนึ่ง แต่เป็นแผงควบคุมสิทธิ์ผู้ดูแลระบบที่ WebManager มอบให้พี่ค่ายได้อยู่แล้ว
-function requireAdminPage(req, res, next) {
-    if (req.path === '/' || req.path === '/index.html') {
-        const user = req.session && req.session.user
-        const hasAdminAccess = user && ((user.role === 'STAFF' && user.isAdmin) || user.role === 'WEBMANAGER')
-        if (!hasAdminAccess) {
-            return res.redirect('/')
-        }
-    }
-    next()
-}
-
-// /webmanager แยกออกจาก /admin โดยสิ้นเชิง เข้าได้เฉพาะ WEBMANAGER (สิทธิ์สูงสุด) เท่านั้น ไม่ใช่ผู้ใช้ที่ล็อกอินก็เด้งไปหน้า login ของตัวเอง ไม่ใช่หน้าแรกเว็บหลัก
-function requireWebManagerPage(req, res, next) {
-    if (req.path === '/' || req.path === '/index.html') {
-        const user = req.session && req.session.user
-        const hasWebManagerAccess = user && user.role === 'WEBMANAGER'
-        if (!hasWebManagerAccess) {
-            return res.redirect('/webmanager/login')
-        }
-    }
-    next()
-}
-
-// ครอบทั้ง mount /staff (ไม่ใช่แค่ index.html) เพราะตอนนี้มีหน้าย่อยอย่าง profile.html ด้วย
-// ไฟล์ static ที่หน้าพี่ค่ายอ้างอิง (css/js/assets) ทั้งหมดอยู่นอก /staff อยู่แล้วจึงไม่กระทบ
-// WebManager ไม่ให้ค้างอยู่หน้านี้อีกต่อไป (เดิมเข้าได้เพื่อสวมรอยดูมุมมองพี่ค่าย) เด้งกลับ /webmanager/ แทนเสมอ - ใช้บัญชีพี่ค่ายทดสอบจริงแทนถ้าต้องการดูมุมมองนี้
-function requireStaffPage(req, res, next) {
-    const user = req.session && req.session.user
-    if (user && user.role === 'WEBMANAGER') {
-        return res.redirect('/webmanager/')
-    }
-    if (!user || user.role !== 'STAFF') {
-        return res.redirect('/')
-    }
-    next()
-}
-
-// ครอบทั้ง mount /participant เหมือนกับ /staff (มี index.html และ profile.html) - WebManager เด้งกลับ /webmanager/ เหมือนกัน (ดูเหตุผลใน requireStaffPage)
-function requireParticipantPage(req, res, next) {
-    const user = req.session && req.session.user
-    if (user && user.role === 'WEBMANAGER') {
-        return res.redirect('/webmanager/')
-    }
-    if (!user || user.role !== 'PARTICIPANT') {
-        return res.redirect('/')
-    }
-    next()
-}
-
-// พี่ค่าย/น้องค่าย/Owner ที่ login อยู่ ไม่ว่าจะพยายามเข้าหน้าแรกด้วยวิธีไหนก็ให้เด้งกลับไปหน้าของตัวเองเสมอ
-// ไม่กระทบคนที่ยังไม่ login เข้าหน้าแรกได้ปกติ (user เป็น undefined เงื่อนไขทั้งหมดข้างล่างจึงไม่เข้า)
-function keepStaffOnStaffPage(req, res, next) {
-    if (req.path === '/' || req.path === '/index.html') {
-        // iframe "ตัวอย่างหน้าเว็บหลัก" ในแผง WebManager (หน้าแรก) โหลด src="/?preview=1" ตั้งใจข้าม redirect นี้
-        // ไม่งั้น session cookie ของ WebManager/พี่ค่าย/น้องค่ายที่ล็อกอินอยู่จะโดนเด้งกลับไปหน้าแผงของตัวเอง กลายเป็นโหลดทั้งแอปซ้อนอยู่ในกรอบพรีวิวเอง (วนไม่รู้จบ)
-        if (req.query.preview === '1') return next()
-        const user = req.session && req.session.user
-        if (user && user.role === 'STAFF') {
-            return res.redirect('/staff/')
-        }
-        if (user && user.role === 'PARTICIPANT') {
-            return res.redirect('/participant/')
-        }
-        if (user && user.role === 'WEBMANAGER') {
-            return res.redirect('/webmanager/')
-        }
-    }
-    next()
-}
-
-// เปลี่ยนทุก URL ที่ลงท้าย .html ให้ redirect (301) ไปหาแบบไม่มีนามสกุลเสมอ ให้ที่อยู่บนเบราว์เซอร์สะอาด ("/staff/academic" แทน "/staff/academic.html")
-// "index.html" พับรวมเป็น path ของโฟลเดอร์แม่ไปเลย ("/webmanager/index.html" -> "/webmanager/", "/index.html" -> "/") - ต้องอยู่ก่อน static ทุกตัวเสมอ
-function redirectHtmlExtension(req, res, next) {
-    if (!req.path.endsWith('.html')) return next()
-    const withoutExt = req.path.slice(0, -5)
-    const clean = withoutExt.endsWith('/index') ? (withoutExt.slice(0, -5) || '/') : withoutExt
-    if (clean === req.path) return next()
-    const queryIndex = req.originalUrl.indexOf('?')
-    const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex)
-    res.redirect(301, clean + query)
-}
-
 // ไฟล์ CSS/JS ส่วนใหญ่อ้างด้วย query string ?v=วันที่-เลขรัน (cache-busting) แต่ไม่ครบ 100% ทั้งเว็บ (เจอจริงระหว่างแก้วันนี้ - news.js/loader.js/modal.css ไม่มี ?v= ทำให้เห็นโค้ดเก่าค้างหลัง deploy)
 // จึงเช็คจาก query string ของคำขอจริงแทนการเดาจากนามสกุลไฟล์อย่างเดียว: มี ?v= แปลว่ามั่นใจว่า cache-bust ได้แน่ (path เปลี่ยนทุกครั้งที่เนื้อหาเปลี่ยน) ให้ cache ยาวได้เต็มที่
 // ไม่มี ?v= (ไฟล์ไหนก็ตามที่ยังไม่ได้ใส่/ลืมใส่) ให้ cache สั้นแค่ 5 นาทีไว้ก่อน กันเห็นโค้ดเก่าค้างนานเกินไปโดยไม่ต้องไล่หาทุกจุดที่ยังไม่ได้ใส่ ?v= ให้ครบ
@@ -178,26 +95,8 @@ function setStaticCacheHeaders(res, filePath) {
     }
 }
 
-app.use(redirectHtmlExtension)
-app.use(keepStaffOnStaffPage)
-// extensions: ['html'] ให้ "/staff/academic" เสิร์ฟไฟล์ academic.html ได้ตรง ๆ โดยไม่ต้องมี .html ใน URL (ยังเสิร์ฟ index.html อัตโนมัติที่ path โฟลเดอร์เหมือนเดิมอยู่แล้ว)
-app.use(express.static(path.join(__dirname, 'fontend', 'public'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
-app.use('/assets', express.static(path.join(__dirname, 'fontend', 'assets'), { setHeaders: setStaticCacheHeaders }))
 app.use('/backend/uploads', express.static(path.join(__dirname, 'backend', 'uploads'), { setHeaders: setStaticCacheHeaders }))
 app.use('/media', mediaRoutes)
-app.use('/admin', requireAdminPage, express.static(path.join(__dirname, 'fontend', 'admin'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
-app.use('/webmanager', requireWebManagerPage, express.static(path.join(__dirname, 'fontend', 'webmanager'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
-app.use('/staff', requireStaffPage, express.static(path.join(__dirname, 'fontend', 'staff'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
-app.use('/participant', requireParticipantPage, express.static(path.join(__dirname, 'fontend', 'participant'), { extensions: ['html'], setHeaders: setStaticCacheHeaders }))
-
-// หน้าแรกของพี่ค่าย/น้องค่ายใช้ไฟล์เดียวกับหน้าแรกสาธารณะ (fontend/public/index.html) ไม่มีสำเนาแยกในโฟลเดอร์ fontend/staff, fontend/participant แล้ว
-// เนื้อหาปรับตาม role ด้วย JS ฝั่ง client (auth.js) - requireStaffPage/requireParticipantPage ยังกันคนละ role เข้าไม่ได้เหมือนเดิม
-app.get('/staff/', requireStaffPage, (req, res) => {
-    res.sendFile(path.join(__dirname, 'fontend', 'public', 'index.html'))
-})
-app.get('/participant/', requireParticipantPage, (req, res) => {
-    res.sendFile(path.join(__dirname, 'fontend', 'public', 'index.html'))
-})
 
 app.use('/api/auth', authRoutes)
 app.use('/api/presidents', presidentsRoutes)

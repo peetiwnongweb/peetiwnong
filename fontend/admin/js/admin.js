@@ -301,6 +301,18 @@ function viewAllActivityLogs() {
     switchAdminSection('log');
 }
 
+function toggleNewsSubnav() {
+    const subnav = document.getElementById('news-subnav');
+    const toggleBtn = document.getElementById('admin-tab-news-toggle');
+    if (subnav && toggleBtn) {
+        const isCollapsed = subnav.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('active', !isCollapsed);
+        const caret = toggleBtn.querySelector('.admin-shell-nav-subcaret');
+        if (caret) {
+            caret.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+    }
+}
 function setAdminNavGroupCollapsed(targetId, collapsed) {
     const collapse = document.getElementById(targetId);
     if (collapse) collapse.classList.toggle('collapsed', collapsed);

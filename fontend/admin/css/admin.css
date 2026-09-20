@@ -645,6 +645,12 @@ body {
   transition: color 0.15s ease;
 }
 
+.admin-shell-nav-subcaret {
+  margin-left: auto;
+  transition: transform 0.2s ease !important;
+}
+
+
 .admin-shell-nav-child:hover {
   background-color: var(--slate-100);
   color: var(--brand-600);

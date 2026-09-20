@@ -626,6 +626,7 @@ function adminConfirmResolve(result) {
 // ==========================================
 const COMMITTEE_PAGE_SIZE = 20;
 let committeeItems = [];
+let committeeDataLoaded = false;
 let committeeCurrentPage = 1;
 let committeeSelectedIds = new Set();
 let committeeSortColumn = 'generationNo';
@@ -690,6 +691,7 @@ const DEFAULT_HISTORY_BODY = 'ค่ายวิชาการพี่ติ�
 function updateHeroToggleAvailability() {
     const cardToggle = document.getElementById('hero-card-visible-toggle');
     if (!cardToggle) return;
+    if (!committeeDataLoaded) return;
     const hasCommitteeData = committeeItems.length > 0;
     cardToggle.disabled = !hasCommitteeData;
     cardToggle.title = hasCommitteeData ? '' : 'ยังไม่มีข้อมูลทำเนียบประธานค่าย เพิ่มข้อมูลก่อนถึงจะเปิดได้';
@@ -701,6 +703,7 @@ function updateHeroToggleAvailability() {
 function updateCommitteeSectionToggleAvailability() {
     const toggle = document.getElementById('committee-section-visible-toggle');
     if (!toggle) return;
+    if (!committeeDataLoaded) return;
     const hasCommitteeData = committeeItems.length > 0;
     toggle.disabled = !hasCommitteeData;
     toggle.title = hasCommitteeData ? '' : 'ยังไม่มีข้อมูลทำเนียบประธานค่าย เพิ่มข้อมูลก่อนถึงจะเปิดได้';
@@ -712,6 +715,7 @@ function updateCommitteeSectionToggleAvailability() {
 function updateNewsSectionToggleAvailability() {
     const toggle = document.getElementById('news-section-visible-toggle');
     if (!toggle) return;
+    if (!newsDataLoaded) return;
     const hasVisibleNews = newsItems.some((item) => item.isVisible);
     toggle.disabled = !hasVisibleNews;
     toggle.title = hasVisibleNews ? '' : 'ยังไม่มีประชาสัมพันธ์ที่แสดงอยู่ เพิ่มก่อนถึงจะเปิดได้';
@@ -938,6 +942,7 @@ function loadCommittees() {
         })
         .then((items) => {
             committeeItems = items;
+            committeeDataLoaded = true;
             committeeCurrentPage = 1;
             committeeSelectedIds.clear();
             renderCommitteeTable();
@@ -2579,6 +2584,7 @@ async function bulkDeleteGalleryPhotos() {
 const NEWS_PAGE_SIZE = 20;
 const NEWS_SORTABLE_COLUMNS = ['title', 'tag', 'publishedAt'];
 let newsItems = [];
+let newsDataLoaded = false;
 let newsCurrentPage = 1;
 let newsSelectedIds = new Set();
 let newsSortColumn = 'publishedAt';
@@ -2595,6 +2601,7 @@ function loadNews() {
         .then((items) => {
             // ตารางนี้ ("ประชาสัมพันธ์") คือของที่อนุมัติ/เผยแพร่จริงแล้วเท่านั้น รายการที่รออนุมัติ/ถูกปฏิเสธอยู่ในแท็บ "การอนุมัติประชาสัมพันธ์" แยกต่างหาก
             newsItems = items.filter((item) => item.approvalStatus === 'APPROVED');
+            newsDataLoaded = true;
             newsCurrentPage = 1;
             newsSelectedIds.clear();
             renderNewsTable();

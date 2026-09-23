@@ -2387,7 +2387,9 @@ function closeOralExamQrFullscreen() {
 // เป็น null ตอนแสดงครั้งแรกของรอบนี้เสมอ กันไม่ให้แถวเดิมที่มีอยู่แล้วเด้งไปด้วยทั้งที่ไม่ใช่คนเพิ่งเข้ามาใหม่จริง ๆ
 let oralExamKnownAttemptIds = null;
 
-function renderOralExamQueue(attempts) {
+function renderOralExamQueue(allAttempts) {
+    // ประเมินผ่าน/ไม่ผ่านแล้ว = ออกจากรอบสอบนี้ไปเลย ไม่โชว์ค้างในคิว (ผลยังบันทึกอยู่ในคะแนน/ประวัติการสอบตามปกติ) เหลือแค่คนที่ยังรอประเมิน
+    const attempts = (allAttempts || []).filter((a) => a.status === 'PENDING');
     if (currentOralExamSession) currentOralExamSession.attempts = attempts;
     const list = document.getElementById('oral-exam-queue-list');
     const empty = document.getElementById('oral-exam-queue-empty');
@@ -2411,6 +2413,7 @@ function renderOralExamQueue(attempts) {
         }
     }
 
+    empty.textContent = currentOralExamSession?.status === 'STARTED' ? 'ประเมินครบทุกคนแล้ว' : 'ยังไม่มีใครสแกนเข้าคิว';
     empty.classList.toggle('hidden', attempts.length > 0);
     list.innerHTML = attempts.map((a) => `
         <div class="oral-exam-queue-row oral-exam-queue-row--${a.status.toLowerCase()}${newAttemptIds.has(a.id) ? ' oral-exam-queue-row--pop-in' : ''}">

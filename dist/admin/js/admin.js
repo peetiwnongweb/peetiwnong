@@ -1097,7 +1097,8 @@ function initRichTextToolbar() {
         btn.addEventListener('mousedown', (event) => event.preventDefault());
         btn.addEventListener('click', async () => {
             if (btn.dataset.richtextCmd === 'createLink') {
-                await insertRichTextLink(document.getElementById('news-detail'));
+                const editorEl = btn.closest('.admin-richtext-editor')?.querySelector('.admin-richtext');
+                if (editorEl) await insertRichTextLink(editorEl);
             } else {
                 document.execCommand(btn.dataset.richtextCmd, false, null);
             }
@@ -1108,15 +1109,14 @@ function initRichTextToolbar() {
 
     // execCommand('defaultParagraphSeparator', 'br') ไม่เสถียรพอในทุกเบราว์เซอร์ จึงสั่งแทรก <br> เองตอนกด Enter แทนที่จะปล่อยให้ห่อ <div> ใหม่ทุกครั้ง
     // ใช้ execCommand('insertLineBreak') แทนการแทรก <br> ด้วย Range เอง เพราะ Range แบบ manual วางตำแหน่งเคอร์เซอร์หลัง <br> ท้ายสุดไม่ได้ (พิมพ์ต่อแล้วอักษรไปแทรกก่อน <br> แทน)
-    const detailEl = document.getElementById('news-detail');
-    if (detailEl) {
+    document.querySelectorAll('.admin-richtext').forEach((detailEl) => {
         detailEl.addEventListener('keydown', (event) => {
             if (event.key !== 'Enter' || event.shiftKey) return;
             event.preventDefault();
             document.execCommand('insertLineBreak');
         });
         detailEl.addEventListener('paste', handleRichTextPaste);
-    }
+    });
 
     document.getElementById('link-prompt-input')?.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter') return;
@@ -1135,8 +1135,9 @@ function handleRichTextPaste(event) {
 }
 
 function updateRichTextToolbarState() {
-    if (document.activeElement?.id !== 'news-detail') return;
-    document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
+    const editorEl = document.activeElement;
+    if (!editorEl?.classList.contains('admin-richtext')) return;
+    editorEl.closest('.admin-richtext-editor')?.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
         try {
             btn.classList.toggle('active', document.queryCommandState(btn.dataset.richtextCmd));
         } catch (error) {
@@ -1892,10 +1893,23 @@ function openScheduleForm(item) {
     document.getElementById('schedule-mobileDate').value = item && item.mobileDate ? item.mobileDate : '';
     document.getElementById('schedule-badgeLabel').value = item && item.badgeLabel ? item.badgeLabel : '';
     document.getElementById('schedule-title').value = item ? item.title : '';
-    document.getElementById('schedule-description').value = item ? item.description : '';
+    document.getElementById('schedule-description').innerHTML = item ? richTextFromStoredText(item.description) : '';
     document.getElementById('schedule-isVisible').checked = item ? item.isVisible !== false : true;
 
     document.getElementById('schedule-modal').classList.remove('hidden');
+}
+
+// ข้อความเก่าที่ไม่มีแท็ก HTML เลย = ข้อความธรรมดา escape แล้วแปลงขึ้นบรรทัดเป็น <br> ส่วนที่เป็น HTML จาก editor อยู่แล้วใช้ตรง ๆ
+function richTextFromStoredText(text) {
+    if (!text) return '';
+    if (/<[a-z][\s\S]*>/i.test(text)) return text;
+    return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+// editor ที่ลบข้อความหมดมักเหลือ <br> ค้างไว้ นับเป็นว่าง (ไม่บังคับกรอกรายละเอียด)
+function richTextToStoredHtml(editorEl) {
+    if (!editorEl.textContent.trim() && !editorEl.querySelector('img')) return '';
+    return editorEl.innerHTML.trim();
 }
 
 function closeScheduleForm() {
@@ -1913,7 +1927,7 @@ function submitScheduleForm(event) {
         mobileDate: document.getElementById('schedule-mobileDate').value.trim(),
         badgeLabel: document.getElementById('schedule-badgeLabel').value.trim(),
         title: document.getElementById('schedule-title').value.trim(),
-        description: document.getElementById('schedule-description').value.trim(),
+        description: richTextToStoredHtml(document.getElementById('schedule-description')),
         isVisible: document.getElementById('schedule-isVisible').checked,
     };
 

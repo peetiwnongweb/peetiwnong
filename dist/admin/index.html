@@ -1008,7 +1008,7 @@
                         </div>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="schedule-badgeColor">สีป้ายกำกับ</label>
+                                <label class="form-label" for="schedule-badgeColor">สีป้ายกำกับ <span class="required-mark">*</span></label>
                                 <select class="form-input" id="schedule-badgeColor">
                                     <option value="EMERALD">เขียว</option>
                                     <option value="ROSE">แดง</option>
@@ -1017,28 +1017,47 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="schedule-badgeLabel">ข้อความป้ายกำกับ</label>
-                                <input class="form-input" type="text" id="schedule-badgeLabel" placeholder="เปิดรับ">
+                                <label class="form-label" for="schedule-badgeLabel">ข้อความป้ายกำกับ <span class="required-mark">*</span></label>
+                                <input class="form-input" type="text" id="schedule-badgeLabel" placeholder="เปิดรับ" required>
                             </div>
                         </div>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="schedule-dateText">วันที่แสดงผล (แบบสั้น)</label>
+                                <label class="form-label" for="schedule-dateText">วันที่แสดงผล (แบบสั้น) <span class="required-mark">*</span></label>
                                 <input class="form-input" type="text" id="schedule-dateText" placeholder="1 ก.ค. 2569" required>
                                 <p class="admin-field-hint">เติมอัตโนมัติจากวันที่ด้านบน แก้ไขเพิ่มเติมเองได้</p>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="schedule-mobileDate">วันที่แสดงผล (แบบเต็ม บนมือถือ)</label>
-                                <input class="form-input" type="text" id="schedule-mobileDate" placeholder="1 กรกฎาคม 2569 (เปิดรับสมัคร)">
+                                <label class="form-label" for="schedule-mobileDate">วันที่แสดงผล (แบบเต็ม บนมือถือ) <span class="required-mark">*</span></label>
+                                <input class="form-input" type="text" id="schedule-mobileDate" placeholder="1 กรกฎาคม 2569 (เปิดรับสมัคร)" required>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="schedule-title">หัวข้อ</label>
+                            <label class="form-label" for="schedule-title">หัวข้อ <span class="required-mark">*</span></label>
                             <input class="form-input" type="text" id="schedule-title" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="schedule-description">รายละเอียด</label>
-                            <textarea class="form-input admin-textarea" id="schedule-description" rows="4" required></textarea>
+                            <!-- editor ชุดเดียวกับรายละเอียดประชาสัมพันธ์ (ดู initRichTextToolbar) ไม่บังคับกรอก -->
+                            <div class="admin-richtext-editor">
+                                <div class="admin-richtext-toolbar">
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                        </svg>
+                                    </button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="admin-textarea admin-richtext" id="schedule-description" contenteditable="true" data-placeholder="พิมพ์รายละเอียดกำหนดการ (ไม่บังคับ)..."></div>
+                            </div>
                         </div>
                         <div class="admin-toggle-row">
                             <label class="admin-toggle-switch">
@@ -1459,7 +1478,7 @@
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/admin.js?v=20260923-4"></script>
+    <script src="js/admin.js?v=20260923-5"></script>
     <script src="js/admin-dashboard.js?v=20260919-2"></script>
 </body>
 

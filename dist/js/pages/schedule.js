@@ -40,7 +40,7 @@ function renderSchedule(items) {
       <div class="timeline-content">
         <span class="timeline-mobile-date">${item.mobileDate}</span>
         <h3 class="timeline-title">${item.title}</h3>
-        <p class="timeline-desc">${item.description}</p>
+        ${item.description ? `<div class="timeline-desc">${item.description}</div>` : ''}
       </div>
     `;
 

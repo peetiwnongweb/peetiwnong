@@ -10,12 +10,30 @@ async function listSchedules(req, res) {
   res.json(schedules);
 }
 
+const REQUIRED_SCHEDULE_FIELDS = {
+  eventDate: 'วันที่เริ่ม',
+  dateText: 'วันที่แสดงผล (แบบสั้น)',
+  mobileDate: 'วันที่แสดงผล (แบบเต็ม)',
+  badgeLabel: 'ข้อความป้ายกำกับ',
+  title: 'หัวข้อ',
+};
+
+// คืนชื่อช่องแรกที่ว่าง (null = ครบ) - onlyProvided: ตอนแก้ไขเช็คเฉพาะช่องที่ส่งมา (เช่นสลับแสดงผลส่งมาแค่ isVisible)
+function findMissingScheduleFields(fields, { onlyProvided = false } = {}) {
+  for (const [key, label] of Object.entries(REQUIRED_SCHEDULE_FIELDS)) {
+    const value = fields[key];
+    if (onlyProvided && value === undefined) continue;
+    if (value === undefined || value === null || String(value).trim() === '') return label;
+  }
+  return null;
+}
+
 async function createSchedule(req, res) {
   const { eventDate, dateText, mobileDate, badgeLabel, badgeColor, title, description, isVisible } = req.body;
 
-  if (!eventDate || !dateText || !title || !description) {
-    return res.status(400).json({ error: 'ต้องระบุ eventDate, dateText, title และ description' });
-  }
+  // บังคับทุกช่อง ยกเว้นรายละเอียด (description) - วันที่สิ้นสุดไม่มีคอลัมน์เก็บอยู่แล้ว (ใช้แค่คำนวณข้อความวันที่ฝั่งฟอร์ม)
+  const missing = findMissingScheduleFields({ eventDate, dateText, mobileDate, badgeLabel, title });
+  if (missing) return res.status(400).json({ error: `กรุณากรอก${missing}` });
   if (badgeColor && !VALID_COLORS.includes(badgeColor)) {
     return res.status(400).json({ error: `badgeColor ต้องเป็นหนึ่งใน ${VALID_COLORS.join(', ')}` });
   }
@@ -25,11 +43,11 @@ async function createSchedule(req, res) {
     data: {
       eventDate: new Date(eventDate),
       dateText,
-      mobileDate: mobileDate || dateText,
-      badgeLabel: badgeLabel || '',
+      mobileDate: mobileDate.trim(),
+      badgeLabel: badgeLabel.trim(),
       badgeColor: badgeColor || 'BRAND',
-      title,
-      description,
+      title: title.trim(),
+      description: description || '',
       isVisible: isVisible === undefined ? true : Boolean(isVisible),
     },
   });
@@ -50,6 +68,9 @@ async function updateSchedule(req, res) {
   const id = Number(req.params.id);
   const { eventDate, dateText, mobileDate, badgeLabel, badgeColor, title, description, isVisible } = req.body;
 
+  const missing = findMissingScheduleFields({ eventDate, dateText, mobileDate, badgeLabel, title }, { onlyProvided: true });
+  if (missing) return res.status(400).json({ error: `กรุณากรอก${missing}` });
+
   if (badgeColor && !VALID_COLORS.includes(badgeColor)) {
     return res.status(400).json({ error: `badgeColor ต้องเป็นหนึ่งใน ${VALID_COLORS.join(', ')}` });
   }
@@ -65,7 +86,7 @@ async function updateSchedule(req, res) {
         ...(badgeLabel !== undefined && { badgeLabel }),
         ...(badgeColor !== undefined && { badgeColor }),
         ...(title !== undefined && { title }),
-        ...(description !== undefined && { description }),
+        ...(description !== undefined && { description: description || '' }),
         ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
       },
     });

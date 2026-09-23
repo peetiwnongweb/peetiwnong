@@ -183,11 +183,34 @@
   font-size: 1.125rem;
 }
 
+/* รายละเอียดเป็น rich text จาก editor ในแผงจัดการ (<br>, ตัวหนา, รายการ, ลิงก์) ข้อความเก่าที่เป็นข้อความธรรมดาใช้ pre-line แสดงการขึ้นบรรทัดเดิม */
 .timeline-desc {
   color: var(--slate-600);
   font-size: 0.875rem;
   margin-top: 0.25rem;
   line-height: 1.625;
+  white-space: pre-line;
+}
+
+.timeline-desc ul,
+.timeline-desc ol {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+  white-space: normal;
+}
+
+.timeline-desc ul {
+  list-style: disc;
+}
+
+.timeline-desc ol {
+  list-style: decimal;
+}
+
+.timeline-desc a {
+  color: var(--brand-600);
+  text-decoration: underline;
+  word-break: break-all;
 }
 
 /* ==========================================

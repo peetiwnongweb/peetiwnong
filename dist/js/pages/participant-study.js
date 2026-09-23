@@ -527,7 +527,8 @@ function restorePendingExamCheckin() {
         .then((res) => (res.ok ? res.json() : { history: [] }))
         .then(({ history }) => {
             for (const subjectEntry of history) {
-                const pending = subjectEntry.attempts.find((a) => a.status === 'PENDING');
+                // ข้ามรายการค้างจากรอบที่ถูกปิดไปแล้ว (ไม่มีใครประเมินได้อีก) ไม่ต้องโชว์การ์ด "เข้าร่วมแล้ว" ให้สแกนรอบใหม่ได้เลย
+                const pending = subjectEntry.attempts.find((a) => a.status === 'PENDING' && a.sessionStatus !== 'CLOSED');
                 if (pending) {
                     renderExamScanSuccess(pending.id, subjectEntry.subjectName, pending.attemptNumber);
                     return;

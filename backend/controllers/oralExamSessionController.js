@@ -295,7 +295,8 @@ async function evaluateAttempts(req, res) {
   res.json({ evaluated, skipped });
 }
 
-// หยุดรับสแกนใหม่ - ไม่แตะ attempt ที่ยัง PENDING พี่ค่ายยังประเมินคิวที่ค้างอยู่ต่อได้หลังปิดรอบ (กดซ้ำได้ ไม่ error)
+// ยกเลิก/ปิดรอบสอบ (กดซ้ำได้ ไม่ error) - คนที่ยังรอประเมิน (PENDING) ถูกนำออกจากคิวด้วย เหมือนไม่เคยเช็คอิน
+// เพราะรอบที่ปิดแล้วไม่โผล่ให้พี่ค่ายประเมินต่อได้อีก (getActiveSession ดึงแค่ OPEN/STARTED) ถ้าปล่อยค้างไว้น้องค่ายจะติด "รอประเมิน" จนเช็คอินรอบใหม่ไม่ได้
 async function closeSession(req, res) {
   const sessionId = Number(req.params.sessionId);
   const prisma = await getPrisma();
@@ -309,14 +310,17 @@ async function closeSession(req, res) {
   }
 
   if (session.status !== 'CLOSED') {
-    await prisma.oralExamSession.update({ where: { id: sessionId }, data: { status: 'CLOSED', closedAt: new Date() } });
+    const [, removed] = await prisma.$transaction([
+      prisma.oralExamSession.update({ where: { id: sessionId }, data: { status: 'CLOSED', closedAt: new Date() } }),
+      prisma.oralExamAttempt.deleteMany({ where: { sessionId, status: 'PENDING' } }),
+    ]);
     await logActivity({
       actorEmail: req.session.user.email,
       actorRole: req.session.user.role,
       action: 'UPDATE',
       entityType: 'ORAL_EXAM_SESSION',
       entityId: sessionId,
-      summary: `ปิดรอบสอบอธิบายวิชา "${session.subject.name}"`,
+      summary: `ปิดรอบสอบอธิบายวิชา "${session.subject.name}"${removed.count ? ` (นำผู้ที่ยังไม่ได้ประเมิน ${removed.count} คนออกจากคิว)` : ''}`,
     });
   }
 
@@ -345,6 +349,11 @@ async function checkIn(req, res) {
   } else if (session.subject.courseFormatId !== null && session.subject.courseFormatId !== profile.courseFormatId) {
     return res.status(403).json({ error: 'วิชานี้ไม่ได้อยู่ในคอร์สของคุณ' });
   }
+
+  // ล้างรายการ "รอประเมิน" ที่ค้างจากรอบที่ถูกปิดไปแล้ว (ข้อมูลเก่าก่อนแก้ closeSession) ไม่มีใครประเมินได้อีก ไม่งั้นน้องค่ายติดเช็คอินใหม่ไม่ได้
+  await prisma.oralExamAttempt.deleteMany({
+    where: { participantProfileId: profile.id, status: 'PENDING', session: { status: 'CLOSED' } },
+  });
 
   const existingAttempts = await prisma.oralExamAttempt.findMany({
     where: { participantProfileId: profile.id, subjectId: session.subjectId },

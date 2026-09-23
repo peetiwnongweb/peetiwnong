@@ -21,6 +21,20 @@ window.PTN_AUTH_ME = (new URLSearchParams(window.location.search).get('preview')
         .then((res) => (res.ok ? res.json() : { user: null, camp: null }))
         .catch(() => ({ user: null, camp: null }));
 
+// หน้าเฉพาะสมาชิก (/staff/*, /participant/*) เปิดจากลิงก์ที่ก๊อปมาโดยไม่ได้ล็อกอิน หรือบทบาทไม่ตรง = เด้งกลับหน้าแรก
+// ไม่ปล่อยให้เห็นแผง "ระบบยังไม่เปิดใช้งาน" แทน (camp เป็น null ตอนไม่ได้ล็อกอิน เลยดูเหมือนระบบปิดอยู่)
+// WebManager เข้าได้ทั้งสองฝั่ง (ใช้จำลองดูหน้าพี่ค่าย/น้องค่าย) ตรงกับสิทธิ์ฝั่ง backend
+// แนบ .then() ตัวนี้ตั้งแต่ตอนสคริปต์โหลด จึงทำงานก่อนสคริปต์เฉพาะหน้าที่มาแนบทีหลังเสมอ
+const PROTECTED_PAGE_ROLES = { staff: ['STAFF', 'WEBMANAGER'], participant: ['PARTICIPANT', 'WEBMANAGER'] };
+const protectedPageArea = (window.location.pathname.match(/^\/(staff|participant)\//) || [])[1];
+if (protectedPageArea) {
+    window.PTN_AUTH_ME.then(({ user }) => {
+        if (!user || !PROTECTED_PAGE_ROLES[protectedPageArea].includes(user.role)) {
+            window.location.replace('/');
+        }
+    });
+}
+
 // promise เดียวกันอีกตัว ใช้แพทเทิร์นเดียวกับ PTN_AUTH_ME ด้านบน กัน home.js ยิง /api/site-settings ซ้ำกับ loadRegistrationOpenSetting() ด้านล่างตอนอยู่หน้าแรก
 // ทุกจุดที่เรียกใช้เช็คค่าแบบ "!== false" อยู่แล้ว object ว่างตอน fetch ล้มเหลวจึงเท่ากับค่าเริ่มต้นเดิมทุกจุดพอดี
 window.PTN_SITE_SETTINGS = fetch('/api/site-settings')

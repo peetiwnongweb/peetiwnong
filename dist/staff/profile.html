@@ -27,10 +27,9 @@
         rel="stylesheet">
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
-    <script src="../js/layout/date-select.js?v=20260916-1"></script>
     <script src="../js/layout/auth.js?v=20260923-2"></script>
     <script src="../js/layout/nav.js?v=20260820-2"></script>
-    <script src="../js/pages/profile.js?v=20260923-1"></script>
+    <script src="../js/pages/profile.js?v=20260923-2"></script>
 </head>
 
 <body>
@@ -274,7 +273,8 @@
                         </div>
                     </div>
 
-                    <form id="profile-settings-form" onsubmit="handleProfileSettingsSubmit(event)">
+                    <!-- แก้เองไม่ได้แล้ว (เหมือนหน้าน้องค่าย participant/profile.html) - เปลี่ยนได้แค่รูปโปรไฟล์ด้านบน ข้อมูลอื่นผิดพลาดต้องแจ้งแอดมินแก้ให้ผ่านแผงจัดการ -->
+                    <div id="profile-settings-form">
                         <p class="profile-section-title">ข้อมูลบัญชี</p>
                         <p class="profile-section-desc">ไม่สามารถแก้ไขได้ หากไม่ถูกต้องโปรดติดต่อแอดมิน</p>
                         <div class="form-grid mb-6" style="grid-template-columns: 1fr;">
@@ -293,73 +293,58 @@
                         </div>
 
                         <p class="profile-section-title">ข้อมูลส่วนตัว</p>
-                        <p class="profile-section-desc">สามารถแก้ไขแล้วกด "บันทึกการเปลี่ยนแปลง" ด้านล่าง</p>
+                        <p class="profile-section-desc">ไม่สามารถแก้ไขได้ หากไม่ถูกต้องโปรดติดต่อแอดมิน</p>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="profile-prefix" class="form-label">คำนำหน้า <span class="required-mark">*</span></label>
-                                <select id="profile-prefix" class="form-input" required>
-                                    <option value="">-- เลือกคำนำหน้า --</option>
-                                    <option value="นาย">นาย</option>
-                                    <option value="นาง">นาง</option>
-                                    <option value="นางสาว">นางสาว</option>
-                                </select>
+                                <label for="profile-prefix" class="form-label">คำนำหน้า</label>
+                                <input type="text" id="profile-prefix" class="form-input" readonly>
                             </div>
                             <div class="form-group">
                                 <label for="profile-academic-title" class="form-label">คำนำหน้าทางวิชาการ(เช่น รศ.ดร. นพ.)</label>
-                                <input type="text" id="profile-academic-title" class="form-input" placeholder="เช่น ดร., ผศ., รศ.ดร.">
+                                <input type="text" id="profile-academic-title" class="form-input" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="profile-first-name" class="form-label">ชื่อ <span class="required-mark">*</span></label>
-                                <input type="text" id="profile-first-name" class="form-input" required>
+                                <label for="profile-first-name" class="form-label">ชื่อ</label>
+                                <input type="text" id="profile-first-name" class="form-input" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="profile-last-name" class="form-label">นามสกุล <span class="required-mark">*</span></label>
-                                <input type="text" id="profile-last-name" class="form-input" required>
+                                <label for="profile-last-name" class="form-label">นามสกุล</label>
+                                <input type="text" id="profile-last-name" class="form-input" readonly>
                             </div>
                             <div class="form-group">
                                 <label for="profile-nickname" class="form-label">ชื่อเล่น</label>
-                                <input type="text" id="profile-nickname" class="form-input">
+                                <input type="text" id="profile-nickname" class="form-input" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="profile-birth-date" class="form-label">วันเกิด <span class="required-mark">*</span></label>
-                                <div id="profile-birth-date-selects"></div>
-                                <input type="hidden" id="profile-birth-date">
+                                <label for="profile-birth-date" class="form-label">วันเกิด</label>
+                                <input type="text" id="profile-birth-date" class="form-input" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="profile-phone" class="form-label">เบอร์โทรศัพท์ <span class="required-mark">*</span></label>
-                                <input type="tel" id="profile-phone" class="form-input" placeholder="08X-XXX-XXXX" required oninput="handleProfilePhoneInput(event)">
+                                <label for="profile-phone" class="form-label">เบอร์โทรศัพท์</label>
+                                <input type="text" id="profile-phone" class="form-input" readonly>
                             </div>
                             <div class="form-group">
-                                <label for="profile-occupation-status" class="form-label">สถานะ <span class="required-mark">*</span></label>
-                                <select id="profile-occupation-status" class="form-input" required onchange="handleProfileOccupationStatusChange()">
-                                    <option value="">-- เลือกสถานะ --</option>
-                                    <option value="working">ประกอบอาชีพ</option>
-                                    <option value="studying">กำลังศึกษา (ระดับอุดมศึกษา)</option>
-                                </select>
+                                <label for="profile-occupation-status" class="form-label">สถานะ</label>
+                                <input type="text" id="profile-occupation-status" class="form-input" readonly>
                             </div>
-                            <div class="form-group" id="profile-affiliation-field-group">
-                                <label for="profile-affiliation" class="form-label">สถาบัน / สังกัด <span class="required-mark hidden" id="profile-affiliation-required-mark">*</span></label>
-                                <input type="text" id="profile-affiliation" class="form-input">
+                            <div class="form-group">
+                                <label for="profile-affiliation" class="form-label">สถาบัน / สังกัด</label>
+                                <input type="text" id="profile-affiliation" class="form-input" readonly>
                             </div>
-                            <div class="form-group" id="profile-occupation-field-group">
-                                <label for="profile-occupation" class="form-label">อาชีพ <span class="required-mark hidden" id="profile-occupation-required-mark">*</span></label>
-                                <input type="text" id="profile-occupation" class="form-input" placeholder="เช่น นักศึกษา, ครู">
+                            <div class="form-group">
+                                <label for="profile-occupation" class="form-label">อาชีพ</label>
+                                <input type="text" id="profile-occupation" class="form-input" readonly>
                             </div>
-                            <div class="form-group" id="profile-faculty-field-group">
-                                <label for="profile-faculty" class="form-label">คณะ / สำนักวิชา <span class="required-mark">*</span></label>
-                                <input type="text" id="profile-faculty" class="form-input" placeholder="เช่น คณะครุศาสตร์">
+                            <div class="form-group">
+                                <label for="profile-faculty" class="form-label">คณะ / สำนักวิชา</label>
+                                <input type="text" id="profile-faculty" class="form-input" readonly>
                             </div>
-                            <div class="form-group" id="profile-major-field-group">
-                                <label for="profile-major" class="form-label">สาขาวิชา <span class="required-mark">*</span></label>
-                                <input type="text" id="profile-major" class="form-input" placeholder="เช่น คณิตศาสตร์">
+                            <div class="form-group">
+                                <label for="profile-major" class="form-label">สาขาวิชา</label>
+                                <input type="text" id="profile-major" class="form-input" readonly>
                             </div>
                         </div>
-
-                        <div class="form-actions">
-                            <span></span>
-                            <button type="submit" class="btn-primary">บันทึกการเปลี่ยนแปลง</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -608,7 +593,7 @@
                 <div class="modal-content-wide">
                     <span class="help-modal-tag" id="help-modal-tag">คู่มือการแก้ไขข้อมูล</span>
                     <h2 id="help-modal-title" class="help-modal-title">วิธีแก้ไขข้อมูลโปรไฟล์</h2>
-                    <p class="help-modal-desc" id="help-modal-desc">คำอธิบายว่าแต่ละช่องในหน้านี้คืออะไร ช่องไหนแก้เองได้และช่องไหนต้องติดต่อแอดมิน หากติดปัญหาส่วนไหนสามารถติดต่อสอบถามได้ที่ช่องทางท้ายหน้านี้</p>
+                    <p class="help-modal-desc" id="help-modal-desc">ทุกช่องในหน้านี้เป็นข้อมูลดูอย่างเดียว แก้ไขเองไม่ได้ (ยกเว้นรูปโปรไฟล์และรหัสผ่าน) เลื่อนลงไปดูความหมายของแต่ละช่องและวิธีแก้ไขข้อมูลด้านล่าง</p>
 
                     <div class="help-section-grid" id="help-topic-profile">
                         <div class="help-section">
@@ -616,15 +601,15 @@
                             <div class="help-field-list">
                                 <div>
                                     <div class="help-field-name">ตำแหน่ง / ฝ่ายงาน</div>
-                                    <p class="help-field-desc">กำหนดโดยผู้ดูแลระบบ แก้ไขเองไม่ได้ หากไม่ถูกต้องให้ติดต่อแอดมิน</p>
+                                    <p class="help-field-desc">กำหนดโดยผู้ดูแลระบบ หากไม่ถูกต้องให้ติดต่อแอดมิน</p>
                                 </div>
                                 <div>
                                     <div class="help-field-name">อีเมล</div>
-                                    <p class="help-field-desc">อีเมลที่ใช้เข้าสู่ระบบ แก้ไขเองไม่ได้ หากต้องการเปลี่ยนให้ติดต่อแอดมิน</p>
+                                    <p class="help-field-desc">อีเมลที่ใช้เข้าสู่ระบบ หากต้องการเปลี่ยนให้ติดต่อแอดมิน</p>
                                 </div>
                                 <div>
                                     <div class="help-field-name">รูปโปรไฟล์</div>
-                                    <p class="help-field-desc">กดปุ่ม "เปลี่ยนรูปโปรไฟล์" เพื่อเลือกรูปจากคลังของค่าย หรือใส่ลิงก์รูปเอง เลือกแล้วต้องกด "บันทึกการเปลี่ยนแปลง" ถึงจะมีผลจริง</p>
+                                    <p class="help-field-desc">จุดเดียวที่แก้ไขเองได้ในหน้านี้ กดปุ่ม "เปลี่ยนรูปโปรไฟล์" ด้านบนเพื่อเลือกรูปจากคลังของค่าย หรือใส่ลิงก์รูปเอง เลือกแล้วต้องกด "บันทึก" ในหน้าต่างที่เปิดขึ้นถึงจะมีผลจริง</p>
                                 </div>
                             </div>
                         </div>
@@ -633,58 +618,30 @@
                             <h3 class="help-section-title"><span class="help-step-number">2</span> ข้อมูลส่วนตัว</h3>
                             <div class="help-field-list">
                                 <div>
-                                    <div class="help-field-name">คำนำหน้า <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">เลือกคำนำหน้าชื่อของคุณ</p>
+                                    <div class="help-field-name">คำนำหน้า / คำนำหน้าทางวิชาการ / ชื่อ / นามสกุล / ชื่อเล่น</div>
+                                    <p class="help-field-desc">ชื่อ-นามสกุลจริงตามที่สมัครไว้ ใช้ออกเกียรติบัตรและเอกสารต่าง ๆ ของค่าย</p>
                                 </div>
                                 <div>
-                                    <div class="help-field-name">คำนำหน้าทางวิชาการ</div>
-                                    <p class="help-field-desc">ไม่บังคับ กรอกเฉพาะกรณีมีคำนำหน้าทางวิชาการ เช่น ดร., ผศ., รศ.ดร.</p>
+                                    <div class="help-field-name">วันเกิด / เบอร์โทรศัพท์</div>
+                                    <p class="help-field-desc">วันเกิดและเบอร์ติดต่อที่กรอกไว้ตอนสมัคร ใช้ยืนยันตัวตนและติดต่อกรณีจำเป็น</p>
                                 </div>
                                 <div>
-                                    <div class="help-field-name">ชื่อ / นามสกุล <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">ชื่อ-นามสกุลจริงตามบัตรประชาชน</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">ชื่อเล่น</div>
-                                    <p class="help-field-desc">ไม่บังคับ ใส่ไว้เพื่อให้เพื่อนร่วมทีมค่ายเรียกได้ถูก</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">วันเกิด <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">วันเกิดจริงของคุณ ใช้ยืนยันตัวตน</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">เบอร์โทรศัพท์ <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">เบอร์โทรที่ติดต่อได้สะดวกที่สุด</p>
+                                    <div class="help-field-name">สถานะ / สถาบัน-สังกัด / อาชีพ / คณะ-สาขา</div>
+                                    <p class="help-field-desc">ข้อมูลสถานะปัจจุบัน (ประกอบอาชีพ/กำลังศึกษา) และสังกัดที่กรอกไว้ตอนสมัคร</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="help-section">
-                            <h3 class="help-section-title"><span class="help-step-number">3</span> สถานะและสังกัด</h3>
+                            <h3 class="help-section-title"><span class="help-step-number">3</span> วิธีแก้ไขข้อมูล</h3>
                             <div class="help-field-list">
                                 <div>
-                                    <div class="help-field-name">สถานะ <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">เลือก "ประกอบอาชีพ" หรือ "กำลังศึกษา (ระดับอุดมศึกษา)" ระบบจะแสดงช่องกรอกเพิ่มเติมให้ตามสถานะที่เลือก ถ้ายังไม่เลือกจะยังไม่มีช่องด้านล่างขึ้นมา</p>
+                                    <div class="help-field-name">ข้อมูลด้านบนทั้งหมด</div>
+                                    <p class="help-field-desc">แก้ไขเองในหน้านี้ไม่ได้ หากข้อมูลไม่ถูกต้องหรือต้องการเปลี่ยนแปลง กรุณาติดต่อแอดมินผ่านช่องทางด้านล่างของหน้าต่างนี้</p>
                                 </div>
                                 <div>
-                                    <div class="help-field-name">สถาบัน / สังกัด</div>
-                                    <p class="help-field-desc">ชื่อบริษัท/หน่วยงาน (กรณีประกอบอาชีพ) หรือชื่อมหาวิทยาลัย (กรณีกำลังศึกษา) — ถ้าเลือกสถานะ "กำลังศึกษา" ช่องนี้จะบังคับกรอก</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">อาชีพ</div>
-                                    <p class="help-field-desc">กรอกเองได้เมื่อเลือกสถานะ "ประกอบอาชีพ" ส่วนกรณีเลือก "กำลังศึกษา" ระบบจะใส่ "นักศึกษา" ให้อัตโนมัติและล็อกไว้ไม่ให้แก้</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">คณะ / สำนักวิชา <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">แสดงและบังคับกรอกเมื่อเลือกสถานะ "กำลังศึกษา"</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">สาขาวิชา <span class="required-mark">*</span></div>
-                                    <p class="help-field-desc">แสดงและบังคับกรอกเมื่อเลือกสถานะ "กำลังศึกษา"</p>
-                                </div>
-                                <div>
-                                    <div class="help-field-name">การบันทึก</div>
-                                    <p class="help-field-desc">แก้ไขเสร็จแล้วต้องกดปุ่ม "บันทึกการเปลี่ยนแปลง" ท้ายฟอร์มทุกครั้ง ข้อมูลถึงจะถูกบันทึก</p>
+                                    <div class="help-field-name">รหัสผ่าน</div>
+                                    <p class="help-field-desc">อีกจุดที่แก้ไขเองได้ ไปที่แท็บ "ความปลอดภัย" ด้านบน</p>
                                 </div>
                             </div>
                         </div>

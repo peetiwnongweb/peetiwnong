@@ -194,59 +194,6 @@ async function updateAvatar(req, res) {
   res.json({ user: req.session.user });
 }
 
-// พี่ค่ายแก้ไขข้อมูลส่วนตัวของตัวเองได้ (อีเมล/ตำแหน่ง/ฝ่าย/สิทธิ์แอดมิน แก้ได้เฉพาะแอดมินผ่านหลังบ้านเท่านั้น)
-async function updateProfile(req, res) {
-  if (!req.session.user) return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบ' });
-  if (req.session.user.role !== 'STAFF') {
-    return res.status(403).json({ error: 'ใช้ได้เฉพาะบัญชีพี่ค่ายเท่านั้น' });
-  }
-
-  const trim = (value) => (typeof value === 'string' ? value.trim() : '');
-  const prefix = trim(req.body.prefix);
-  const academicTitle = trim(req.body.academicTitle);
-  const firstName = trim(req.body.firstName);
-  const lastName = trim(req.body.lastName);
-  const nickname = trim(req.body.nickname);
-  const phoneDigits = trim(req.body.phone).replace(/\D/g, '');
-  const affiliation = trim(req.body.affiliation);
-  const faculty = trim(req.body.faculty);
-  const major = trim(req.body.major);
-  const occupation = trim(req.body.occupation);
-  const birthDate = new Date(req.body.birthDate);
-
-  if (!prefix || !firstName || !lastName || !phoneDigits || Number.isNaN(birthDate.getTime())) {
-    return res.status(400).json({ error: 'กรุณากรอกคำนำหน้า ชื่อ นามสกุล วันเกิด และเบอร์โทรศัพท์ให้ครบถ้วน' });
-  }
-  if (!/^0\d{8,9}$/.test(phoneDigits)) {
-    return res.status(400).json({ error: 'เบอร์โทรศัพท์ไม่ถูกต้อง' });
-  }
-  if ([prefix, academicTitle, firstName, lastName, nickname, affiliation, faculty, major, occupation].some((value) => value.length > 200)) {
-    return res.status(400).json({ error: 'ข้อมูลบางช่องยาวเกินไป' });
-  }
-
-  const prisma = await getPrisma();
-  await prisma.staffProfile.update({
-    where: { userId: req.session.user.id },
-    data: {
-      prefix,
-      academicTitle: academicTitle || null,
-      firstName,
-      lastName,
-      nickname: nickname || null,
-      birthDate,
-      phone: phoneDigits,
-      affiliation: affiliation || null,
-      faculty: faculty || null,
-      major: major || null,
-      occupation: occupation || null,
-    },
-  });
-
-  const user = await prisma.user.findUnique({ where: { id: req.session.user.id } });
-  req.session.user = await buildSessionUser(prisma, user);
-  res.json({ user: req.session.user });
-}
-
 // น้องค่ายดูรายชื่อเพื่อนร่วมกลุ่มเดียวกับตัวเองได้ (ยังไม่ถูกจัดกลุ่ม = คืน array ว่าง)
 async function getMyGroupMembers(req, res) {
   if (!req.session.user) return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบ' });
@@ -558,4 +505,4 @@ async function resetPassword(req, res) {
   res.json({ message: 'ตั้งรหัสผ่านใหม่สำเร็จ กรุณาเข้าสู่ระบบอีกครั้ง' });
 }
 
-module.exports = { login, logout, me, updateAvatar, updateProfile, getMyGroupMembers, changePassword, requestRegistrationOtp, completeRegistration, checkRegistrationStatus, forgotPassword, verifyOtp, resetPassword };
+module.exports = { login, logout, me, updateAvatar, getMyGroupMembers, changePassword, requestRegistrationOtp, completeRegistration, checkRegistrationStatus, forgotPassword, verifyOtp, resetPassword };

@@ -3,11 +3,12 @@ const AVATAR_GALLERY = ['1_base.png', '2_base.png'].map((name) => `/assets/image
 let currentAvatarUrl = null; // รูปที่บันทึกไว้จริงในระบบ
 let stagedAvatarUrl = null; // รูปที่กำลังพรีวิวในโมดัล ยังไม่บันทึกจนกว่าจะกด "บันทึก"
 let currentAvatarInitial = 'U';
-let profileBirthDateSelects = null; // ตัวควบคุม dropdown วันเกิด (setupDateSelects) - null บนหน้าที่ไม่มี element นี้ (participant/profile.html)
 
-function formatDateForInput(isoDate) {
-    if (!isoDate) return '';
-    return String(isoDate).slice(0, 10);
+function formatBirthDateDisplay(isoDate) {
+    if (!isoDate) return 'ยังไม่ได้กำหนด';
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) return 'ยังไม่ได้กำหนด';
+    return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 // แสดงเบอร์โทรแบบมีขีดให้อ่านง่าย (081-234-5671) โดยไม่ต้องเก็บขีดจริงในข้อมูล
@@ -24,7 +25,7 @@ const HELP_TOPICS = {
     profile: {
         tag: 'คู่มือการแก้ไขข้อมูล',
         title: 'วิธีแก้ไขข้อมูลโปรไฟล์',
-        desc: 'คำอธิบายว่าแต่ละช่องในหน้านี้คืออะไร ช่องไหนแก้เองได้และช่องไหนต้องติดต่อแอดมิน หากติดปัญหาส่วนไหนสามารถติดต่อสอบถามได้ที่ช่องทางท้ายหน้านี้',
+        desc: 'ทุกช่องในหน้านี้เป็นข้อมูลดูอย่างเดียว แก้ไขเองไม่ได้ (ยกเว้นรูปโปรไฟล์และรหัสผ่าน) เลื่อนลงไปดูความหมายของแต่ละช่องและวิธีแก้ไขข้อมูลด้านล่าง',
     },
     security: {
         tag: 'คู่มือความปลอดภัย',
@@ -56,102 +57,31 @@ function closeHelpModal() {
     document.body.classList.remove('modal-open');
 }
 
-// สลับช่องตามสถานะ ใช้เงื่อนไขเดียวกับฟอร์มสมัครพี่ค่าย (ดู handleOccupationStatusChange ใน staff-form.js):
-// กำลังศึกษา = โชว์คณะ/สาขา และล็อกอาชีพเป็น "นักศึกษา" / ประกอบอาชีพ = พิมพ์อาชีพเอง ซ่อนคณะ/สาขา
-function handleProfileOccupationStatusChange() {
-    const status = document.getElementById('profile-occupation-status')?.value;
-    const occupationInput = document.getElementById('profile-occupation');
-    const facultyInput = document.getElementById('profile-faculty');
-    const majorInput = document.getElementById('profile-major');
-    const occupationGroup = document.getElementById('profile-occupation-field-group');
-    const facultyGroup = document.getElementById('profile-faculty-field-group');
-    const majorGroup = document.getElementById('profile-major-field-group');
-    if (!occupationInput || !facultyInput || !majorInput) return;
-
-    const affiliationInput = document.getElementById('profile-affiliation');
-    const affiliationMark = document.getElementById('profile-affiliation-required-mark');
-    const occupationMark = document.getElementById('profile-occupation-required-mark');
-
-    const affiliationGroup = document.getElementById('profile-affiliation-field-group');
-
-    // ยังไม่เลือกสถานะ = ยังไม่รู้ว่าจะให้กรอกสังกัดแบบไหน (บริษัท/มหาวิทยาลัย) ซ่อนไว้ก่อนเหมือนฟอร์มสมัคร
-    const showStudentFields = status === 'studying';
-    facultyGroup.classList.toggle('hidden', !showStudentFields);
-    majorGroup.classList.toggle('hidden', !showStudentFields);
-    occupationGroup.classList.toggle('hidden', !status);
-    affiliationGroup.classList.toggle('hidden', !status);
-
-    // ช่องไหนบังคับกรอกตามสถานะไหน ใช้เกณฑ์เดียวกับฟอร์มสมัคร: กำลังศึกษา = สถาบัน/คณะ/สาขา, ประกอบอาชีพ = อาชีพ
-    facultyInput.required = showStudentFields;
-    majorInput.required = showStudentFields;
-    affiliationInput.required = showStudentFields;
-    affiliationMark.classList.toggle('hidden', !showStudentFields);
-    occupationInput.required = status === 'working';
-    occupationMark.classList.toggle('hidden', status !== 'working');
-
-    if (showStudentFields) {
-        occupationInput.value = 'นักศึกษา';
-        occupationInput.readOnly = true;
-    } else {
-        if (occupationInput.readOnly) occupationInput.value = '';
-        occupationInput.readOnly = false;
-        facultyInput.value = '';
-        majorInput.value = '';
-        if (!status) {
-            occupationInput.value = '';
-            affiliationInput.value = '';
-        }
-    }
-}
-
-function handleProfilePhoneInput(event) {
-    const input = event.target;
-    const digitsBeforeCursor = input.value.slice(0, input.selectionStart).replace(/\D/g, '').length;
-    input.value = formatPhoneNumber(input.value);
-
-    let seen = 0;
-    let cursorPos = input.value.length;
-    for (let i = 0; i < input.value.length; i++) {
-        if (/\d/.test(input.value[i])) seen++;
-        if (seen === digitsBeforeCursor) {
-            cursorPos = i + 1;
-            break;
-        }
-    }
-    if (digitsBeforeCursor === 0) cursorPos = 0;
-    input.setSelectionRange(cursorPos, cursorPos);
-}
-
+// ทั้งฟอร์มเป็นช่องแสดงผลอ่านอย่างเดียวทั้งหมด (แก้เองไม่ได้ ยกเว้นรูปโปรไฟล์ด้านบน) ไม่มีฟอร์มให้บันทึกอีกต่อไป - ผิดพลาดต้องแจ้งแอดมินแก้ให้ (เหมือน participant/profile.html)
 function fillProfileForm(user) {
     const setVal = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.value = val || '';
+        if (el) el.value = val || 'ยังไม่ได้กำหนด';
     };
 
     setVal('profile-email', user.email);
-    setVal('profile-position', (user.position && user.position.name) || 'ยังไม่ได้กำหนด');
-    setVal('profile-department', (user.department && user.department.name) || 'ยังไม่ได้กำหนด');
+    setVal('profile-position', user.position && user.position.name);
+    setVal('profile-department', user.department && user.department.name);
     setVal('profile-prefix', user.prefix);
     setVal('profile-academic-title', user.academicTitle);
     setVal('profile-first-name', user.firstName);
     setVal('profile-last-name', user.lastName);
     setVal('profile-nickname', user.nickname);
-    profileBirthDateSelects?.setValue(formatDateForInput(user.birthDate));
+    setVal('profile-birth-date', formatBirthDateDisplay(user.birthDate));
     setVal('profile-phone', formatPhoneNumber(user.phone));
     setVal('profile-affiliation', user.affiliation);
     setVal('profile-occupation', user.occupation);
     setVal('profile-faculty', user.faculty);
     setVal('profile-major', user.major);
 
-    // ฐานข้อมูลไม่ได้เก็บ "สถานะ" (ประกอบอาชีพ/กำลังศึกษา) เป็นคอลัมน์แยก - เหมือนฝั่งฟอร์มสมัครที่ใช้เป็นแค่ตัวสลับ UI
-    // จึงเดาย้อนกลับจากข้อมูลที่มี: กรอกคณะ/สาขาไว้ = กำลังศึกษา, มีแต่อาชีพ = ประกอบอาชีพ, ไม่มีทั้งคู่ = ยังไม่ได้เลือก
-    const statusSelect = document.getElementById('profile-occupation-status');
-    if (statusSelect) {
-        if (user.faculty || user.major) statusSelect.value = 'studying';
-        else if (user.occupation) statusSelect.value = 'working';
-        else statusSelect.value = '';
-        handleProfileOccupationStatusChange();
-    }
+    // ฐานข้อมูลไม่ได้เก็บ "สถานะ" (ประกอบอาชีพ/กำลังศึกษา) เป็นคอลัมน์แยก - เดาย้อนกลับจากข้อมูลที่มีเหมือนที่แผงแอดมิน/WebManager ใช้แสดงในตาราง (มีคณะ/สาขา = กำลังศึกษา, มีแต่อาชีพ = ประกอบอาชีพ)
+    const statusText = user.faculty || user.major ? 'กำลังศึกษา (ระดับอุดมศึกษา)' : (user.occupation ? 'ประกอบอาชีพ' : null);
+    setVal('profile-occupation-status', statusText);
 
     currentAvatarUrl = user.avatarUrl || null;
     currentAvatarInitial = (user.firstName || user.email || 'U').charAt(0).toUpperCase();
@@ -318,55 +248,6 @@ function showProfileToast(message, isSuccess) {
     profileToastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-function handleProfileSettingsSubmit(event) {
-    event.preventDefault();
-
-    const payload = {
-        prefix: document.getElementById('profile-prefix').value,
-        academicTitle: document.getElementById('profile-academic-title').value,
-        firstName: document.getElementById('profile-first-name').value,
-        lastName: document.getElementById('profile-last-name').value,
-        nickname: document.getElementById('profile-nickname').value,
-        birthDate: document.getElementById('profile-birth-date').value,
-        phone: document.getElementById('profile-phone').value,
-        affiliation: document.getElementById('profile-affiliation').value,
-        occupation: document.getElementById('profile-occupation').value,
-        faculty: document.getElementById('profile-faculty').value,
-        major: document.getElementById('profile-major').value,
-    };
-
-    // วันเกิดเป็น input[type=hidden] แล้ว (ค่ามาจาก dropdown) เบราว์เซอร์ไม่บังคับ required ให้อีกต่อไป ต้องเช็คเอง
-    if (!payload.birthDate) {
-        showProfileToast('กรุณาเลือกวันเกิด', false);
-        return;
-    }
-
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    if (submitBtn) Loader.setButtonLoading(submitBtn, 'กำลังบันทึก...');
-
-    fetch('/api/auth/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    })
-        .then(async (res) => {
-            const body = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-            return body;
-        })
-        .then(({ user }) => {
-            fillProfileForm(user);
-            if (typeof loginUser === 'function') loginUser(user);
-            showProfileToast('บันทึกการเปลี่ยนแปลงสำเร็จ', true);
-        })
-        .catch((error) => {
-            showProfileToast(error.message, false);
-        })
-        .finally(() => {
-            if (submitBtn) Loader.clearButtonLoading(submitBtn);
-        });
-}
-
 // checklist เงื่อนไขรหัสผ่านใต้ช่องกรอก ใช้เกณฑ์เดียวกับฟอร์มสมัคร (ดู updatePasswordChecklist ใน staff-form.js)
 // และตรงกับที่ backend บังคับจริง (backend/lib/password.js)
 function handleSecurityNewPasswordInput() {
@@ -428,10 +309,6 @@ function handleSecuritySubmit(event) {
 
 document.addEventListener('DOMContentLoaded', () => {
     Loader.showFullPageLoader();
-
-    // ช่องวันเกิดพี่ค่าย: dropdown วัน/เดือน/ปี แทน input[type=date] เดิม (บั๊ก iOS Safari กับปฏิทินพุทธศักราช - ดู date-select.js)
-    // มีแค่ในหน้า staff/profile.html เท่านั้น (participant/profile.html ที่ใช้ไฟล์นี้ร่วมกันไม่มี element นี้ ฟังก์ชันจะคืน null เฉย ๆ ไม่พัง)
-    profileBirthDateSelects = setupDateSelects({ containerId: 'profile-birth-date-selects', hiddenId: 'profile-birth-date', yearsBack: 100, yearsAhead: 0 });
 
     window.PTN_AUTH_ME
         .then(({ user }) => { if (user) fillProfileForm(user); })

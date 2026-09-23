@@ -1,5 +1,5 @@
 const express = require('express');
-const { login, logout, me, updateAvatar, updateProfile, getMyGroupMembers, changePassword, requestRegistrationOtp, completeRegistration, checkRegistrationStatus, forgotPassword, verifyOtp, resetPassword } = require('../controllers/authController');
+const { login, logout, me, updateAvatar, getMyGroupMembers, changePassword, requestRegistrationOtp, completeRegistration, checkRegistrationStatus, forgotPassword, verifyOtp, resetPassword } = require('../controllers/authController');
 const { requireAuth } = require('../middleware/requireAuth');
 const { loginLimiter, otpRequestLimiter, otpVerifyLimiter } = require('../middleware/rateLimit');
 
@@ -9,8 +9,7 @@ router.post('/login', loginLimiter, login);
 router.post('/logout', logout);
 router.get('/me', me);
 router.put('/avatar', requireAuth, updateAvatar);
-router.put('/profile', requireAuth, updateProfile);
-// ไม่มี PUT /participant-profile แล้ว - น้องค่ายแก้ข้อมูลโปรไฟล์เองไม่ได้ (ดูอย่างเดียว ดู participant/profile.html) ต้องให้แอดมินแก้ให้
+// ไม่มี PUT /profile หรือ /participant-profile แล้ว - พี่ค่ายและน้องค่ายแก้ข้อมูลส่วนตัวของตัวเองไม่ได้ (ดูอย่างเดียว) แก้รูปโปรไฟล์เองได้เท่านั้น (updateAvatar ด้านบน) ต้องให้แอดมินแก้ข้อมูลอื่นให้ผ่าน /api/users/:id
 router.get('/my-group-members', requireAuth, getMyGroupMembers);
 router.put('/password', requireAuth, changePassword);
 router.post('/register/request-otp', otpRequestLimiter, requestRegistrationOtp);

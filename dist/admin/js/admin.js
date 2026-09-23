@@ -120,7 +120,8 @@ function loadAdminUser() {
 
             const display = document.getElementById('admin-username-display');
             const avatar = document.getElementById('admin-avatar');
-            if (display) display.textContent = `${nameLine} (${subLabel})`;
+            // เหมือนหน้าอื่น (auth.js): บนแถบแสดงแค่ชื่อ ตำแหน่ง/สิทธิ์ดูได้ในเมนูบัญชีที่กดเปิด
+            if (display) display.textContent = nameLine;
             renderAvatar(avatar, user.avatarUrl, initial);
 
             const menuAvatar = document.getElementById('admin-menu-avatar');

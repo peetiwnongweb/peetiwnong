@@ -209,6 +209,8 @@ async function createUser(req, res) {
     const result = buildStaffProfileData(profile);
     if (result.error) return res.status(400).json({ error: result.error });
     staffProfileData = result.data;
+    // ตำแหน่งกำหนดได้เฉพาะ WebManager (ผ่านคณะทำงานค่าย/แผง WebManager) - Admin ส่งมาก็ไม่มีผล
+    if (req.session.user.role !== 'WEBMANAGER') delete staffProfileData.positionId;
   } else if (profile && role === 'PARTICIPANT') {
     const result = buildParticipantProfileData(profile);
     if (result.error) return res.status(400).json({ error: result.error });
@@ -283,6 +285,8 @@ async function updateUser(req, res) {
       const result = buildStaffProfileData(profile);
       if (result.error) return res.status(400).json({ error: result.error });
       staffProfileData = result.data;
+      // ตำแหน่งกำหนดได้เฉพาะ WebManager (ผ่านคณะทำงานค่าย/แผง WebManager) - Admin ส่งมาก็ไม่มีผล
+      if (req.session.user.role !== 'WEBMANAGER') delete staffProfileData.positionId;
     } else if (profile && targetRole === 'PARTICIPANT') {
       const result = buildParticipantProfileData(profile);
       if (result.error) return res.status(400).json({ error: result.error });

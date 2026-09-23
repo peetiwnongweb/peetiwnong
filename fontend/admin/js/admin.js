@@ -686,13 +686,6 @@ function loadLookupOptions() {
         })
         .catch((error) => console.error('โหลดรายชื่อฝ่ายงานไม่สำเร็จ:', error));
 
-    fetch('/api/lookups/positions')
-        .then((res) => (res.ok ? res.json() : []))
-        .then((items) => {
-            populateSelectOptions('user-staff-position', items);
-        })
-        .catch((error) => console.error('โหลดรายชื่อตำแหน่งไม่สำเร็จ:', error));
-
     fetch('/api/lookups/course-formats')
         .then((res) => (res.ok ? res.json() : []))
         .then((items) => {
@@ -2657,7 +2650,6 @@ function openUserForm(item, role, onSaved) {
     document.getElementById('user-staff-phone').value = formatPhoneNumber(item?.phone || '');
     document.getElementById('user-staff-department').value = item?.department?.id || '';
     refreshSingleCardSelect('user-staff-department');
-    document.getElementById('user-staff-position').value = item?.position?.id || '';
     // สถานะ (ประกอบอาชีพ/กำลังศึกษา) ไม่มีคอลัมน์เก็บจริง เป็นแค่ตัวสลับ UI เหมือนหน้าลงทะเบียน (ดู schema.prisma: StaffProfile.faculty) เดาจากข้อมูลที่มีอยู่: มีคณะ/สาขา = กำลังศึกษา, ไม่มีแต่มีอาชีพ = ประกอบอาชีพ
     const inferredStatus = item?.faculty || item?.major ? 'studying' : (item?.occupation ? 'working' : '');
     document.getElementById('user-staff-occupationStatus').value = inferredStatus;
@@ -2742,7 +2734,6 @@ function submitUserForm(event) {
             birthDate: document.getElementById('user-staff-birthDate').value,
             phone: document.getElementById('user-staff-phone').value.trim(),
             departmentId: document.getElementById('user-staff-department').value,
-            positionId: document.getElementById('user-staff-position').value,
             affiliation: document.getElementById('user-staff-affiliation').value.trim(),
             occupation: document.getElementById('user-staff-occupation').value.trim(),
             faculty: document.getElementById('user-staff-faculty').value.trim(),

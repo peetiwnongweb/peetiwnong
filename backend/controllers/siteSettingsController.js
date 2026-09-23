@@ -1,12 +1,13 @@
 const { getPrisma } = require('../lib/prisma');
 const { logActivity } = require('../lib/activityLog');
 const { getCampState } = require('../lib/campState');
+const { getSiteSettingsRow, invalidateSiteSettingsCache } = require('../lib/siteSettings');
 
 // ตั้งค่าเว็บไซต์มีแถวเดียวตายตัว (id=1) ใช้ upsert เพื่อให้ยังทำงานได้แม้ยังไม่เคยมีแถวนี้มาก่อน (ไม่ต้อง seed แยก)
 async function getSiteSettings(req, res) {
   const prisma = await getPrisma();
   const [settings, campState] = await Promise.all([
-    prisma.siteSetting.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } }),
+    getSiteSettingsRow(prisma),
     getCampState(prisma),
   ]);
   // campActive แนบไปด้วยให้หน้าเว็บ (ผู้เยี่ยมชมที่ยังไม่ล็อกอินก็เรียก endpoint นี้ได้) รู้ว่าน้องค่ายสมัครได้จริงไหม
@@ -67,6 +68,7 @@ async function updateSiteSettings(req, res) {
     update: data,
     create: { id: 1, ...data },
   });
+  invalidateSiteSettingsCache();
 
   const changeSummaries = [
     ...(heroCardVisible !== undefined ? [`การ์ดเด่นประธานค่ายใน Hero: ${settings.heroCardVisible ? 'แสดง' : 'ซ่อน'}`] : []),

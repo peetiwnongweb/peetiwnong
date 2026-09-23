@@ -4,6 +4,7 @@ const { isConfigured: isImageStorageConfigured } = require('../lib/driveImageSto
 const { readLiveDbMetrics } = require('../lib/usageSnapshot');
 const { toBangkokDay, TIMEZONE } = require('../middleware/usageTracker');
 const { getCampState } = require('../lib/campState');
+const { getSiteSettingsRow } = require('../lib/siteSettings');
 
 // ==========================================
 // แดชบอร์ด WebManager - รวมตัวเลขจากทุกส่วนของระบบ (ดู fontend/webmanager/js/webmanager-dashboard.js)
@@ -107,7 +108,7 @@ async function buildSummary(prisma) {
       },
     }),
     prisma.campDepartment.count(),
-    prisma.siteSetting.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } }),
+    getSiteSettingsRow(prisma),
 
     prisma.user.count({ where: { role: 'STAFF', approvalStatus: 'PENDING' } }),
     prisma.user.count({ where: { role: 'PARTICIPANT', approvalStatus: 'PENDING' } }),
@@ -542,7 +543,7 @@ async function getSystem(req, res) {
     prisma.activityLog.groupBy({ by: ['actorRole'], where: { createdAt: { gte: sevenDaysAgo } }, _count: { _all: true } }),
     prisma.activityLog.groupBy({ by: ['action'], where: { createdAt: { gte: sevenDaysAgo } }, _count: { _all: true } }),
     prisma.activityLog.groupBy({ by: ['entityType'], where: { createdAt: { gte: sevenDaysAgo } }, _count: { _all: true }, orderBy: { _count: { entityType: 'desc' } }, take: 8 }),
-    prisma.siteSetting.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } }),
+    getSiteSettingsRow(prisma),
     readLiveDbMetrics().catch(() => null),
     prisma.usageDbSnapshot.findFirst({ orderBy: { day: 'desc' } }),
     prisma.news.groupBy({ by: ['tag'], _count: { _all: true } }),

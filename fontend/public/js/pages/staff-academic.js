@@ -2476,7 +2476,8 @@ function handleOralExamEvaluateClick(result) {
             return res.json();
         })
         .then((evalResult) => {
-            showActivitiesToast(result === 'PASSED' ? 'บันทึกผลผ่านสำเร็จ' : 'บันทึกผลไม่ผ่านสำเร็จ', true);
+            // ประเมินแบบหมู่ทีเดียวทุกคนในคิว = จบรอบนี้เลย ปิดรอบแล้วกลับไปหน้าเลือกวิชาให้อัตโนมัติ
+            finishOralExamSession(`บันทึกผล${result === 'PASSED' ? 'ผ่าน' : 'ไม่ผ่าน'} ${evalResult.evaluated.length} คน และปิดรอบสอบแล้ว`);
             // อัปเดตสถานะคิวจากผลลัพธ์ที่ได้ตรง ๆ แทนการ fetch "active session" ใหม่ - endpoint นั้นจะคืน null ถ้าประเมินครบไม่มี pending เหลือแล้ว (ตั้งใจออกแบบไว้กันโชว์รอบที่จบแล้วตอนรีเฟรชหน้า)
             // ถ้าเพิ่งประเมิน "คนสุดท้าย" พอดี จะเจอ null กลับมาแทนข้อมูลจริง ทำให้คิวค้างโชว์ "รอประเมิน" ผิด ๆ ถ้าไปพึ่ง endpoint นั้นแทน
             const evaluatedMap = new Map(evalResult.evaluated.map((e) => [e.attemptId, e]));
@@ -2522,25 +2523,32 @@ async function handleOralExamCloseClick() {
         return;
     }
     const confirmed = await showConfirm(
-        'ปิดรอบสอบนี้ ไม่รับสแกนใหม่อีก ใช่หรือไม่? (คิวที่ค้างประเมินอยู่ยังกดผ่าน/ไม่ผ่านต่อได้ตามปกติ)',
-        { title: 'ยืนยันการปิดรอบสอบ', confirmText: 'ปิดรอบ' }
+        'ยกเลิกรอบสอบนี้ใช่หรือไม่? คนที่สแกนเข้าคิวไว้แล้วจะถูกนำออกจากคิว',
+        { title: 'ยืนยันการยกเลิกรอบสอบ', confirmText: 'ยกเลิกรอบสอบ' }
     );
     if (!confirmed) return;
 
-    fetch(`/api/oral-exam-sessions/${currentOralExamSession.id}/close`, { method: 'POST' })
+    finishOralExamSession('ยกเลิกรอบสอบสำเร็จ');
+}
+
+// ปิดรอบสอบแล้วกลับไปหน้าเลือกวิชา (ขั้นที่ 1) ใช้ทั้งตอนกด "ยกเลิกรอบสอบ" และหลังกดผ่าน/ไม่ผ่าน (ประเมินแบบหมู่ครั้งเดียวจบรอบ)
+function finishOralExamSession(successMessage) {
+    const session = currentOralExamSession;
+    if (!session) return Promise.resolve();
+    return fetch(`/api/oral-exam-sessions/${session.id}/close`, { method: 'POST' })
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             stopOralExamPolling();
-            currentOralExamSession.status = 'CLOSED';
+            session.status = 'CLOSED';
             setOralExamPickerVisible(true);
             document.getElementById('oral-exam-session-card')?.classList.add('hidden');
             updateOralExamStepper();
             if (currentOralExamSubjectId) loadOralExamHistory(currentOralExamSubjectId);
-            showActivitiesToast('ปิดรอบสอบสำเร็จ (คิวที่ค้างอยู่ยังประเมินต่อได้)', true);
+            showActivitiesToast(successMessage, true);
         })
         .catch((error) => {
             console.error(error);
-            showActivitiesToast('ปิดรอบสอบไม่สำเร็จ', false);
+            showActivitiesToast('ปิดรอบสอบไม่สำเร็จ กด "ยกเลิกรอบสอบ" อีกครั้ง', false);
         });
 }
 

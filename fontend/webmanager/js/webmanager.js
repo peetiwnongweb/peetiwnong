@@ -108,8 +108,8 @@ function loadAdminUser() {
 
         })
         .catch(() => {
-            // ไม่ได้ล็อกอิน (เช่นก๊อปลิงก์มาเปิด) = เด้งกลับหน้าแรกเหมือนทุกหน้าที่ต้องล็อกอิน - Owner เข้าสู่ระบบผ่าน /webmanager/login ตามปกติ
-            window.location.replace('/');
+            // ไม่ได้ล็อกอิน (เช่นก๊อปลิงก์มาเปิด/session หมดอายุ) = เด้งไปหน้า login ของ WebManager เพื่อให้เข้าสู่ระบบต่อได้เลย
+            window.location.replace('/webmanager/login.html');
         });
 }
 

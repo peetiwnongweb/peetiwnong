@@ -130,14 +130,9 @@ function loadAdminUser() {
             if (menuUsername) menuUsername.textContent = nameLine;
             if (menuRole) menuRole.textContent = subLabel;
 
-            // ลิงก์ "โปรไฟล์" มีเฉพาะพี่ค่าย (Host ไม่มี StaffProfile) ส่วน "หน้าแรก" พาไปหน้าที่เหมาะกับ role นั้น ๆ
+            // ลิงก์ "โปรไฟล์" มีเฉพาะพี่ค่าย (Host ไม่มี StaffProfile)
             const profileLink = document.getElementById('admin-menu-profile-link');
             if (profileLink) profileLink.classList.toggle('hidden', user.role !== 'STAFF');
-
-            const homeLink = document.getElementById('admin-menu-home-link');
-            if (homeLink) homeLink.onclick = () => {
-                window.location.href = user.role === 'STAFF' ? '/staff/profile' : '/';
-            };
 
             applyAdminTaskMenuVisibility(user);
         })
@@ -166,11 +161,6 @@ function applyAdminTaskMenuVisibility(user) {
         });
         wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isWebManager)) || visibleCount === 0);
     });
-}
-
-function adminComingSoon(featureName) {
-    document.getElementById('admin-user-menu').classList.add('hidden');
-    showToast(`"${featureName}" อยู่ระหว่างการพัฒนา`);
 }
 
 async function adminLogout() {

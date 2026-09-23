@@ -220,6 +220,7 @@ button.m-header-user-chip .user-avatar {
 .active-nav-btn,
 .user-dropdown-item.current-page-btn,
 .nav-dropdown-item.current-page-btn,
+.admin-dropdown-item.current-page-btn,
 .mobile-nav-btn.active-nav-btn,
 .mobile-nav-btn.current-page-btn {
   background-color: transparent;
@@ -233,9 +234,15 @@ button.m-header-user-chip .user-avatar {
 .nav-btn.active-nav-btn:hover,
 .user-dropdown-item.current-page-btn:hover,
 .nav-dropdown-item.current-page-btn:hover,
+.admin-dropdown-item.current-page-btn:hover,
 .mobile-nav-btn.active-nav-btn:hover,
 .mobile-nav-btn.current-page-btn:hover {
   background-color: rgba(255, 114, 32, 0.06);
+  color: var(--brand-600);
+}
+
+/* ไอคอนในเมนูบัญชีหน้า Admin มีสีเทาตายตัว (webmanager.css) ต้องให้เป็นสีส้มตามรายการที่เลือกอยู่ด้วย */
+.admin-dropdown-item.current-page-btn svg {
   color: var(--brand-600);
 }
 

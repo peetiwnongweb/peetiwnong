@@ -1783,12 +1783,13 @@ function renderLifecycleRunStatus(latestCamp, participantOpen) {
         ['ค่าย', `ครั้งที่ ${latestCamp.generationNo}`, active ? '<span class="admin-badge admin-badge-current">กำลังดำเนินการ</span>' : '<span class="admin-badge admin-badge-hidden">จบแล้ว</span>'],
         ['ประธานค่าย', escapeHtml(latestCamp.president?.fullName || '-'), ''],
         ['รองประธาน', latestCamp.vicePresidents?.length ? escapeHtml(latestCamp.vicePresidents.map((vp) => vp.fullName).join(', ')) : '-', ''],
-        ['เลขานุการ', escapeHtml(latestCamp.secretary?.fullName || '-'), ''],
-        ['หัวหน้าฝ่าย', `${latestCamp.departmentHeads?.length || 0} ฝ่าย`, ''],
+        ['เลขานุการ', escapeHtml(latestCamp.secretary?.fullName || 'ยังไม่ได้กำหนด'), ''],
+        ['หัวหน้าฝ่าย', latestCamp.departmentHeads?.length ? escapeHtml(latestCamp.departmentHeads.map((dh) => `${dh.departmentName}: ${dh.fullName}`).join(', ')) : 'ยังไม่ได้กำหนด', ''],
         ['ระบบวิชาการ / ระบบกิจกรรม', active ? 'เปิดใช้งาน' : 'ปิด (ค่ายจบแล้ว)', active ? '<span class="admin-badge admin-badge-create">พร้อมใช้</span>' : ''],
         ['รับลงทะเบียนน้องค่าย', participantOpen ? 'เปิดรับอยู่' : 'ปิดรับ', ''],
     ];
-    el.innerHTML = `<dl class="lifecycle-run-grid">${rows.map(([k, v, badge]) => `<dt>${k}</dt><dd>${v} ${badge}</dd>`).join('')}</dl>`;
+    el.innerHTML = `<dl class="lifecycle-run-grid">${rows.map(([k, v, badge]) => `<dt>${k}</dt><dd>${v} ${badge}</dd>`).join('')}</dl>`
+        + (active ? '<button type="button" class="btn-outline" style="margin-top: 1rem;" onclick="openCampEditLeadership()">แก้ไขคณะทำงาน</button>' : '');
 }
 
 // เปิดสวิตช์ "เปิดรับลงทะเบียนน้องค่าย" ไม่ได้เลยถ้าไม่มีค่ายที่กำลังดำเนินการอยู่จริง (ยังไม่สร้างค่ายเลย หรือค่ายล่าสุดจบไปแล้ว) - เช็คคู่กับฝั่ง server ใน siteSettingsController.js
@@ -2041,6 +2042,11 @@ function createStaffSelect(containerId, options) {
 
     return {
         getValue: () => (hidden.value ? Number(hidden.value) : null),
+        setValue: (userId) => {
+            const staff = campStaffOptions.find((s) => s.userId === userId);
+            input.value = staff ? `${staff.fullName}${staff.nickname ? ` (${staff.nickname})` : ''}` : '';
+            hidden.value = staff ? staff.userId : '';
+        },
         clear: () => {
             input.value = '';
             hidden.value = '';
@@ -2204,11 +2210,28 @@ function addPendingCampVicePresident() {
     document.getElementById('camp-vice-president-add-btn').disabled = true;
 }
 
-function openCampCreateForm() {
+// ค่ายที่กำลังแก้ไขคณะทำงานอยู่ (null = โหมดสร้างค่ายใหม่) - ใช้ฟอร์มเดียวกัน ต่างกันแค่ไม่มีช่องครั้งที่และไม่ล้างข้อมูลค่าย
+let campEditingLeadership = null;
+
+function openCampEditLeadership() {
+    const camp = campItemsCache[0];
+    if (!camp || camp.isEnded) return;
+    openCampCreateForm(camp);
+}
+
+function openCampCreateForm(camp = null) {
     const form = document.getElementById('camp-create-form');
     const error = document.getElementById('camp-create-form-error');
     form.reset();
     error.classList.add('hidden');
+    campEditingLeadership = camp;
+    document.getElementById('camp-create-modal-title').textContent = camp ? `แก้ไขคณะทำงานค่ายครั้งที่ ${camp.generationNo}` : 'สร้างค่ายใหม่';
+    document.getElementById('camp-create-modal-desc').textContent = camp
+        ? 'เพิ่มตำแหน่งที่ยังว่าง หรือเปลี่ยนตัวคนได้ (ประธานค่ายต้องมีเสมอ) ไม่กระทบข้อมูลน้องค่าย/วิชา/กิจกรรม คนที่ถูกถอดออกจากตำแหน่งจะกลับเป็นทีมงานค่าย'
+        : 'การสร้างค่ายใหม่จะลบข้อมูลน้องค่ายทั้งหมดในระบบอย่างถาวร และมอบตำแหน่ง/ฝ่ายให้พี่ค่ายที่เลือกทันที ต้องเลือกประธานค่ายก่อน ตำแหน่งอื่นเว้นว่างไว้แล้วเพิ่มทีหลังได้';
+    document.getElementById('camp-generationNo-group').classList.toggle('hidden', !!camp);
+    document.getElementById('camp-generationNo').required = !camp;
+    document.getElementById('camp-create-submit-btn').textContent = camp ? 'บันทึกคณะทำงาน' : 'สร้างค่าย';
     campVicePresidents = [];
     campVicePresidentPendingStaff = null;
     renderCampVicePresidentChips();
@@ -2255,6 +2278,14 @@ function openCampCreateForm() {
             });
         });
 
+        if (camp) {
+            if (camp.president) campPresidentSelect?.setValue(camp.president.userId);
+            if (camp.secretary) campSecretarySelect?.setValue(camp.secretary.userId);
+            campVicePresidents = camp.vicePresidents.map((vp) => ({ userId: vp.userId, fullName: vp.fullName }));
+            renderCampVicePresidentChips();
+            camp.departmentHeads.forEach((dh) => campDepartmentHeadSelects[dh.departmentId]?.setValue(dh.userId));
+        }
+
         document.getElementById('camp-create-modal').classList.remove('hidden');
     }).catch((err) => {
         console.error('โหลดข้อมูลสำหรับสร้างค่ายไม่สำเร็จ:', err);
@@ -2276,24 +2307,47 @@ async function submitCampCreateForm(event) {
     event.preventDefault();
     document.getElementById('camp-create-form-error').classList.add('hidden');
 
+    const editingCamp = campEditingLeadership;
     const generationNoRaw = document.getElementById('camp-generationNo').value;
-    if (!generationNoRaw) return showCampFormError('กรุณาระบุครั้งที่');
+    if (!editingCamp && !generationNoRaw) return showCampFormError('กรุณาระบุครั้งที่');
 
+    // บังคับแค่ประธานค่าย - เลขานุการ/รองประธาน/หัวหน้าฝ่าย เว้นว่างไว้แล้วเพิ่มทีหลังได้ผ่าน "แก้ไขคณะทำงาน"
     const presidentUserId = campPresidentSelect ? campPresidentSelect.getValue() : null;
     const secretaryUserId = campSecretarySelect ? campSecretarySelect.getValue() : null;
     if (!presidentUserId) return showCampFormError('กรุณาเลือกประธานค่าย');
-    if (!secretaryUserId) return showCampFormError('กรุณาเลือกเลขานุการ');
-    if (campDepartments.some((dept) => !campDepartmentHeadSelects[dept.id] || !campDepartmentHeadSelects[dept.id].getValue())) {
-        return showCampFormError('กรุณาเลือกหัวหน้าฝ่ายให้ครบทุกฝ่าย');
-    }
 
     const payload = {
         generationNo: Number(generationNoRaw),
         presidentUserId,
         secretaryUserId,
         vicePresidentUserIds: campVicePresidents.map((vp) => vp.userId),
-        departmentHeads: campDepartments.map((dept) => ({ departmentId: dept.id, userId: campDepartmentHeadSelects[dept.id].getValue() })),
+        departmentHeads: campDepartments
+            .map((dept) => ({ departmentId: dept.id, userId: campDepartmentHeadSelects[dept.id]?.getValue() }))
+            .filter((d) => d.userId),
     };
+
+    if (editingCamp) {
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        Loader.setButtonLoading(submitBtn, 'กำลังบันทึก...');
+        fetch(`/api/camps/${editingCamp.id}/leadership`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+            .then(async (res) => {
+                if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(() => {
+                closeCampCreateForm();
+                showToast(`บันทึกคณะทำงานค่ายครั้งที่ ${editingCamp.generationNo} สำเร็จ`);
+                loadCamps();
+                loadUsers('STAFF');
+            })
+            .catch((error) => showCampFormError(error.message))
+            .finally(() => Loader.clearButtonLoading(submitBtn));
+        return;
+    }
 
     const wipePreview = await fetch('/api/camps/wipe-preview')
         .then((res) => (res.ok ? res.json() : null))

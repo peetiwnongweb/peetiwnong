@@ -1455,16 +1455,16 @@
                 </div>
                 <div class="modal-content-wide">
                     <h2 id="camp-create-modal-title" class="admin-modal-title">สร้างค่ายใหม่</h2>
-                    <p class="admin-panel-desc" style="margin-bottom: 1rem;">การสร้างค่ายใหม่จะลบข้อมูลน้องค่ายทั้งหมดในระบบอย่างถาวร และมอบตำแหน่ง/ฝ่ายให้พี่ค่ายที่เลือกทันที</p>
+                    <p class="admin-panel-desc" id="camp-create-modal-desc" style="margin-bottom: 1rem;">การสร้างค่ายใหม่จะลบข้อมูลน้องค่ายทั้งหมดในระบบอย่างถาวร และมอบตำแหน่ง/ฝ่ายให้พี่ค่ายที่เลือกทันที ต้องเลือกประธานค่ายก่อน ตำแหน่งอื่นเว้นว่างไว้แล้วเพิ่มทีหลังได้</p>
                     <form id="camp-create-form" class="auth-form">
-                        <div class="form-group">
-                            <label class="form-label" for="camp-generationNo">ครั้งที่</label>
+                        <div class="form-group" id="camp-generationNo-group">
+                            <label class="form-label" for="camp-generationNo">ครั้งที่ <span class="required-mark">*</span></label>
                             <input class="form-input camp-generationNo-input" type="number" id="camp-generationNo" min="1" required>
                         </div>
 
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label">ประธานค่าย</label>
+                                <label class="form-label">ประธานค่าย <span class="required-mark">*</span></label>
                                 <div class="staff-select" id="camp-president-select"></div>
                             </div>
                             <div class="form-group">
@@ -1488,13 +1488,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">หัวหน้าฝ่าย (ต้องเลือกให้ครบทุกฝ่าย)</label>
+                            <label class="form-label">หัวหน้าฝ่าย (ฝ่ายไหนยังไม่มีเว้นว่างไว้ก่อนได้)</label>
                             <div id="camp-department-heads-rows" class="camp-department-head-rows"></div>
                         </div>
 
                         <div class="admin-form-actions">
                             <button type="button" class="admin-cancel-btn" onclick="closeCampCreateForm()">ยกเลิก</button>
-                            <button type="submit" class="submit-btn admin-submit-btn">สร้างค่าย</button>
+                            <button type="submit" class="submit-btn admin-submit-btn" id="camp-create-submit-btn">สร้างค่าย</button>
                         </div>
                         <div id="camp-create-form-error" class="admin-form-error hidden"></div>
                     </form>
@@ -2227,7 +2227,7 @@
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/webmanager.js?v=20260923-3"></script>
+    <script src="js/webmanager.js?v=20260924-1"></script>
     <script src="js/webmanager-dashboard.js?v=20260923-1"></script>
 </body>
 

@@ -2,6 +2,10 @@ const { getPrisma } = require('./prisma');
 const { logActivity } = require('./activityLog');
 const { getActiveCampDriveFolderId } = require('./campDriveFolder');
 const { isDriveConfigured, uploadJson } = require('./googleDrive');
+const { pruneOldSnapshots } = require('./driveRetention');
+
+// เก็บ snapshot อัตโนมัติ/กดเองไว้แค่ 50 ไฟล์ล่าสุดต่อค่าย (ปกติสำรองทุก 12 ชม. ถ้าไม่จำกัดจะสะสมไฟล์ไม่มีที่สิ้นสุดจนเปลืองพื้นที่ Drive)
+const AUTO_BACKUP_KEEP_COUNT = 50;
 
 // รูปประธานค่าย/ประมวลภาพ/ข่าว อยู่บน Google Drive โดยตรงอยู่แล้ว (ดู backend/lib/driveImageStorage.js) เหมือนเอกสารประกอบการเรียน
 // จึงไม่ต้องสำรองซ้ำอีกชั้นที่นี่ (ต่างจากสมัยที่ไฟล์จริงอยู่บน Supabase/R2 แล้วต้องดาวน์โหลดมาอัปขึ้น Drive ซ้ำ) เหลือแค่สำรอง snapshot ข้อมูลค่ายเป็น JSON
@@ -138,6 +142,9 @@ async function runBackupInternal({ trigger, actorEmail }) {
       snapshotFileId = snapshotResult.fileId;
       fileCount += 1;
       totalBytes += snapshotResult.bytes;
+
+      // ล้างไฟล์เก่าเกิน 50 อันทิ้งแบบไม่บล็อก - ทำพลาด/ช้าไม่กระทบผลของการสำรองรอบนี้ (ไฟล์ที่เพิ่งอัปโหลดสำเร็จแล้ว)
+      pruneOldSnapshots(campFolderId, AUTO_BACKUP_KEEP_COUNT).catch((error) => console.error('ล้าง snapshot เก่าไม่สำเร็จ:', error));
     }
 
     const finished = await prisma.campBackupRun.update({

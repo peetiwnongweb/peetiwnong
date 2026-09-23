@@ -273,9 +273,20 @@ body {
   z-index: 60;
 }
 
+/* .hidden เป็น display:none !important จึงยังซ่อนกลุ่มได้ตามปกติ */
+.admin-profile-menu .admin-tasks-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
 .admin-profile-menu {
   width: 15.5rem;
   padding: 0.5rem;
+  /* เฉพาะเมนูบัญชี (เมนูแจ้งเตือนใช้ .admin-dropdown-menu ร่วมกันแต่จัดวางคนละแบบ) เว้นระยะระหว่างรายการเท่าเมนูบัญชีหน้าอื่น (.user-dropdown-menu ใน header.css) ไม่ให้กรอบไฮไลต์/hover ติดกัน */
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
 }
 
 .admin-profile-menu-header {
@@ -317,7 +328,8 @@ body {
 .admin-dropdown-divider {
   height: 1px;
   background-color: var(--slate-200);
-  margin: 0.35rem 0.25rem;
+  /* gap ของเมนูบวกอีกชั้นแล้ว ตั้งน้อยกว่าเดิมเท่า .user-dropdown-divider ไม่งั้นกลุ่มห่างเกินไป */
+  margin: 0.15rem 0.25rem;
 }
 
 .admin-dropdown-item {

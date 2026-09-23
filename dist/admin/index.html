@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="../css/base/utilities.css">
     <link rel="stylesheet" href="../css/base/loader.css">
     <link rel="stylesheet" href="../css/layout/header.css?v=20260923-1">
+    <link rel="stylesheet" href="../css/layout/landscape-only.css?v=20260923-1">
     <link rel="stylesheet" href="../css/layout/modal.css?v=20260920-2">
     <link rel="stylesheet" href="../css/pages/form.css?v=20260914-42">
     <link rel="stylesheet" href="../css/pages/staff-activities.css">
@@ -34,7 +35,18 @@
         rel="stylesheet">
 </head>
 
-<body>
+<body class="has-landscape-only">
+    <!-- หน้าดัก: แผงจัดการใช้ได้เฉพาะจอแนวนอนหรือจอใหญ่ (ดู css/layout/landscape-only.css) -->
+    <div class="landscape-only-screen" role="alert">
+        <div class="landscape-only-icon" aria-hidden="true">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+            </svg>
+        </div>
+        <h1 class="landscape-only-title">กรุณาหมุนหน้าจอเป็นแนวนอน</h1>
+        <p class="landscape-only-desc">ระบบจัดการใช้งานได้เฉพาะหน้าจอแนวนอน หรือบนคอมพิวเตอร์/แท็บเล็ตจอใหญ่ เพื่อให้แสดงตารางและข้อมูลได้ครบ</p>
+        <button type="button" class="landscape-only-home-btn" onclick="window.location.href='/'">กลับหน้าแรก</button>
+    </div>
     <div class="admin-shell">
         <!-- ================= SIDEBAR (ชิดซ้ายสุด, สูงเต็มจอ) ================= -->
         <aside class="admin-shell-sidebar">

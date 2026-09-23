@@ -1,0 +1,94 @@
+/* หน้าดักของแผงจัดการ (Admin / WebManager): ใช้ได้เฉพาะจอแนวนอนหรือจอใหญ่
+   จอแนวตั้งที่กว้างไม่ถึง 1024px (มือถือ/แท็บเล็ตถือแนวตั้ง) จะเห็นหน้าแจ้งให้หมุนจอแทน
+   ใช้ media query ล้วน ๆ จึงสลับทันทีตอนหมุนเครื่อง ไม่ต้องรีโหลด */
+.landscape-only-screen {
+  display: none;
+}
+
+@media (orientation: portrait) and (max-width: 1023px) {
+  .landscape-only-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    background-color: var(--slate-50);
+    color: var(--slate-900);
+  }
+
+  body.has-landscape-only {
+    overflow: hidden;
+  }
+}
+
+.landscape-only-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 1.5rem;
+  background-color: var(--brand-50);
+  color: var(--brand-600);
+}
+
+.landscape-only-icon svg {
+  width: 2.75rem;
+  height: 2.75rem;
+  animation: landscape-only-rotate 2.4s ease-in-out infinite;
+}
+
+@keyframes landscape-only-rotate {
+  0%, 20% { transform: rotate(0deg); }
+  50%, 70% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landscape-only-icon svg {
+    animation: none;
+  }
+}
+
+.landscape-only-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.landscape-only-desc {
+  max-width: 20rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--slate-500);
+}
+
+.landscape-only-home-btn {
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--brand-600);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+[data-theme="dark"] .landscape-only-screen {
+  background-color: #0b1120;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .landscape-only-icon {
+  background-color: rgba(255, 114, 32, 0.12);
+}
+
+[data-theme="dark"] .landscape-only-desc {
+  color: #94a3b8;
+}

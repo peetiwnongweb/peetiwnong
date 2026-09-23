@@ -1595,6 +1595,65 @@
   color: #be123c;
 }
 
+/* วิชา + คอร์สของรอบสอบที่เปิดอยู่ (ใต้หัวข้อ "รอบสอบที่เปิดอยู่") */
+.oral-exam-session-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+}
+
+.oral-exam-session-meta-item {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--slate-200);
+  border-radius: 0.75rem;
+  background-color: var(--slate-50);
+}
+
+.oral-exam-session-meta-item dt {
+  font-size: 0.75rem;
+  color: var(--slate-500);
+}
+
+.oral-exam-session-meta-item dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+  color: var(--slate-900);
+  overflow-wrap: anywhere;
+}
+
+/* กากบาทนำออกจากคิว (เฉพาะแถวที่ยังรอประเมิน) - แถวที่ประเมินแล้วใส่ช่องว่างกว้างเท่ากันแทน ให้ป้ายสถานะตรงแนวเดียวกันทุกแถว */
+.oral-exam-queue-remove-btn,
+.oral-exam-queue-remove-spacer {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.oral-exam-queue-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--slate-400);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.oral-exam-queue-remove-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.oral-exam-queue-remove-btn:hover,
+.oral-exam-queue-remove-btn:focus-visible {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
 .oral-exam-evaluate-actions {
   display: flex;
   gap: 0.6rem;

@@ -66,6 +66,9 @@ async function serializeSession(session, req) {
   return {
     id: session.id,
     subjectId: session.subjectId,
+    subjectName: session.subject?.name ?? null,
+    courseFormatId: session.courseFormatId,
+    courseFormatName: session.courseFormat?.name ?? null,
     token: session.token,
     status: session.status,
     openedAt: session.openedAt,
@@ -87,6 +90,8 @@ async function findSubjectWithInstructors(prisma, subjectId) {
 async function openSession(req, res) {
   const subjectId = Number(req.body.subjectId);
   if (!subjectId) return res.status(400).json({ error: 'ต้องระบุวิชา' });
+  const courseFormatId = Number(req.body.courseFormatId);
+  if (!courseFormatId) return res.status(400).json({ error: 'ต้องระบุคอร์ส' });
 
   // ต้องระบุจำนวนผู้เข้าสอบสูงสุดเสมอ (บังคับ ไม่ให้เปิดแบบไม่จำกัดจำนวนอีกต่อไป) เป็นจำนวนเต็มบวกเท่านั้น
   if (req.body.maxParticipants === undefined || req.body.maxParticipants === null || req.body.maxParticipants === '') {
@@ -104,12 +109,19 @@ async function openSession(req, res) {
   if (!canManageSubjectExam(req.session.user, subject)) {
     return res.status(403).json({ error: 'ไม่มีสิทธิ์เปิดรอบสอบวิชานี้' });
   }
+  const courseFormat = await prisma.courseFormat.findUnique({ where: { id: courseFormatId } });
+  if (!courseFormat) return res.status(400).json({ error: 'ไม่พบคอร์สนี้' });
+  // วิชาเฉพาะคอร์ส เปิดได้แค่คอร์สของวิชานั้น ส่วนวิชา "ทั้งคู่" (courseFormatId: null) เลือกคอร์สไหนก็ได้ แต่รอบนั้นรับเฉพาะคอร์สที่เลือก
+  if (subject.courseFormatId !== null && subject.courseFormatId !== courseFormatId) {
+    return res.status(400).json({ error: 'วิชานี้ไม่ได้อยู่ในคอร์สที่เลือก' });
+  }
 
   const existing = await prisma.oralExamSession.findFirst({ where: { subjectId, status: 'OPEN' } });
   if (existing) return res.status(409).json({ error: 'มีรอบสอบของวิชานี้เปิดอยู่แล้ว' });
 
   const session = await prisma.oralExamSession.create({
-    data: { subjectId, openedByUserId: req.session.user.id, token: generateSessionToken(), maxParticipants },
+    data: { subjectId, courseFormatId, openedByUserId: req.session.user.id, token: generateSessionToken(), maxParticipants },
+    include: { subject: { select: { name: true } }, courseFormat: { select: { name: true } } },
   });
 
   await logActivity({
@@ -118,7 +130,7 @@ async function openSession(req, res) {
     action: 'CREATE',
     entityType: 'ORAL_EXAM_SESSION',
     entityId: session.id,
-    summary: `เปิดรอบสอบอธิบายวิชา "${subject.name}"${maxParticipants ? ` (จำกัด ${maxParticipants} คน)` : ''}`,
+    summary: `เปิดรอบสอบอธิบายวิชา "${subject.name}" คอร์ส${courseFormat.name}${maxParticipants ? ` (จำกัด ${maxParticipants} คน)` : ''}`,
   });
 
   res.status(201).json(await serializeSession(session, req));
@@ -142,6 +154,8 @@ async function getActiveSession(req, res) {
     where: { subjectId, status: { in: ['OPEN', 'STARTED'] } },
     orderBy: { openedAt: 'desc' },
     include: {
+      subject: { select: { name: true } },
+      courseFormat: { select: { name: true } },
       attempts: {
         orderBy: { checkedInAt: 'asc' },
         include: {
@@ -305,15 +319,20 @@ async function checkIn(req, res) {
   if (!token) return res.status(400).json({ error: 'ลิงก์ไม่ถูกต้อง' });
 
   const prisma = await getPrisma();
-  const session = await prisma.oralExamSession.findUnique({ where: { token }, include: { subject: true } });
+  const session = await prisma.oralExamSession.findUnique({ where: { token }, include: { subject: true, courseFormat: true } });
   if (!session) return res.status(404).json({ error: 'ไม่พบรอบสอบนี้ ลิงก์อาจไม่ถูกต้อง' });
   if (session.status !== 'OPEN') return res.status(410).json({ error: 'ลิงก์หมดอายุหรือรอบสอบถูกปิดแล้ว' });
 
   const profile = await prisma.participantProfile.findUnique({ where: { userId: req.session.user.id } });
   if (!profile) return res.status(404).json({ error: 'ไม่พบข้อมูลน้องค่ายของคุณ' });
 
-  // courseFormatId: null บนวิชา = "ทั้งคู่" (ใช้ร่วมกันทุกคอร์ส) ผ่านได้ทุกคน
-  if (session.subject.courseFormatId !== null && session.subject.courseFormatId !== profile.courseFormatId) {
+  // รอบสอบระบุคอร์สไว้ตอนเปิด = รับเฉพาะน้องค่ายคอร์สนั้น (แม้วิชาจะเป็นวิชา "ทั้งคู่")
+  // รอบเก่าที่เปิดก่อนมีช่องนี้ (courseFormatId: null) ใช้เงื่อนไขคอร์สของวิชาแทน - วิชา "ทั้งคู่" ผ่านได้ทุกคน
+  if (session.courseFormatId !== null) {
+    if (session.courseFormatId !== profile.courseFormatId) {
+      return res.status(403).json({ error: `รอบสอบนี้เปิดสำหรับคอร์ส${session.courseFormat?.name || 'อื่น'}เท่านั้น` });
+    }
+  } else if (session.subject.courseFormatId !== null && session.subject.courseFormatId !== profile.courseFormatId) {
     return res.status(403).json({ error: 'วิชานี้ไม่ได้อยู่ในคอร์สของคุณ' });
   }
 
@@ -506,26 +525,40 @@ async function getMyExamHistory(req, res) {
   res.json({ history });
 }
 
-// ออกจากคิวสอบด้วยตัวเอง (เช่นเช็คอินผิดวิชา/เปลี่ยนใจ) - ลบได้เฉพาะ attempt ของตัวเองที่ยังรอประเมิน (PENDING) เท่านั้น ไม่ผ่าน resolveParticipantWhere
-// (ห้าม WebManager จำลองแทนคนอื่นได้เหมือน checkIn ด้านบน เพราะเป็นธุรกรรมจริง) ลบแล้วนับเป็นเหมือนไม่เคยเช็คอินเลย เช็คอินรอบใหม่ได้ทันทีถ้ารอบเดิมยังเปิดอยู่
-// กลับมาจำกัดแค่ PENDING เหมือนเดิม (เคยเปิดให้ลบได้ทุกสถานะช่วงสั้น ๆ ตามคำขอ แต่พบว่าเป็นช่องโหว่ - น้องค่ายยิง API ตรงลบแถว FAILED เพื่อลด "ครั้งที่" ให้ได้คะแนน band สูงขึ้นตอนสอบใหม่ หรือลบแถว PASSED เพื่อสอบซ้ำได้ทั้งที่ผ่านแล้ว)
-async function cancelMyAttempt(req, res) {
+// พี่ค่ายนำน้องค่ายออกจากคิวสอบ (ปุ่มกากบาทในรายชื่อผู้เข้าสอบ) เช่นเช็คอินผิดวิชา/ไม่มาสอบ - น้องค่ายออกจากคิวเองไม่ได้แล้ว
+// ลบได้เฉพาะแถวที่ยังรอประเมิน (PENDING) เท่านั้น แถวที่ประเมินแล้วเป็นประวัติคะแนน/ตัวนับ "ครั้งที่" ห้ามลบ
+// ลบแล้วนับเป็นเหมือนไม่เคยเช็คอินเลย น้องค่ายเช็คอินใหม่ได้ถ้ารอบยังเปิดรับอยู่
+async function removeAttempt(req, res) {
+  const sessionId = Number(req.params.sessionId);
   const attemptId = Number(req.params.attemptId);
-  if (!attemptId) return res.status(400).json({ error: 'ไม่พบรายการที่ต้องการยกเลิก' });
-
   const prisma = await getPrisma();
-  const profile = await prisma.participantProfile.findUnique({ where: { userId: req.session.user.id } });
-  if (!profile) return res.status(404).json({ error: 'ไม่พบข้อมูลน้องค่ายของคุณ' });
-
-  const attempt = await prisma.oralExamAttempt.findUnique({ where: { id: attemptId } });
-  if (!attempt || attempt.participantProfileId !== profile.id) {
-    return res.status(404).json({ error: 'ไม่พบรายการที่ต้องการยกเลิก' });
+  const session = await prisma.oralExamSession.findUnique({
+    where: { id: sessionId },
+    include: { subject: { include: { instructors: { select: { userId: true } } } } },
+  });
+  if (!session) return res.status(404).json({ error: 'ไม่พบรอบสอบนี้' });
+  if (!canManageSubjectExam(req.session.user, session.subject)) {
+    return res.status(403).json({ error: 'ไม่มีสิทธิ์จัดการรอบสอบนี้' });
   }
+
+  const attempt = await prisma.oralExamAttempt.findUnique({
+    where: { id: attemptId },
+    include: { participantProfile: { select: { prefix: true, firstName: true, lastName: true, nickname: true } } },
+  });
+  if (!attempt || attempt.sessionId !== sessionId) return res.status(404).json({ error: 'ไม่พบผู้เข้าสอบคนนี้ในรอบสอบนี้' });
   if (attempt.status !== 'PENDING') {
-    return res.status(409).json({ error: 'รายการนี้ประเมินผลไปแล้ว ยกเลิกเองไม่ได้ กรุณาติดต่อพี่ค่าย' });
+    return res.status(409).json({ error: 'ผู้เข้าสอบคนนี้ประเมินผลไปแล้ว นำออกไม่ได้' });
   }
 
   await prisma.oralExamAttempt.delete({ where: { id: attemptId } });
+  await logActivity({
+    actorEmail: req.session.user.email,
+    actorRole: req.session.user.role,
+    action: 'DELETE',
+    entityType: 'ORAL_EXAM_ATTEMPT',
+    entityId: attemptId,
+    summary: `นำ "${toFullName(attempt.participantProfile)}" ออกจากคิวสอบอธิบายวิชา "${session.subject.name}"`,
+  });
 
   res.status(204).end();
 }
@@ -540,5 +573,5 @@ module.exports = {
   deleteSession,
   checkIn,
   getMyExamHistory,
-  cancelMyAttempt,
+  removeAttempt,
 };

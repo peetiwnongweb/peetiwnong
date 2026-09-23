@@ -243,6 +243,7 @@ model CourseFormat {
   scheduleEntries     ClassSchedule[]
   studyDocuments      StudyDocument[]
   subjects            Subject[]
+  oralExamSessions    OralExamSession[]
 
   @@map("course_formats")
 }
@@ -355,6 +356,10 @@ model OralExamSession {
   status         OralExamSessionStatus  @default(OPEN)
   // null = ไม่จำกัดจำนวน (ค่าเริ่มต้น) - ถ้ากำหนดไว้ เช็คอินเข้าคิวได้สูงสุดตามนี้ (นับจากจำนวน attempt ทั้งหมดที่เคยเกิดในรอบนี้ ไม่ว่าผลจะเป็นอะไร ดู checkIn ใน oralExamSessionController.js)
   maxParticipants Int?                  @map("max_participants")
+  // คอร์สที่รอบนี้เปิดให้ (เลือกตอนเปิดรอบ) - เช็คอินได้เฉพาะน้องค่ายคอร์สนี้เท่านั้น แม้วิชาจะเป็นวิชา "ทั้งคู่" ก็ตาม
+  // null = รอบเก่าก่อนมีช่องนี้ (ใช้เงื่อนไขคอร์สของวิชาแทน ดู checkIn ใน oralExamSessionController.js)
+  courseFormatId Int?                   @map("course_format_id")
+  courseFormat   CourseFormat?          @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
   openedAt       DateTime               @default(now()) @map("opened_at")
   // เวลาที่กด "เริ่มการสอบอธิบาย" ครั้งแรก (OPEN -> STARTED) - null แปลว่ายังไม่เคยกดเริ่มเลย (เปิดรอบไว้เฉย ๆ แล้วปิดทิ้งโดยไม่มีใครสอบจริง) ใช้กรองประวัติไม่ให้ปนรอบที่ไม่ได้ใช้งานจริงเข้ามา (ดู getSessionHistory)
   startedAt      DateTime?              @map("started_at")

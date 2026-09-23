@@ -9,7 +9,7 @@ const {
   deleteSession,
   checkIn,
   getMyExamHistory,
-  cancelMyAttempt,
+  removeAttempt,
 } = require('../controllers/oralExamSessionController');
 const { requireRole } = require('../middleware/requireAuth');
 
@@ -24,13 +24,12 @@ router.get('/active', requireStaffAccess, getActiveSession);
 router.get('/history', requireStaffAccess, getSessionHistory);
 router.post('/check-in', requireParticipantAccess, checkIn);
 router.get('/me/history', requireParticipantOrSimulateAccess, getMyExamHistory);
-// ออกจากคิวสอบด้วยตัวเอง - ธุรกรรมจริง ใช้ requireParticipantAccess เข้มเหมือน check-in (ห้าม WebManager จำลองแทนคนอื่น)
-router.delete('/me/attempt/:attemptId', requireParticipantAccess, cancelMyAttempt);
 
 router.post('/', requireStaffAccess, openSession); // เช็คสิทธิ์รายวิชาในคอนโทรลเลอร์ (isAcademicManager หรือผู้สอนวิชานั้น)
 router.post('/:sessionId/start', requireStaffAccess, startSession);
 router.post('/:sessionId/evaluate', requireStaffAccess, evaluateAttempts);
 router.post('/:sessionId/close', requireStaffAccess, closeSession);
+router.delete('/:sessionId/attempts/:attemptId', requireStaffAccess, removeAttempt); // พี่ค่ายนำน้องค่ายออกจากคิว (เฉพาะที่ยังรอประเมิน)
 router.delete('/:sessionId', requireStaffAccess, deleteSession); // ลบประวัติรอบสอบที่ปิดแล้ว (เช็คสิทธิ์รายวิชา + สถานะ CLOSED ในคอนโทรลเลอร์)
 
 module.exports = router;

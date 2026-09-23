@@ -506,7 +506,7 @@ function handleExamScanDecoded(rawText) {
         });
 }
 
-// attempt ที่กำลังรอประเมินอยู่ตอนนี้ (ถ้ามี) - เก็บไว้ให้ปุ่ม "ออกจากการสอบ" รู้ว่าต้องลบ attempt ไหน
+// attempt ที่กำลังรอประเมินอยู่ตอนนี้ (ถ้ามี) - ใช้ poll เช็คว่ายังรอผลอยู่จริงไหม (ดู pollExamScanWaitStatus)
 // มาจากได้ 2 ทาง: 1) เพิ่งเช็คอินสำเร็จ (ดู handleQrCode) 2) รีเฟรชหน้าแล้วเจอ PENDING ค้างอยู่จาก /me/history (ดู restorePendingExamCheckin)
 let currentPendingAttemptId = null;
 
@@ -543,30 +543,6 @@ function resetExamScan() {
     showExamScanState('idle');
 }
 
-// กด "ออกจากการสอบ" บนการ์ด "เข้าร่วมแล้ว" - ยกเลิกแถวที่รอประเมินอยู่ (เช่นเช็คอินผิดวิชา/เปลี่ยนใจ) เช็คอินรอบใหม่ได้ทันทีถ้ารอบเดิมยังเปิดอยู่
-async function handleLeaveExam() {
-    if (!currentPendingAttemptId) {
-        resetExamScan();
-        return;
-    }
-
-    const confirmed = await showConfirm('ต้องการออกจากคิวสอบวิชานี้ใช่หรือไม่? ต้องสแกน QR ใหม่ถ้าต้องการเข้าสอบอีกครั้ง', {
-        title: 'ยืนยันการออกจากการสอบ',
-        confirmText: 'ออกจากการสอบ',
-    });
-    if (!confirmed) return;
-
-    fetch(`/api/oral-exam-sessions/me/attempt/${currentPendingAttemptId}`, { method: 'DELETE' })
-        .then(async (res) => {
-            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
-            showTimetableToast('ออกจากคิวสอบแล้ว', true);
-            resetExamScan();
-        })
-        .catch((error) => {
-            showTimetableToast(error.message || 'ออกจากคิวสอบไม่สำเร็จ', false);
-        });
-}
-
 // ==========================================
 // เช็คสถานะระหว่างรอผลบนการ์ด "เข้าร่วมแล้ว" - เผื่อพี่ค่ายปิด/ยกเลิกรอบหรือประเมินผลไปแล้วระหว่างที่น้องค่ายเปิดหน้านี้ค้างไว้เฉย ๆ
 // ==========================================
@@ -596,7 +572,7 @@ function pollExamScanWaitStatus() {
     return fetch('/api/oral-exam-sessions/me/history')
         .then((res) => (res.ok ? res.json() : { history: [] }))
         .then(({ history }) => {
-            if (attemptId !== currentPendingAttemptId) return; // สลับสถานะไปแล้วระหว่างรอผลลัพธ์ (เช่นกด "ออกจากการสอบ" เอง)
+            if (attemptId !== currentPendingAttemptId) return; // สลับสถานะไปแล้วระหว่างรอผลลัพธ์
             let found = null;
             for (const subjectEntry of history) {
                 found = subjectEntry.attempts.find((a) => a.id === attemptId);
@@ -604,7 +580,8 @@ function pollExamScanWaitStatus() {
             }
 
             if (!found) {
-                showTimetableToast('ไม่พบรายการที่รอผลอยู่แล้ว', false);
+                // หายไปจากคิว = พี่ค่ายกดนำออกจากคิว (น้องค่ายออกเองไม่ได้แล้ว)
+                showTimetableToast('พี่ค่ายนำคุณออกจากคิวสอบแล้ว', false);
                 resetExamScan();
                 loadExamScanHistory();
                 return;

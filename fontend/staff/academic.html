@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20260917-1">
     <link rel="stylesheet" href="../css/pages/form.css?v=20260914-45">
     <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20260916-1">
-    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20260822-107">
+    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20260923-1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
     <script src="../js/layout/time-select.js?v=20260916-1"></script>
     <script src="../js/layout/auth.js?v=20260923-1"></script>
     <script src="../js/layout/nav.js?v=20260820-2"></script>
-    <script src="../js/pages/staff-academic.js?v=20260919-1"></script>
+    <script src="../js/pages/staff-academic.js?v=20260923-1"></script>
 </head>
 
 <body>
@@ -652,6 +652,17 @@
                     <div class="oral-exam-session-header-row">
                         <p class="profile-section-title">รอบสอบที่เปิดอยู่</p>
                     </div>
+                    <!-- วิชา + คอร์สของรอบนี้ (เช็คอินได้เฉพาะน้องค่ายคอร์สนี้) เติมโดย renderOralExamSessionCard -->
+                    <dl class="oral-exam-session-meta">
+                        <div class="oral-exam-session-meta-item">
+                            <dt>วิชา</dt>
+                            <dd id="oral-exam-session-subject">-</dd>
+                        </div>
+                        <div class="oral-exam-session-meta-item">
+                            <dt>คอร์ส</dt>
+                            <dd id="oral-exam-session-course">-</dd>
+                        </div>
+                    </dl>
                     <div class="oral-exam-qr-block" id="oral-exam-qr-block">
                         <button type="button" class="oral-exam-qr-image-btn" id="oral-exam-qr-expand-btn" title="กดเพื่อขยายเต็มจอ">
                             <img id="oral-exam-qr-image" class="oral-exam-qr-image" alt="QR สำหรับสแกนเข้าสอบ">

@@ -2330,7 +2330,8 @@ function handleOralExamOpenClick() {
     fetch('/api/oral-exam-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subjectId, maxParticipants }),
+        // คอร์สที่เลือกในขั้นที่ 1 = คอร์สเดียวที่เช็คอินรอบนี้ได้ (backend บังคับ ดู checkIn ใน oralExamSessionController.js)
+        body: JSON.stringify({ subjectId, courseFormatId: selectedOralExamCourseId, maxParticipants }),
     })
         .then(async (res) => {
             if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
@@ -2365,6 +2366,12 @@ function renderOralExamSessionCard(session) {
     if (img) img.src = session.qrImageDataUrl;
     if (fsImg) fsImg.src = session.qrImageDataUrl;
     if (linkInput) linkInput.value = session.qrPayload;
+
+    const subjectEl = document.getElementById('oral-exam-session-subject');
+    const courseEl = document.getElementById('oral-exam-session-course');
+    if (subjectEl) subjectEl.textContent = session.subjectName || '-';
+    // รอบเก่าที่เปิดก่อนระบุคอร์สได้ (courseFormatName เป็น null) รับตามคอร์สของวิชา
+    if (courseEl) courseEl.textContent = session.courseFormatName || 'ตามคอร์สของวิชา';
 }
 
 // กดที่ QR เพื่อขยายเต็มจอ (เผื่อฉายจอโปรเจกเตอร์ให้น้องค่ายที่นั่งไกลสแกนได้ถนัดขึ้น) - แพทเทิร์นเดียวกับ openScheduleFullscreen/closeScheduleFullscreen
@@ -2411,8 +2418,40 @@ function renderOralExamQueue(attempts) {
             <span class="oral-exam-queue-name">${a.fullName}${a.nickname ? ` (${a.nickname})` : ''}</span>
             <span class="oral-exam-queue-attempt">ครั้งที่ ${a.attemptNumber}</span>
             <span class="oral-exam-queue-status">${ORAL_EXAM_STATUS_LABEL[a.status] || a.status}</span>
+            ${a.status === 'PENDING'
+                ? `<button type="button" class="oral-exam-queue-remove-btn" title="นำออกจากคิวสอบ" aria-label="นำ ${a.fullName} ออกจากคิวสอบ" onclick="handleOralExamRemoveAttemptClick(${a.id})">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>`
+                : '<span class="oral-exam-queue-remove-spacer" aria-hidden="true"></span>'}
         </div>
     `).join('');
+}
+
+// กากบาทท้ายแถว - พี่ค่ายนำน้องค่ายออกจากคิว (เช็คอินผิดวิชา/ไม่มาสอบ) น้องค่ายออกจากคิวเองไม่ได้แล้ว
+// ลบได้เฉพาะคนที่ยังรอประเมิน คนที่ประเมินแล้วเป็นประวัติคะแนน (backend กันไว้อีกชั้น ดู removeAttempt)
+async function handleOralExamRemoveAttemptClick(attemptId) {
+    const session = currentOralExamSession;
+    const attempt = session?.attempts?.find((a) => a.id === attemptId);
+    if (!attempt) return;
+
+    const confirmed = await showConfirm(`นำ "${attempt.fullName}" ออกจากคิวสอบใช่หรือไม่? ถ้ารอบยังเปิดรับอยู่ น้องค่ายสแกน QR เข้าคิวใหม่ได้`, {
+        title: 'ยืนยันการนำออกจากคิว',
+        confirmText: 'นำออก',
+    });
+    if (!confirmed) return;
+
+    fetch(`/api/oral-exam-sessions/${session.id}/attempts/${attemptId}`, { method: 'DELETE' })
+        .then(async (res) => {
+            if (!res.ok && res.status !== 204) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+            if (currentOralExamSession?.id === session.id) {
+                renderOralExamQueue(currentOralExamSession.attempts.filter((a) => a.id !== attemptId));
+            }
+            showActivitiesToast('นำออกจากคิวสอบแล้ว', true);
+        })
+        .catch((error) => {
+            console.error(error);
+            showActivitiesToast(error.message || 'นำออกจากคิวสอบไม่สำเร็จ', false);
+        });
 }
 
 // ปุ่ม "ผ่าน"/"ไม่ผ่าน" ประเมินทุกคนที่ยังรอผล (PENDING) ในคิวพร้อมกันเสมอ ไม่มีการเลือกเป็นรายคนอีกต่อไป (ผ่านทั้งคิวหรือไม่ผ่านทั้งคิว)

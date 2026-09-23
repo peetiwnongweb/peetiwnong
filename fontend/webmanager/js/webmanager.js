@@ -108,7 +108,8 @@ function loadAdminUser() {
 
         })
         .catch(() => {
-            window.location.href = '/webmanager/login.html';
+            // ไม่ได้ล็อกอิน (เช่นก๊อปลิงก์มาเปิด) = เด้งกลับหน้าแรกเหมือนทุกหน้าที่ต้องล็อกอิน - Owner เข้าสู่ระบบผ่าน /webmanager/login ตามปกติ
+            window.location.replace('/');
         });
 }
 

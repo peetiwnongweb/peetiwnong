@@ -109,6 +109,11 @@ function loadAdminUser() {
         })
         .then(({ user }) => {
             const isPrivilegedStaff = user.role === 'STAFF' && user.isAdmin;
+            // ก๊อปลิงก์ /admin มาเปิดโดยไม่มีสิทธิ์ (น้องค่าย/พี่ค่ายที่ไม่ใช่ผู้ดูแลระบบ) = เด้งกลับหน้าแรก ตรงกับ requireAdminAccess ฝั่ง backend
+            if (!isPrivilegedStaff && user.role !== 'WEBMANAGER') {
+                window.location.replace('/');
+                return;
+            }
             const roleLabel = ACTIVITY_ROLE_LABELS[user.role] || user.role;
 
             // เหมือนหน้าพี่ค่าย/หน้าแรก: ถ้ามีชื่อ-นามสกุลและตำแหน่งในโปรไฟล์ ให้ขึ้นชื่อและตำแหน่งแทน email/role ตรง ๆ

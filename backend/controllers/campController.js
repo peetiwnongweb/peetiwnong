@@ -63,18 +63,12 @@ async function listCamps(req, res) {
 }
 
 // ตรวจสอบข้อมูลฟอร์มสร้างค่าย คืน { error } หรือค่าที่ผ่านการตรวจสอบแล้วพร้อมใช้งาน
-async function validateCreateCampBody(body, prisma) {
-  const generationNo = Number(body.generationNo);
-  if (!Number.isInteger(generationNo) || generationNo < 1) {
-    return { error: 'ครั้งที่ต้องเป็นจำนวนเต็มบวก' };
-  }
-  const existing = await prisma.camp.findUnique({ where: { generationNo } });
-  if (existing) return { error: `ครั้งที่ ${generationNo} ถูกใช้ไปแล้ว` };
-
+// ตรวจคณะทำงานของค่าย ใช้ร่วมกันทั้งตอนสร้างค่ายและตอนแก้ไขคณะทำงานทีหลัง
+// บังคับแค่ประธานค่าย - เลขานุการ/รองประธาน/หัวหน้าฝ่าย เว้นว่างไว้ก่อนแล้วค่อยเพิ่มหรือเปลี่ยนทีหลังได้ (ดู updateCampLeadership)
+async function validateCampLeadership(body, prisma) {
   const presidentUserId = Number(body.presidentUserId);
-  const secretaryUserId = Number(body.secretaryUserId);
   if (!presidentUserId) return { error: 'ต้องระบุประธานค่าย' };
-  if (!secretaryUserId) return { error: 'ต้องระบุเลขานุการ' };
+  const secretaryUserId = Number(body.secretaryUserId) || null;
 
   const vicePresidentUserIds = Array.isArray(body.vicePresidentUserIds)
     ? [...new Set(body.vicePresidentUserIds.map(Number).filter(Boolean))]
@@ -85,45 +79,71 @@ async function validateCreateCampBody(body, prisma) {
     .map((d) => ({ departmentId: Number(d.departmentId), userId: Number(d.userId) }))
     .filter((d) => d.departmentId && d.userId);
 
-  // ทุกฝ่ายที่มีอยู่จริงต้องมีหัวหน้าฝ่ายครบ ไม่ขาด/ไม่เกิน/ไม่ซ้ำฝ่าย
+  // ฝ่ายไหนยังไม่มีหัวหน้าก็ได้ แต่ฝ่ายที่ส่งมาต้องมีอยู่จริงและไม่ซ้ำกัน
   const departments = await prisma.campDepartment.findMany({ select: { id: true } });
   const departmentIds = departments.map((d) => d.id);
   const suppliedIds = departmentHeads.map((d) => d.departmentId);
-  const missing = departmentIds.filter((id) => !suppliedIds.includes(id));
-  if (missing.length) return { error: 'กรุณาเลือกหัวหน้าฝ่ายให้ครบทุกฝ่าย' };
   if (suppliedIds.some((id) => !departmentIds.includes(id))) return { error: 'พบฝ่ายที่ไม่มีอยู่จริงในระบบ' };
   if (new Set(suppliedIds).size !== suppliedIds.length) return { error: 'มีฝ่ายซ้ำกันในรายการหัวหน้าฝ่าย' };
 
   // กันคนเดียวถือหลายตำแหน่งพร้อมกันในค่ายเดียวกัน (ป้องกันความกำกวมว่า StaffProfile.positionId สุดท้ายควรเป็นตำแหน่งไหน)
-  const allAssigned = [presidentUserId, secretaryUserId, ...vicePresidentUserIds, ...departmentHeads.map((d) => d.userId)];
+  const allAssigned = [presidentUserId, secretaryUserId, ...vicePresidentUserIds, ...departmentHeads.map((d) => d.userId)].filter(Boolean);
   if (new Set(allAssigned).size !== allAssigned.length) {
     return { error: 'พี่ค่าย 1 คนไม่สามารถได้รับมอบหมายมากกว่า 1 ตำแหน่งในค่ายเดียวกันได้' };
   }
 
   // ทุก id ที่อ้างถึงต้องเป็นบัญชี STAFF จริง
   const staffUsers = await prisma.user.findMany({ where: { id: { in: allAssigned }, role: 'STAFF' }, select: { id: true } });
-  if (staffUsers.length !== new Set(allAssigned).size) {
+  if (staffUsers.length !== allAssigned.length) {
     return { error: 'พบผู้ใช้ที่ไม่ใช่บัญชีพี่ค่าย (STAFF) หรือไม่พบในระบบ' };
   }
 
-  return { generationNo, presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads };
+  return { presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads, allAssigned };
+}
+
+async function findLeadershipPositions(prisma) {
+  const [posPresident, posVice, posSecretary, posHead, posTeam] = await Promise.all([
+    prisma.staffPosition.findFirst({ where: { name: 'ประธานค่าย' } }),
+    prisma.staffPosition.findFirst({ where: { name: 'รองประธานค่าย' } }),
+    prisma.staffPosition.findFirst({ where: { name: 'เลขานุการ' } }),
+    prisma.staffPosition.findFirst({ where: { name: 'หัวหน้าฝ่าย' } }),
+    prisma.staffPosition.findFirst({ where: { name: 'ทีมงานค่าย' } }),
+  ]);
+  if (!posPresident || !posVice || !posSecretary || !posHead || !posTeam) return null;
+  return { posPresident, posVice, posSecretary, posHead, posTeam };
+}
+
+// มอบตำแหน่ง/ฝ่ายจริงใน StaffProfile ให้คนที่ถูกเลือก (ข้ามตำแหน่งที่ยังว่าง)
+async function assignLeadershipPositions(tx, positions, { presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads }) {
+  await tx.staffProfile.update({ where: { userId: presidentUserId }, data: { positionId: positions.posPresident.id } });
+  if (secretaryUserId) {
+    await tx.staffProfile.update({ where: { userId: secretaryUserId }, data: { positionId: positions.posSecretary.id } });
+  }
+  for (const userId of vicePresidentUserIds) {
+    await tx.staffProfile.update({ where: { userId }, data: { positionId: positions.posVice.id } });
+  }
+  for (const d of departmentHeads) {
+    await tx.staffProfile.update({ where: { userId: d.userId }, data: { positionId: positions.posHead.id, departmentId: d.departmentId } });
+  }
 }
 
 // สร้างค่ายใหม่: มอบตำแหน่ง/ฝ่ายให้ผู้ถูกเลือกจริง + ลบน้องค่ายทั้งหมดอย่างถาวร (ทำในทรานแซกชันเดียวกัน)
 async function createCamp(req, res) {
   const prisma = await getPrisma();
-  const result = await validateCreateCampBody(req.body, prisma);
+  const generationNo = Number(req.body.generationNo);
+  if (!Number.isInteger(generationNo) || generationNo < 1) {
+    return res.status(400).json({ error: 'ครั้งที่ต้องเป็นจำนวนเต็มบวก' });
+  }
+  if (await prisma.camp.findUnique({ where: { generationNo } })) {
+    return res.status(400).json({ error: `ครั้งที่ ${generationNo} ถูกใช้ไปแล้ว` });
+  }
+  const result = await validateCampLeadership(req.body, prisma);
   if (result.error) return res.status(400).json({ error: result.error });
-  const { generationNo, presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads } = result;
+  const { presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads } = result;
 
-  const [posPresident, posVice, posSecretary, posHead] = await Promise.all([
-    prisma.staffPosition.findFirst({ where: { name: 'ประธานค่าย' } }),
-    prisma.staffPosition.findFirst({ where: { name: 'รองประธานค่าย' } }),
-    prisma.staffPosition.findFirst({ where: { name: 'เลขานุการ' } }),
-    prisma.staffPosition.findFirst({ where: { name: 'หัวหน้าฝ่าย' } }),
-  ]);
-  if (!posPresident || !posVice || !posSecretary || !posHead) {
-    return res.status(500).json({ error: 'ไม่พบตำแหน่งมาตรฐานในระบบ (ประธานค่าย/รองประธานค่าย/เลขานุการ/หัวหน้าฝ่าย) กรุณารัน seed ก่อน' });
+  const positions = await findLeadershipPositions(prisma);
+  if (!positions) {
+    return res.status(500).json({ error: 'ไม่พบตำแหน่งมาตรฐานในระบบ (ประธานค่าย/รองประธานค่าย/เลขานุการ/หัวหน้าฝ่าย/ทีมงานค่าย) กรุณารัน seed ก่อน' });
   }
 
   // สำรองข้อมูลค่ายปัจจุบัน (ถ้ามี) ขึ้น Google Drive ก่อนแตะข้อมูลใด ๆ - ถ้าตั้งค่า Drive ไว้แล้วแต่สำรองไม่สำเร็จ (เช่น Drive API ล่ม)
@@ -151,14 +171,7 @@ async function createCamp(req, res) {
       },
     });
 
-    await tx.staffProfile.update({ where: { userId: presidentUserId }, data: { positionId: posPresident.id } });
-    await tx.staffProfile.update({ where: { userId: secretaryUserId }, data: { positionId: posSecretary.id } });
-    for (const userId of vicePresidentUserIds) {
-      await tx.staffProfile.update({ where: { userId }, data: { positionId: posVice.id } });
-    }
-    for (const d of departmentHeads) {
-      await tx.staffProfile.update({ where: { userId: d.userId }, data: { positionId: posHead.id, departmentId: d.departmentId } });
-    }
+    await assignLeadershipPositions(tx, positions, result);
 
     return created;
   }, { maxWait: 15000, timeout: 120000 });
@@ -179,6 +192,69 @@ async function createCamp(req, res) {
 
   const full = await prisma.camp.findUnique({ where: { id: camp.id }, include: CAMP_LIST_INCLUDE });
   res.status(201).json(serializeCamp(full));
+}
+
+// แก้ไขคณะทำงานของค่ายที่ยังไม่จบ: เพิ่มตำแหน่งที่ว่างไว้ตอนสร้าง หรือเปลี่ยนตัวคน (รวมประธาน) ได้ตลอด - ไม่ล้างข้อมูลค่ายใด ๆ ต่างจากตอนสร้างค่าย
+// คนที่ถูกถอดออกจากตำแหน่ง (และไม่ได้ตำแหน่งอื่นแทน) กลับเป็น "ทีมงานค่าย" ไม่มีฝ่าย เหมือนตอนจบค่าย
+async function updateCampLeadership(req, res) {
+  const prisma = await getPrisma();
+  const campId = Number(req.params.id);
+  const camp = await prisma.camp.findUnique({
+    where: { id: campId },
+    include: { vicePresidents: true, departmentHeads: true },
+  });
+  if (!camp) return res.status(404).json({ error: 'ไม่พบค่ายนี้' });
+  if (camp.isEnded) return res.status(400).json({ error: `ค่ายครั้งที่ ${camp.generationNo} จบไปแล้ว แก้ไขคณะทำงานไม่ได้` });
+
+  const result = await validateCampLeadership(req.body, prisma);
+  if (result.error) return res.status(400).json({ error: result.error });
+  const { presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads, allAssigned } = result;
+
+  const positions = await findLeadershipPositions(prisma);
+  if (!positions) {
+    return res.status(500).json({ error: 'ไม่พบตำแหน่งมาตรฐานในระบบ (ประธานค่าย/รองประธานค่าย/เลขานุการ/หัวหน้าฝ่าย/ทีมงานค่าย) กรุณารัน seed ก่อน' });
+  }
+
+  const previouslyAssigned = [
+    camp.presidentUserId,
+    camp.secretaryUserId,
+    ...camp.vicePresidents.map((vp) => vp.userId),
+    ...camp.departmentHeads.map((dh) => dh.userId),
+  ].filter(Boolean);
+  const removedUserIds = previouslyAssigned.filter((id) => !allAssigned.includes(id));
+
+  await prisma.$transaction(async (tx) => {
+    if (removedUserIds.length) {
+      await tx.staffProfile.updateMany({
+        where: { userId: { in: removedUserIds } },
+        data: { positionId: positions.posTeam.id, departmentId: null },
+      });
+    }
+    await tx.campVicePresident.deleteMany({ where: { campId } });
+    await tx.campDepartmentHead.deleteMany({ where: { campId } });
+    await tx.camp.update({
+      where: { id: campId },
+      data: {
+        presidentUserId,
+        secretaryUserId,
+        vicePresidents: { create: vicePresidentUserIds.map((userId) => ({ userId })) },
+        departmentHeads: { create: departmentHeads.map((d) => ({ departmentId: d.departmentId, userId: d.userId })) },
+      },
+    });
+    await assignLeadershipPositions(tx, positions, result);
+  }, { maxWait: 15000, timeout: 60000 });
+
+  await logActivity({
+    actorEmail: req.session.user.email,
+    actorRole: req.session.user.role,
+    action: 'UPDATE',
+    entityType: 'CAMP',
+    entityId: campId,
+    summary: `แก้ไขคณะทำงานค่ายครั้งที่ ${camp.generationNo}${removedUserIds.length ? ` (ถอดออกจากตำแหน่ง ${removedUserIds.length} คน)` : ''}`,
+  });
+
+  const full = await prisma.camp.findUnique({ where: { id: campId }, include: CAMP_LIST_INCLUDE });
+  res.json(serializeCamp(full));
 }
 
 // จบค่าย: (1) เก็บข้อมูลน้องค่ายทั้งหมดเป็นไฟล์ขึ้น Google Drive (2) ลบน้องค่ายทั้งหมดออกจากฐานข้อมูลถาวร (3) รีเซ็ตตำแหน่ง/ฝ่ายของ "ทุก" พี่ค่ายกลับเป็นทีมงานค่าย + ไม่มีฝ่าย แล้ว mark ค่ายล่าสุด (ที่ยังไม่จบ) เป็น isEnded
@@ -273,5 +349,5 @@ async function listCampBackups(req, res) {
 }
 
 module.exports = {
-  listStaffOptions, listCamps, createCamp, endCamp, deleteCamp, getWipePreview, triggerManualBackup, listCampBackups,
+  listStaffOptions, listCamps, createCamp, updateCampLeadership, endCamp, deleteCamp, getWipePreview, triggerManualBackup, listCampBackups,
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-  listStaffOptions, listCamps, createCamp, endCamp, deleteCamp, getWipePreview, triggerManualBackup, listCampBackups,
+  listStaffOptions, listCamps, createCamp, updateCampLeadership, endCamp, deleteCamp, getWipePreview, triggerManualBackup, listCampBackups,
 } = require('../controllers/campController');
 const { requireWebManagerAccess } = require('../middleware/requireAuth');
 
@@ -13,6 +13,7 @@ router.post('/backup', requireWebManagerAccess, triggerManualBackup);
 router.get('/', requireWebManagerAccess, listCamps);
 router.post('/', requireWebManagerAccess, createCamp);
 router.post('/end', requireWebManagerAccess, endCamp);
+router.put('/:id/leadership', requireWebManagerAccess, updateCampLeadership);
 router.delete('/:id', requireWebManagerAccess, deleteCamp);
 
 module.exports = router;

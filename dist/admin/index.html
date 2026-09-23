@@ -13,7 +13,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
-    <title>ระบบจัดการหลังบ้าน - PTN Camp</title>
+    <title>Admin - PTN Camp</title>
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/images/favicon/favicon.png">
 
     <link rel="stylesheet" href="../scr/output.css">
@@ -23,7 +23,8 @@
     <link rel="stylesheet" href="../css/layout/header.css?v=20260919-1">
     <link rel="stylesheet" href="../css/layout/modal.css?v=20260920-2">
     <link rel="stylesheet" href="../css/pages/form.css?v=20260914-42">
-    <link rel="stylesheet" href="css/admin.css?v=20260920-1">
+    <link rel="stylesheet" href="../css/pages/staff-activities.css">
+    <link rel="stylesheet" href="../webmanager/css/webmanager.css?v=20260920-1">
     <link rel="stylesheet" href="css/admin-dashboard.css?v=20260919-1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -102,13 +103,6 @@
                                     d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                             </svg>
                             กำหนดการ
-                        </button>
-                        <button class="admin-shell-nav-child" onclick="switchAdminTab('committee')" id="admin-tab-committee">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                            </svg>
-                            ประวัติความเป็นมา
                         </button>
                     </div>
                 </div>
@@ -361,65 +355,8 @@
                     <div class="dashboard-panel" id="dashboard-panel-activities"></div>
                 </section>
 
-                <!-- ================= SECTION: หน้าแรก (Committee + News) ================= -->
+                <!-- ================= SECTION: หน้าแรก (News + Schedule) ================= -->
                 <section id="admin-section-home" class="admin-section">
-                    <!-- ทำเนียบประธานค่าย -->
-                    <section id="admin-panel-committee" class="admin-panel">
-                        <div class="admin-panel-header flex items-center justify-between">
-                            <div>
-                                <h2 class="admin-panel-title">ทำเนียบประธานค่าย</h2>
-                                <p class="admin-panel-desc">จัดการรายชื่อประธานค่ายที่แสดงในหน้าแรกและหน้าประวัติ</p>
-                            </div>
-                        </div>
-                        <div class="admin-toolbar">
-                            <div class="admin-search-box">
-                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                </svg>
-                                <input type="text" id="committee-search" class="admin-search-input" placeholder="ค้นหาชื่อ, ชื่อเล่น, ครั้งที่...">
-                            </div>
-                            <div class="admin-toolbar-actions">
-                                <span class="admin-selected-count hidden" id="committee-selected-count">เลือกแล้ว 0 รายการ</span>
-                                <button type="button" class="btn-outline" onclick="loadCommittees()">
-                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                                    </svg>
-                                    รีเฟรช
-                                </button>
-                                <button class="btn-primary" onclick="openCommitteeForm()">เพิ่ม</button>
-                                <button type="button" class="admin-bulk-delete-btn" id="committee-bulk-delete-btn" onclick="bulkDeleteCommittees()" disabled>ลบ</button>
-                            </div>
-                        </div>
-                        <div class="admin-table-wrap">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th class="admin-col-checkbox">
-                                            <label class="admin-checkbox-wrap">
-                                                <input type="checkbox" id="committee-select-all" onchange="toggleCommitteeSelectAll(this.checked)">
-                                                <span class="custom-checkbox"></span>
-                                            </label>
-                                        </th>
-                                        <th class="admin-col-image">รูป</th>
-                                        <th class="admin-sortable" onclick="setCommitteeSort('generationNo')">ครั้งที่ <span class="admin-sort-icon" data-sort-icon-committee="generationNo"></span></th>
-                                        <th class="admin-sortable" onclick="setCommitteeSort('fullName')">ชื่อ-นามสกุล <span class="admin-sort-icon" data-sort-icon-committee="fullName"></span></th>
-                                        <th class="admin-sortable" onclick="setCommitteeSort('nickname')">ชื่อเล่น <span class="admin-sort-icon" data-sort-icon-committee="nickname"></span></th>
-                                        <th>สถานะ</th>
-                                        <th class="admin-col-actions">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="committee-table-body"></tbody>
-                            </table>
-                            <p id="committee-empty" class="admin-empty hidden">ยังไม่มีข้อมูลประธานค่าย</p>
-                            <p id="committee-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
-                        </div>
-                        <div class="admin-pagination hidden" id="committee-pagination">
-                            <button type="button" class="admin-page-nav-btn" id="committee-prev-btn" onclick="changeCommitteePage(-1)">ก่อนหน้า</button>
-                            <div class="admin-page-numbers" id="committee-page-numbers"></div>
-                            <button type="button" class="admin-page-nav-btn" id="committee-next-btn" onclick="changeCommitteePage(1)">ถัดไป</button>
-                        </div>
-                    </section>
-
                     <!-- การอนุมัติประชาสัมพันธ์ -->
                     <section id="admin-panel-approve-news" class="admin-panel">
                         <div class="admin-panel-header flex items-center justify-between">
@@ -924,81 +861,6 @@
         </div>
     </div>
 
-    <!-- ================= MODAL: ฟอร์มประธานค่าย ================= -->
-    <div id="committee-modal" class="modal hidden" aria-labelledby="committee-modal-title" role="dialog" aria-modal="true">
-        <div class="modal-wrapper">
-            <div onclick="closeCommitteeForm()" class="modal-backdrop" aria-hidden="true"></div>
-            <span class="modal-trick" aria-hidden="true">&#8203;</span>
-            <div class="modal-box auth-box">
-                <div class="modal-close-btn">
-                    <button type="button" onclick="closeCommitteeForm()">
-                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                <div class="modal-content">
-                    <h2 id="committee-modal-title" class="admin-modal-title">เพิ่มประธานค่าย</h2>
-                    <form id="committee-form" class="auth-form">
-                        <input type="hidden" id="committee-id">
-                        <div class="form-group">
-                            <label class="form-label" for="committee-generationNo-add-input">ครั้งที่</label>
-                            <div class="generation-chip-list" id="committee-generationNos-chips"></div>
-                            <div class="generation-chip-add-row">
-                                <input class="form-input" type="number" id="committee-generationNo-add-input" min="1" placeholder="ใส่ครั้งที่แล้วกด +" onkeydown="handleCommitteeGenerationInputKeydown(event)">
-                                <button type="button" class="btn-outline generation-chip-add-btn" onclick="addCommitteeGenerationChip()">+</button>
-                            </div>
-                            <p class="admin-field-hint">คนเดียวกันดำรงตำแหน่งหลายครั้งได้ ใส่ทีละครั้งแล้วกด + เพื่อเพิ่ม ไม่ต้องสร้างข้อมูลซ้ำ</p>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-fullName">ชื่อ-นามสกุล</label>
-                            <input class="form-input" type="text" id="committee-fullName" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-nickname">ชื่อเล่น</label>
-                            <input class="form-input" type="text" id="committee-nickname" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-imageUrl">URL รูปภาพ</label>
-                            <input class="form-input" type="text" id="committee-imageUrl" placeholder="/backend/uploads/presidents/xxx.jpg">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-university">มหาวิทยาลัย</label>
-                            <input class="form-input" type="text" id="committee-university" placeholder="มหาวิทยาลัยราชภัฏชัยภูมิ">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-universityLogoUrl">URL โลโก้มหาวิทยาลัย</label>
-                            <input class="form-input" type="text" id="committee-universityLogoUrl" placeholder="/backend/uploads/presidents/xxx-logo.png">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-faculty">คณะ</label>
-                            <input class="form-input" type="text" id="committee-faculty" placeholder="คณะครุศาสตร์">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="committee-major">สาขาวิชา</label>
-                            <input class="form-input" type="text" id="committee-major" placeholder="สาขาวิชาการศึกษา วิชาเอกสังคมศึกษา">
-                        </div>
-                        <p class="admin-field-hint">ข้อมูลมหาวิทยาลัย/คณะ/สาขา จะแสดงในการ์ดเด่นหน้าแรก (Hero) เฉพาะรุ่นล่าสุด (ครั้งที่สูงสุด) เท่านั้น</p>
-                        <div class="admin-toggle-row">
-                            <label class="admin-toggle-switch">
-                                <input type="checkbox" id="committee-isVisible" checked>
-                            </label>
-                            <div>
-                                <span class="admin-toggle-label">แสดงผลบนหน้าเว็บไซต์หลัก</span>
-                                <p class="admin-field-hint admin-toggle-hint">ปิดไว้เพื่อซ่อนจากหน้าเว็บโดยไม่ต้องลบข้อมูล</p>
-                            </div>
-                        </div>
-                        <div class="admin-form-actions">
-                            <button type="button" class="admin-cancel-btn" onclick="closeCommitteeForm()">ยกเลิก</button>
-                            <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
-                        </div>
-                        <div id="committee-form-error" class="admin-form-error hidden"></div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ================= MODAL: ฟอร์มข่าวสาร ================= -->
     <div id="news-modal" class="modal hidden" aria-labelledby="news-modal-title" role="dialog" aria-modal="true">
         <div class="modal-wrapper">
@@ -1197,7 +1059,7 @@
         <div class="modal-wrapper">
             <div onclick="closeUserForm()" class="modal-backdrop" aria-hidden="true"></div>
             <span class="modal-trick" aria-hidden="true">&#8203;</span>
-            <div class="modal-box auth-box">
+            <div class="modal-box news-box modal-box-lg">
                 <div class="modal-close-btn">
                     <button type="button" onclick="closeUserForm()">
                         <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1205,27 +1067,268 @@
                         </svg>
                     </button>
                 </div>
-                <div class="modal-content">
+                <div class="modal-content-wide">
                     <h2 id="user-modal-title" class="admin-modal-title">เพิ่มผู้ใช้งาน</h2>
                     <form id="user-form" class="auth-form">
                         <input type="hidden" id="user-id">
                         <input type="hidden" id="user-current-role-tab">
-                        <div class="form-group">
-                            <label class="form-label" for="user-email">อีเมล</label>
-                            <input class="form-input" type="email" id="user-email" required>
+
+                        <div class="dashboard-tabs" id="user-form-tabs">
+                            <button type="button" class="dashboard-tab active" data-user-form-tab="account" onclick="switchUserFormTab('account')">บัญชี</button>
+                            <button type="button" class="dashboard-tab" data-user-form-tab="personal" onclick="switchUserFormTab('personal')" id="user-form-tab-personal-label">ข้อมูลส่วนตัว</button>
+                            <button type="button" class="dashboard-tab" data-user-form-tab="work" onclick="switchUserFormTab('work')" id="user-form-tab-work-label">เกี่ยวกับค่าย</button>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="user-password">รหัสผ่าน</label>
-                            <input class="form-input" type="password" id="user-password" placeholder="อย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลข">
+
+                        <div class="create-user-tab-panel" id="user-form-panel-account">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-email">อีเมล</label>
+                                    <input class="form-input" type="email" id="user-email" required>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-password">รหัสผ่าน</label>
+                                    <div class="password-field-wrap">
+                                        <input class="form-input" type="password" id="user-password" placeholder="อย่างน้อย 8 ตัวอักษร" oninput="updateUserPasswordChecklist()">
+                                        <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('user-password', this)">
+                                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <ul class="password-checklist" id="user-password-checklist">
+                                        <li data-rule="length">อย่างน้อย 8 ตัวอักษร</li>
+                                    </ul>
+                                    <p class="password-checklist-hint">และผ่านอย่างน้อย 3 ใน 4 ข้อต่อไปนี้</p>
+                                    <ul class="password-checklist" id="user-password-checklist-categories">
+                                        <li data-rule="lower">ตัวพิมพ์เล็ก (a-z)</li>
+                                        <li data-rule="upper">ตัวพิมพ์ใหญ่ (A-Z)</li>
+                                        <li data-rule="number">ตัวเลข (0-9)</li>
+                                        <li data-rule="special">อักขระพิเศษ (เช่น ! @ # $)</li>
+                                    </ul>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="user-confirm-password">ยืนยันรหัสผ่าน</label>
+                                    <div class="password-field-wrap">
+                                        <input class="form-input" type="password" id="user-confirm-password" placeholder="พิมพ์รหัสผ่านอีกครั้ง">
+                                        <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('user-confirm-password', this)">
+                                            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="user-role-group">
+                                <label class="form-label" for="user-role">บทบาท (Role)</label>
+                                <select class="form-input" id="user-role" onchange="handleUserRoleChange()">
+                                    <option value="STAFF">พี่ค่าย</option>
+                                    <option value="PARTICIPANT">น้องค่าย</option>
+                                </select>
+                                <p class="admin-field-hint">บทบาทถูกกำหนดตั้งแต่ลงทะเบียน ไม่สามารถเปลี่ยนภายหลังได้</p>
+                            </div>
                         </div>
-                        <div class="form-group" id="user-role-group">
-                            <label class="form-label" for="user-role">บทบาท (Role)</label>
-                            <select class="form-input" id="user-role">
-                                <option value="STAFF">พี่ค่าย</option>
-                                <option value="PARTICIPANT">น้องค่าย</option>
-                            </select>
-                            <p class="admin-field-hint">บทบาทถูกกำหนดตั้งแต่ลงทะเบียน ไม่สามารถเปลี่ยนภายหลังได้</p>
+
+                        <div class="create-user-tab-panel hidden" id="user-form-panel-personal">
+                            <div id="user-staff-personal-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-prefix">คำนำหน้า</label>
+                                        <select class="form-input" id="user-staff-prefix">
+                                            <option value="">-- เลือกคำนำหน้า --</option>
+                                            <option value="นาย">นาย</option>
+                                            <option value="นาง">นาง</option>
+                                            <option value="นางสาว">นางสาว</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-academicTitle">คำนำหน้าทางวิชาการ</label>
+                                        <input class="form-input" type="text" id="user-staff-academicTitle" placeholder="เช่น ดร., รศ.ดร.">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-firstName">ชื่อ</label>
+                                        <input class="form-input" type="text" id="user-staff-firstName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-lastName">นามสกุล</label>
+                                        <input class="form-input" type="text" id="user-staff-lastName">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-nickname">ชื่อเล่น</label>
+                                        <input class="form-input" type="text" id="user-staff-nickname">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-birthDate">วันเกิด</label>
+                                        <div id="user-staff-birthDate-selects"></div>
+                                        <input type="hidden" id="user-staff-birthDate">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-phone">เบอร์โทรศัพท์</label>
+                                        <input class="form-input" type="tel" id="user-staff-phone" placeholder="0XX-XXX-XXXX" oninput="handleUserPhoneInput(event)">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-occupationStatus">สถานะ</label>
+                                        <select class="form-input" id="user-staff-occupationStatus" onchange="handleUserStaffOccupationStatusChange()">
+                                            <option value="">-- เลือกสถานะ --</option>
+                                            <option value="working">ประกอบอาชีพ</option>
+                                            <option value="studying">กำลังศึกษา (ระดับอุดมศึกษา)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-grid hidden" id="user-staff-affiliation-group">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-affiliation">สังกัด</label>
+                                        <input class="form-input" type="text" id="user-staff-affiliation" placeholder="เช่น มหาวิทยาลัยราชภัฏชัยภูมิ คณะครุศาสตร์">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-occupation">อาชีพ</label>
+                                        <input class="form-input" type="text" id="user-staff-occupation">
+                                    </div>
+                                </div>
+                                <div class="form-grid hidden" id="user-staff-student-group">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-faculty">คณะ / สำนักวิชา</label>
+                                        <input class="form-input" type="text" id="user-staff-faculty" placeholder="เช่น คณะครุศาสตร์">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-major">สาขาวิชา</label>
+                                        <input class="form-input" type="text" id="user-staff-major" placeholder="เช่น คณิตศาสตร์">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden" id="user-participant-personal-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-prefix">คำนำหน้า</label>
+                                        <select class="form-input" id="user-participant-prefix">
+                                            <option value="">-- เลือกคำนำหน้า --</option>
+                                            <option value="นาย">นาย</option>
+                                            <option value="นาง">นาง</option>
+                                            <option value="นางสาว">นางสาว</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-birthDate">วันเกิด</label>
+                                        <div id="user-participant-birthDate-selects"></div>
+                                        <input type="hidden" id="user-participant-birthDate">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-firstName">ชื่อ</label>
+                                        <input class="form-input" type="text" id="user-participant-firstName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-lastName">นามสกุล</label>
+                                        <input class="form-input" type="text" id="user-participant-lastName">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-nickname">ชื่อเล่น</label>
+                                        <input class="form-input" type="text" id="user-participant-nickname">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-phone">เบอร์โทรศัพท์</label>
+                                        <input class="form-input" type="tel" id="user-participant-phone" placeholder="0XX-XXX-XXXX" oninput="handleUserPhoneInput(event)">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-parentPhone">เบอร์โทรผู้ปกครอง</label>
+                                        <input class="form-input" type="tel" id="user-participant-parentPhone" placeholder="0XX-XXX-XXXX" oninput="handleUserPhoneInput(event)">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="create-user-tab-panel hidden" id="user-form-panel-work">
+                            <div id="user-staff-work-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-department">ฝ่ายงาน</label>
+                                        <select class="form-input" id="user-staff-department">
+                                            <option value="">-- เลือกฝ่ายงาน --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-staff-position">ตำแหน่ง</label>
+                                        <select class="form-input" id="user-staff-position">
+                                            <option value="">-- เลือกตำแหน่ง --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden" id="user-participant-study-fields">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-courseFormat">รูปแบบคอร์สเรียน</label>
+                                        <select class="form-input" id="user-participant-courseFormat">
+                                            <option value="">-- เลือกรูปแบบคอร์ส --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-group">กลุ่ม</label>
+                                        <select class="form-input" id="user-participant-group">
+                                            <option value="">-- เลือกกลุ่ม --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-studyPlan">แผนการเรียน</label>
+                                        <select class="form-input" id="user-participant-studyPlan" onchange="syncStudyPlanOtherVisibility('user-participant-studyPlan', 'user-participant-studyPlanOther-group')">
+                                            <option value="">-- เลือกแผนการเรียน --</option>
+                                            <option value="SCIENCE_MATH">วิทย์-คณิต</option>
+                                            <option value="ARTS_MATH">ศิลป์-คำนวณ</option>
+                                            <option value="ARTS_LANGUAGE">ศิลป์-ภาษา</option>
+                                            <option value="ARTS_SOCIAL">ศิลป์-สังคม</option>
+                                            <option value="OTHER">อื่น ๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group hidden" id="user-participant-studyPlanOther-group">
+                                        <label class="form-label" for="user-participant-studyPlanOther">ระบุแผนการเรียน</label>
+                                        <input class="form-input" type="text" id="user-participant-studyPlanOther" placeholder="เช่น ศิลป์ - กีฬา">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-interestSubjectGroup">กลุ่มวิชาที่สนใจ (เลือกได้มากกว่า 1 ข้อ)</label>
+                                        <select class="form-input" id="user-participant-interestSubjectGroup" multiple size="5" onchange="syncInterestOtherVisibility('user-participant-interestSubjectGroup', 'user-participant-interestSubjectGroupOther-group')">
+                                            <option value="ENGINEERING_TECH">วิศวกรรมศาสตร์</option>
+                                            <option value="SCIENCE">วิทยาศาสตร์</option>
+                                            <option value="HEALTH">สุขภาพ</option>
+                                            <option value="EDUCATION">ศึกษาศาสตร์</option>
+                                            <option value="HUMANITIES_SOCIAL">มนุษยศาสตร์และสังคม</option>
+                                            <option value="ART_DESIGN">ศิลปกรรมศาสตร์</option>
+                                            <option value="MEDIA_DIGITAL_TECH">สื่อและเทคโนโลยีดิจิทัล</option>
+                                            <option value="BUSINESS">บริหารธุรกิจ</option>
+                                            <option value="OTHER">อื่น ๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group hidden" id="user-participant-interestSubjectGroupOther-group">
+                                        <label class="form-label" for="user-participant-interestSubjectGroupOther">ระบุกลุ่มวิชาที่สนใจ</label>
+                                        <input class="form-input" type="text" id="user-participant-interestSubjectGroupOther" placeholder="เช่น นิติศาสตร์">
+                                    </div>
+                                </div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label" for="user-participant-dreamInstitution">สถาบัน/คณะในฝัน</label>
+                                        <input class="form-input" type="text" id="user-participant-dreamInstitution">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="admin-form-actions">
                             <button type="button" class="admin-cancel-btn" onclick="closeUserForm()">ยกเลิก</button>
                             <button type="submit" class="submit-btn admin-submit-btn">บันทึก</button>
@@ -1321,10 +1424,11 @@
                 </div>
                 <div class="modal-content-wide">
                     <h2 id="news-approval-detail-title" class="admin-modal-title">ตัวอย่างประชาสัมพันธ์</h2>
-                    <p class="admin-panel-desc" id="news-approval-detail-subtitle" style="margin: 0.15rem 0 1rem;">แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก</p>
+                    <p class="admin-panel-desc" id="news-approval-detail-subtitle" style="margin: 0.15rem 0 1rem;">แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก หากกดอนุมัติ</p>
                     <div class="approval-detail-grid" id="news-approval-detail-grid"></div>
+                    <!-- กรอบเส้นประ = พื้นที่ที่ render ด้วย markup/คลาสเดียวกับหน้ารายละเอียดข่าวจริง (ดู viewNewsDetail() ใน js/pages/news.js) ให้เหมือนจริงที่สุด ไม่ใช่แค่ list ข้อมูลดิบ -->
                     <div class="news-live-preview-frame" id="news-approval-detail-preview"></div>
-                    <div class="admin-confirm-actions hidden" id="news-approval-detail-actions" style="margin-top: 1.5rem;">
+                    <div class="admin-confirm-actions" id="news-approval-detail-actions" style="margin-top: 1.5rem;">
                         <button type="button" class="admin-approve-btn" id="news-approval-detail-approve-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">อนุมัติ</button>
                         <button type="button" class="admin-reject-btn" id="news-approval-detail-reject-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">ปฏิเสธ</button>
                     </div>
@@ -1349,7 +1453,7 @@
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/admin.js?v=20260923-1"></script>
+    <script src="js/admin.js?v=20260923-2"></script>
     <script src="js/admin-dashboard.js?v=20260919-2"></script>
 </body>
 

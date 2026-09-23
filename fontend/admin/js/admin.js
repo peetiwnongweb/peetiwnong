@@ -140,28 +140,10 @@ function loadAdminUser() {
             };
 
             applyAdminTaskMenuVisibility(user);
-            applyAdminHomeNavAccess(user);
         })
         .catch(() => {
             window.location.href = '/';
         });
-}
-
-// Admin (พี่ค่ายที่ isAdmin) มีสิทธิ์ในกลุ่ม "Home" แค่ ประชาสัมพันธ์ กับ กำหนดการ - ทำเนียบประธานค่ายเป็นของ WebManager เท่านั้น
-// (WebManager ที่แวะเข้า /admin ยังเห็นครบทุกแท็บเหมือนเดิม)
-function applyAdminHomeNavAccess(user) {
-    const isWebManager = !!(user && user.role === 'WEBMANAGER');
-    ['committee'].forEach((tab) => {
-        const navChild = document.getElementById(`admin-tab-${tab}`);
-        if (navChild) navChild.classList.toggle('hidden', !isWebManager);
-    });
-    if (isWebManager) return;
-
-    // ถ้าแท็บที่เปิดอยู่ตอนนี้ดันเป็นแท็บที่เพิ่งถูกซ่อน ให้สลับไปแท็บที่ Admin เข้าได้แทน
-    const activeTab = document.querySelector('#home-subnav .admin-shell-nav-child.active');
-    if (activeTab && activeTab.id === 'admin-tab-committee') {
-        switchAdminTab('news');
-    }
 }
 
 // เหมือน applyStaffTaskMenuVisibility ใน auth.js: กรองรายการ "งาน" ตามฝ่ายที่พี่ค่ายสังกัด (Host ไม่มีฝ่ายจึงไม่เห็นเมนูนี้เลย)
@@ -278,8 +260,8 @@ function renderAdminNotifications(items, lastSeen) {
 // ใช้ข้อมูลที่ loadActivityLogs('admin')/loadActivityLogs('user') โหลดมาอยู่แล้ว (เรียงจากใหม่สุดก่อนเสมอ) แทนการยิง /api/activity-logs แยกอีกรอบซ้ำซ้อน
 // รายการล่าสุดของ 2 scope นี้รวมกัน = รายการล่าสุดจริงของทั้งระบบเสมอ (ฝั่ง backend ก็แบ่งแค่ 2 scope นี้เหมือนกัน)
 function checkAdminNotificationBadge() {
-    const latestAdmin = adminActivityLogCache.admin?.[0]?.createdAt;
-    const latestUser = adminActivityLogCache.user?.[0]?.createdAt;
+    const latestAdmin = activityLogItemsCache.admin?.[0]?.createdAt;
+    const latestUser = activityLogItemsCache.user?.[0]?.createdAt;
     const timestamps = [latestAdmin, latestUser].filter(Boolean).map((d) => new Date(d).getTime());
     if (timestamps.length === 0) return;
     const latest = Math.max(...timestamps);
@@ -348,7 +330,6 @@ const ADMIN_NAV_GROUPS = {
 const loadedAdminKeys = new Set();
 
 const ADMIN_LAZY_LOADERS = {
-    committee: () => loadCommittees(),
     news: () => loadNews(),
     schedule: () => loadSchedules(),
     'approve-staff': () => loadUsers('STAFF'),
@@ -357,16 +338,16 @@ const ADMIN_LAZY_LOADERS = {
     'staff-users': () => loadUsers('STAFF'),
     'participant-users': () => loadUsers('PARTICIPANT'),
     users: () => loadUsers('ALL'),
+    lookups: () => loadLookupOptions(),
 };
 
 const ADMIN_TAB_LOAD_KEYS = {
     news: ['news'],
     schedule: ['schedule'],
-    committee: ['committee'],
-    'approve-staff': ['approve-staff'],
-    'approve-participant': ['approve-participant'],
-    'staff-users': ['staff-users'],
-    'participant-users': ['participant-users'],
+    'approve-staff': ['approve-staff', 'lookups'],
+    'approve-participant': ['approve-participant', 'lookups'],
+    'staff-users': ['staff-users', 'lookups'],
+    'participant-users': ['participant-users', 'lookups'],
     'approve-news': ['approve-news'],
     users: ['users'],
 };
@@ -512,16 +493,8 @@ function adminConfirmResolve(result) {
 
 
 // ==========================================
-// ทำเนียบประธานค่าย (Committee)
+// ตัวช่วยตาราง (ไอคอนเรียงลำดับ / ปุ่มแก้ไข-ลบในแถว / เลขหน้า) ใช้ร่วมกันทุกตาราง
 // ==========================================
-const COMMITTEE_PAGE_SIZE = 20;
-let committeeItems = [];
-let committeeCurrentPage = 1;
-let committeeSelectedIds = new Set();
-let committeeSortColumn = 'generationNo';
-let committeeSortDirection = 'asc';
-
-const COMMITTEE_SORTABLE_COLUMNS = ['generationNo', 'fullName', 'nickname'];
 const SORT_ICON_NEUTRAL = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.53 3.47a.75.75 0 00-1.06 0L6.22 6.72a.75.75 0 001.06 1.06L10 5.06l2.72 2.72a.75.75 0 101.06-1.06l-3.25-3.25zm-4.31 9.81l3.25 3.25a.75.75 0 001.06 0l3.25-3.25a.75.75 0 10-1.06-1.06L10 14.94l-2.72-2.72a.75.75 0 00-1.06 1.06z" clip-rule="evenodd" /></svg>';
 const SORT_ICON_ASC = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.47 6.47a.75.75 0 011.06 0l4.25 4.25a.75.75 0 01-1.06 1.06L10 8.06l-3.72 3.72a.75.75 0 01-1.06-1.06l4.25-4.25z" clip-rule="evenodd" /></svg>';
 const SORT_ICON_DESC = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.53 13.53a.75.75 0 01-1.06 0l-4.25-4.25a.75.75 0 111.06-1.06L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25z" clip-rule="evenodd" /></svg>';
@@ -541,236 +514,6 @@ function adminActionButtonsHtml() {
             </button>
         </div>
     `;
-}
-
-function loadCommittees() {
-    Loader.renderSkeletonTableRows(document.getElementById('committee-table-body'), 5, 4);
-    fetch('/api/presidents')
-        .then((res) => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-        .then((items) => {
-            committeeItems = items;
-            committeeCurrentPage = 1;
-            committeeSelectedIds.clear();
-            renderCommitteeTable();
-        })
-        .catch((error) => {
-            console.error('โหลดข้อมูลประธานค่ายไม่สำเร็จ:', error);
-            showToast('โหลดข้อมูลประธานค่ายไม่สำเร็จ', true);
-        });
-}
-
-function getFilteredCommitteeItems() {
-    const searchInput = document.getElementById('committee-search');
-    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    let items = committeeItems;
-    if (query) {
-        items = items.filter((item) => {
-            const text = `${item.generationNos.join(' ')} ${item.fullName} ${item.nickname}`.toLowerCase();
-            return text.includes(query);
-        });
-    }
-    return sortCommitteeItems(items);
-}
-
-function sortCommitteeItems(items) {
-    const direction = committeeSortDirection === 'asc' ? 1 : -1;
-    return [...items].sort((a, b) => {
-        // คอลัมน์ "ครั้งที่" เก็บเป็น array (generationNos) เรียงตามครั้งที่น้อยที่สุด แทนการเทียบตัวเลขตรง ๆ
-        const valA = committeeSortColumn === 'generationNo' ? Math.min(...a.generationNos) : a[committeeSortColumn];
-        const valB = committeeSortColumn === 'generationNo' ? Math.min(...b.generationNos) : b[committeeSortColumn];
-        if (typeof valA === 'number' && typeof valB === 'number') return (valA - valB) * direction;
-        return String(valA).localeCompare(String(valB), 'th') * direction;
-    });
-}
-
-function setCommitteeSort(column) {
-    if (committeeSortColumn === column) {
-        committeeSortDirection = committeeSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-        committeeSortColumn = column;
-        committeeSortDirection = 'asc';
-    }
-    committeeCurrentPage = 1;
-    renderCommitteeTable();
-}
-
-function updateCommitteeSortIndicators() {
-    COMMITTEE_SORTABLE_COLUMNS.forEach((column) => {
-        const icon = document.querySelector(`[data-sort-icon-committee="${column}"]`);
-        if (!icon) return;
-        if (committeeSortColumn !== column) {
-            icon.classList.remove('active');
-            icon.innerHTML = SORT_ICON_NEUTRAL;
-        } else {
-            icon.classList.add('active');
-            icon.innerHTML = committeeSortDirection === 'asc' ? SORT_ICON_ASC : SORT_ICON_DESC;
-        }
-    });
-}
-
-function getCurrentCommitteeId() {
-    const visibleItems = committeeItems.filter((item) => item.isVisible !== false);
-    if (visibleItems.length === 0) return null;
-    return visibleItems.reduce((max, item) => (Math.max(...item.generationNos) > Math.max(...max.generationNos) ? item : max), visibleItems[0]).id;
-}
-
-function renderCommitteeTable() {
-    const tbody = document.getElementById('committee-table-body');
-    const empty = document.getElementById('committee-empty');
-    const noMatch = document.getElementById('committee-no-match');
-    if (!tbody || !empty) return;
-
-    const filtered = getFilteredCommitteeItems();
-    const totalPages = Math.max(1, Math.ceil(filtered.length / COMMITTEE_PAGE_SIZE));
-    committeeCurrentPage = Math.min(Math.max(1, committeeCurrentPage), totalPages);
-    const start = (committeeCurrentPage - 1) * COMMITTEE_PAGE_SIZE;
-    const pageItems = filtered.slice(start, start + COMMITTEE_PAGE_SIZE);
-    const currentId = getCurrentCommitteeId();
-
-    tbody.innerHTML = '';
-    empty.classList.toggle('hidden', committeeItems.length !== 0);
-    if (noMatch) noMatch.classList.toggle('hidden', !(committeeItems.length > 0 && filtered.length === 0));
-
-    pageItems.forEach((item) => {
-        const row = document.createElement('tr');
-        const checked = committeeSelectedIds.has(item.id);
-        const isVisible = item.isVisible !== false;
-        row.innerHTML = `
-            <td>
-                <label class="admin-checkbox-wrap">
-                    <input type="checkbox" class="admin-row-checkbox" ${checked ? 'checked' : ''}>
-                    <span class="custom-checkbox"></span>
-                </label>
-            </td>
-            <td><img class="admin-row-thumb" src="${window.PTN_MEDIA_URL(item.imageUrl) || window.PTN_PLACEHOLDER_IMAGE}" alt=""></td>
-            <td class="admin-cell-strong">${item.generationNos.join(', ')}</td>
-            <td class="admin-cell-strong">${item.fullName}</td>
-            <td>${item.nickname}</td>
-            <td>
-                <div class="admin-status-cell">
-                    <label class="admin-toggle-switch small">
-                        <input type="checkbox" class="admin-visibility-toggle" ${isVisible ? 'checked' : ''}>
-                    </label>
-                    ${item.id === currentId ? '<span class="admin-badge admin-badge-current">ปัจจุบัน</span>' : ''}
-                </div>
-            </td>
-            <td>${adminActionButtonsHtml()}</td>
-        `;
-        row.querySelector('.admin-row-checkbox').addEventListener('change', (e) => toggleCommitteeRowSelect(item.id, e.target.checked));
-        row.querySelector('.admin-visibility-toggle').addEventListener('change', (e) => toggleCommitteeVisibility(item, e.target.checked));
-        row.querySelector('[data-action="edit"]').addEventListener('click', () => openCommitteeForm(item));
-        row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteCommittee(item));
-        tbody.appendChild(row);
-    });
-
-    updateCommitteePagination(filtered.length, totalPages);
-    updateCommitteeBulkBar();
-    updateCommitteeSelectAllState(pageItems);
-    updateCommitteeSortIndicators();
-}
-
-function toggleCommitteeVisibility(item, isVisible) {
-    fetch(`/api/presidents/${item.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVisible }),
-    })
-        .then((res) => {
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.json();
-        })
-        .then(() => {
-            showToast(
-                isVisible ? `เปิดแสดงผล "${item.fullName}" แล้ว` : `ซ่อน "${item.fullName}" จากหน้าเว็บแล้ว`,
-                false,
-                { onUndo: () => toggleCommitteeVisibility(item, !isVisible) }
-            );
-            loadCommittees();
-        })
-        .catch((error) => {
-            console.error(error);
-            showToast('อัปเดตสถานะไม่สำเร็จ', true);
-            loadCommittees();
-        });
-}
-
-function toggleCommitteeRowSelect(id, checked) {
-    if (checked) committeeSelectedIds.add(id);
-    else committeeSelectedIds.delete(id);
-    updateCommitteeBulkBar();
-    updateCommitteeSelectAllState();
-}
-
-function toggleCommitteeSelectAll(checked) {
-    const filtered = getFilteredCommitteeItems();
-    const start = (committeeCurrentPage - 1) * COMMITTEE_PAGE_SIZE;
-    const pageItems = filtered.slice(start, start + COMMITTEE_PAGE_SIZE);
-    pageItems.forEach((item) => {
-        if (checked) committeeSelectedIds.add(item.id);
-        else committeeSelectedIds.delete(item.id);
-    });
-    renderCommitteeTable();
-}
-
-function updateCommitteeSelectAllState(currentPageItems) {
-    const selectAll = document.getElementById('committee-select-all');
-    if (!selectAll) return;
-
-    let pageItems = currentPageItems;
-    if (!pageItems) {
-        const filtered = getFilteredCommitteeItems();
-        const start = (committeeCurrentPage - 1) * COMMITTEE_PAGE_SIZE;
-        pageItems = filtered.slice(start, start + COMMITTEE_PAGE_SIZE);
-    }
-    selectAll.checked = pageItems.length > 0 && pageItems.every((item) => committeeSelectedIds.has(item.id));
-}
-
-function updateCommitteeBulkBar() {
-    const btn = document.getElementById('committee-bulk-delete-btn');
-    const countEl = document.getElementById('committee-selected-count');
-    const n = committeeSelectedIds.size;
-
-    if (btn) btn.disabled = n === 0;
-    if (countEl) {
-        countEl.textContent = `เลือกแล้ว ${n} รายการ`;
-        countEl.classList.toggle('hidden', n === 0);
-    }
-}
-
-async function bulkDeleteCommittees() {
-    const ids = Array.from(committeeSelectedIds);
-    if (ids.length === 0) return;
-    const confirmed = await adminConfirm(`ลบข้อมูลประธานค่ายที่เลือกไว้ ${ids.length} รายการ ใช่หรือไม่?`);
-    if (!confirmed) return;
-
-    Promise.all(ids.map((id) => fetch(`/api/presidents/${id}`, { method: 'DELETE' })))
-        .then((results) => {
-            const failedCount = results.filter((res) => !res.ok && res.status !== 204).length;
-            showToast(
-                failedCount > 0 ? `ลบสำเร็จบางส่วน (ล้มเหลว ${failedCount} รายการ)` : 'ลบข้อมูลที่เลือกสำเร็จ',
-                failedCount > 0
-            );
-            loadCommittees();
-        })
-        .catch((error) => {
-            console.error(error);
-            showToast('ลบข้อมูลที่เลือกไม่สำเร็จ', true);
-        });
-}
-
-function updateCommitteePagination(filteredCount, totalPages) {
-    const pagination = document.getElementById('committee-pagination');
-    const prevBtn = document.getElementById('committee-prev-btn');
-    const nextBtn = document.getElementById('committee-next-btn');
-    if (!pagination || !prevBtn || !nextBtn) return;
-
-    pagination.classList.toggle('hidden', filteredCount <= COMMITTEE_PAGE_SIZE);
-    prevBtn.disabled = committeeCurrentPage <= 1;
-    nextBtn.disabled = committeeCurrentPage >= totalPages;
-    renderCommitteePageNumbers(totalPages);
 }
 
 function getPaginationRange(current, total) {
@@ -800,183 +543,190 @@ function getPaginationRange(current, total) {
     return rangeWithDots;
 }
 
-function renderCommitteePageNumbers(totalPages) {
-    const container = document.getElementById('committee-page-numbers');
-    if (!container) return;
+// ==========================================
+// กลุ่มเช็กบ็อกซ์เลือกได้หลายข้อ (ครอบ <select multiple> เดิมไว้) - แทนที่กล่องลิสต์ยาวมีสกรอลบาร์แบบ native ด้วยการ์ดเช็กบ็อกซ์
+// ดีไซน์/คำอธิบายเหมือนช่อง "กลุ่มวิชาที่สนใจ" ในหน้าลงทะเบียนสาธารณะ (form.html) เป๊ะ ให้ UI ตรงกันทั้งสองฝั่ง
+// ซ่อน <select> ตัวจริงไว้ (id/options เดิมทุกอย่าง) แล้ววาดการ์ดมาคลุมแทน โค้ดที่อ่าน/เขียนค่าจาก select.selectedOptions หรือ option.selected ที่มีอยู่เดิมยังใช้ได้ปกติ ไม่ต้องแก้
+// ==========================================
+const INTEREST_SUBJECT_GROUP_DESCRIPTIONS = {
+    ENGINEERING_TECH: 'เทคโนโลยี, คอมพิวเตอร์ และการคำนวณ',
+    SCIENCE: 'ฟิสิกส์, เคมี, ชีววิทยา และวิทยาศาสตร์ทั่วไป',
+    HEALTH: 'แพทยศาสตร์, พยาบาล, เภสัช และสาธารณสุข',
+    EDUCATION: 'ครุศาสตร์และการสอน',
+    HUMANITIES_SOCIAL: 'ภาษาอังกฤษ, ประวัติศาสตร์, สังคมศาสตร์',
+    ART_DESIGN: 'การคิดเชิงสร้างสรรค์, การออกแบบ, ทัศนศิลป์',
+    MEDIA_DIGITAL_TECH: 'สื่อสารมวลชนและดิจิทัลคอนเทนต์',
+    BUSINESS: 'การจัดการ, การตลาด, การเงินและการบัญชี',
+    OTHER: 'สาขาอื่นที่ไม่ได้ระบุไว้ข้างต้น',
+};
 
-    container.innerHTML = '';
-    getPaginationRange(committeeCurrentPage, totalPages).forEach((page) => {
-        if (page === '...') {
-            const span = document.createElement('span');
-            span.className = 'admin-page-ellipsis';
-            span.textContent = '...';
-            container.appendChild(span);
-            return;
-        }
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'admin-page-number-btn';
-        btn.textContent = page;
-        btn.classList.toggle('active', page === committeeCurrentPage);
-        btn.addEventListener('click', () => goToCommitteePage(page));
-        container.appendChild(btn);
+const multiCheckboxGroupRefreshers = {};
+
+function initMultiCheckboxGroup(selectId) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.classList.add('hidden');
+
+    const group = document.createElement('div');
+    group.className = 'multi-checkbox-group';
+    group.innerHTML = Array.from(select.options).map((option, index) => `
+        <label class="multi-checkbox-option${option.selected ? ' selected' : ''}">
+            <input type="checkbox" data-option-index="${index}" ${option.selected ? 'checked' : ''}>
+            <div class="multi-checkbox-option-content">
+                <span class="multi-checkbox-option-title">${escapeHtml(option.textContent)}</span>
+                ${INTEREST_SUBJECT_GROUP_DESCRIPTIONS[option.value] ? `<span class="multi-checkbox-option-desc">${escapeHtml(INTEREST_SUBJECT_GROUP_DESCRIPTIONS[option.value])}</span>` : ''}
+            </div>
+        </label>
+    `).join('');
+
+    select.insertAdjacentElement('afterend', group);
+
+    group.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+            select.options[Number(checkbox.dataset.optionIndex)].selected = checkbox.checked;
+            checkbox.closest('.multi-checkbox-option').classList.toggle('selected', checkbox.checked);
+            select.dispatchEvent(new Event('change'));
+        });
+    });
+
+    // เรียกอันนี้จากภายนอกทุกครั้งที่มีโค้ดอื่นตั้งค่า option.selected ตรง ๆ (เช่นตอนเปิดฟอร์มแก้ไขแล้วเติมค่าเดิม) ให้เช็กบ็อกซ์/การ์ดตามทัน
+    multiCheckboxGroupRefreshers[selectId] = () => {
+        const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+        Array.from(select.options).forEach((option, index) => {
+            checkboxes[index].checked = option.selected;
+            checkboxes[index].closest('.multi-checkbox-option').classList.toggle('selected', option.selected);
+        });
+    };
+}
+
+function refreshMultiCheckboxGroup(selectId) {
+    multiCheckboxGroupRefreshers[selectId]?.();
+}
+
+// คำอธิบายฝ่ายงานแต่ละฝ่าย เหมือนช่อง "ฝ่ายงานที่สนใจร่วมทำงาน" ในหน้าลงทะเบียนพี่ค่าย (staff-form.html) เป๊ะ - ผูกกับ "ชื่อฝ่าย" เพราะตารางฝ่ายงานไม่มีคอลัมน์คำอธิบายเก็บไว้
+const DEPARTMENT_DESCRIPTIONS = {
+    'ฝ่ายวิชาการ': 'ออกแบบเนื้อหาและดูแลกิจกรรมด้านวิชาการ',
+    'ฝ่ายกิจกรรมและสันทนาการ': 'ออกแบบและดูแลกิจกรรมนันทนาการ',
+    'ฝ่ายปกครองบริการและอาคารสถานที่': 'ดูแลความปลอดภัยและสถานที่',
+    'ฝ่ายเทคโนโลยีและประชาสัมพันธ์': 'ดูแลระบบ สื่อ และประชาสัมพันธ์',
+    'ฝ่ายงานพยาบาล': 'ดูแลสุขภาพและปฐมพยาบาล',
+};
+
+// การ์ดเลือกได้ข้อเดียว (ครอบ <select> เดิมไว้ เหมือน initMultiCheckboxGroup แต่ใช้ radio แทน checkbox) - ใช้กับ "ฝ่ายงาน" ในฟอร์มแก้ไขพี่ค่าย ให้ดีไซน์ตรงกับหน้าลงทะเบียน
+// ต้องเรียกหลัง select มี <option> ครบแล้วเท่านั้น (ฝ่ายงานเติมแบบ async จาก API ไม่ใช่ hardcode ไว้ใน HTML แบบกลุ่มวิชาที่สนใจ)
+const singleCardSelectRefreshers = {};
+
+function initSingleCardSelect(selectId, descriptions = {}) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.classList.add('hidden');
+
+    const radioName = `${selectId}-card`;
+    const group = document.createElement('div');
+    group.className = 'multi-checkbox-group';
+    group.innerHTML = Array.from(select.options)
+        .filter((option) => option.value)
+        .map((option) => `
+            <label class="multi-checkbox-option${option.selected ? ' selected' : ''}">
+                <input type="radio" name="${radioName}" value="${escapeHtml(option.value)}" ${option.selected ? 'checked' : ''}>
+                <div class="multi-checkbox-option-content">
+                    <span class="multi-checkbox-option-title">${escapeHtml(option.textContent)}</span>
+                    ${descriptions[option.textContent] ? `<span class="multi-checkbox-option-desc">${escapeHtml(descriptions[option.textContent])}</span>` : ''}
+                </div>
+            </label>
+        `).join('');
+
+    select.insertAdjacentElement('afterend', group);
+
+    group.querySelectorAll('input[type="radio"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            select.value = radio.value;
+            group.querySelectorAll('.multi-checkbox-option').forEach((card) => {
+                card.classList.toggle('selected', card.querySelector('input[type="radio"]').checked);
+            });
+            select.dispatchEvent(new Event('change'));
+        });
+    });
+
+    // เรียกอันนี้จากภายนอกทุกครั้งที่มีโค้ดอื่นตั้งค่า select.value ตรง ๆ (เช่นตอนเปิดฟอร์มแก้ไขแล้วเติมค่าเดิม) ให้การ์ดตามทัน
+    singleCardSelectRefreshers[selectId] = () => {
+        group.querySelectorAll('input[type="radio"]').forEach((radio) => {
+            radio.checked = radio.value === select.value;
+            radio.closest('.multi-checkbox-option').classList.toggle('selected', radio.checked);
+        });
+    };
+}
+
+function refreshSingleCardSelect(selectId) {
+    singleCardSelectRefreshers[selectId]?.();
+}
+
+// ==========================================
+// ตัวเลือกฝ่ายงาน/ตำแหน่ง/คอร์สเรียน/กลุ่ม ในฟอร์ม "จัดการข้อมูลผู้ใช้" (แก้ไขพี่ค่าย/น้องค่าย) - เติม <option> จาก API ให้ select ที่มีอยู่แล้วในหน้า
+// ==========================================
+function populateSelectOptions(selectId, items) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    items.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.name;
+        select.appendChild(option);
     });
 }
 
-function goToCommitteePage(page) {
-    committeeCurrentPage = page;
-    renderCommitteeTable();
-}
-
-function changeCommitteePage(delta) {
-    committeeCurrentPage += delta;
-    renderCommitteeTable();
-}
-
-// ชิปตัวเลข "ครั้งที่" ของฟอร์มที่เปิดอยู่ตอนนี้ (คนเดียวกันดำรงตำแหน่งได้หลายครั้ง ไม่ต้องสร้างข้อมูลซ้ำ)
-let committeeGenerationChips = [];
-
-function renderCommitteeGenerationChips() {
-    const container = document.getElementById('committee-generationNos-chips');
-    if (!container) return;
-    container.innerHTML = committeeGenerationChips
-        .map((n) => `
-            <span class="generation-chip">
-                ครั้งที่ ${n}
-                <button type="button" class="generation-chip-remove" aria-label="ลบครั้งที่ ${n}" onclick="removeCommitteeGenerationChip(${n})">&times;</button>
-            </span>
-        `)
-        .join('');
-}
-
-function addCommitteeGenerationChip() {
-    const input = document.getElementById('committee-generationNo-add-input');
-    const value = Number(input.value);
-
-    if (!input.value || !Number.isInteger(value) || value < 1) {
-        showToast('กรุณาใส่ครั้งที่เป็นจำนวนเต็มบวก', true);
-        return;
-    }
-    if (committeeGenerationChips.includes(value)) {
-        showToast(`มีครั้งที่ ${value} อยู่แล้ว`, true);
-        return;
-    }
-
-    committeeGenerationChips.push(value);
-    committeeGenerationChips.sort((a, b) => a - b);
-    renderCommitteeGenerationChips();
-    input.value = '';
-    input.focus();
-}
-
-function removeCommitteeGenerationChip(value) {
-    committeeGenerationChips = committeeGenerationChips.filter((n) => n !== value);
-    renderCommitteeGenerationChips();
-}
-
-// กด Enter ในช่องเพิ่มครั้งที่ = เพิ่มชิป ไม่ใช่ submit ฟอร์มทั้งหมด
-function handleCommitteeGenerationInputKeydown(event) {
-    if (event.key !== 'Enter') return;
-    event.preventDefault();
-    addCommitteeGenerationChip();
-}
-
-function openCommitteeForm(item) {
-    const form = document.getElementById('committee-form');
-    const error = document.getElementById('committee-form-error');
-    form.reset();
-    error.classList.add('hidden');
-
-    document.getElementById('committee-modal-title').textContent = item ? 'แก้ไขประธานค่าย' : 'เพิ่มประธานค่าย';
-    document.getElementById('committee-id').value = item ? item.id : '';
-    committeeGenerationChips = item ? [...item.generationNos].sort((a, b) => a - b) : [];
-    renderCommitteeGenerationChips();
-    document.getElementById('committee-fullName').value = item ? item.fullName : '';
-    document.getElementById('committee-nickname').value = item ? item.nickname : '';
-    document.getElementById('committee-imageUrl').value = item && item.imageUrl ? item.imageUrl : '';
-    document.getElementById('committee-university').value = item && item.university ? item.university : '';
-    document.getElementById('committee-universityLogoUrl').value = item && item.universityLogoUrl ? item.universityLogoUrl : '';
-    document.getElementById('committee-faculty').value = item && item.faculty ? item.faculty : '';
-    document.getElementById('committee-major').value = item && item.major ? item.major : '';
-    document.getElementById('committee-isVisible').checked = item ? item.isVisible !== false : true;
-
-    document.getElementById('committee-modal').classList.remove('hidden');
-}
-
-function closeCommitteeForm() {
-    document.getElementById('committee-modal').classList.add('hidden');
-}
-
-function submitCommitteeForm(event) {
-    event.preventDefault();
-
-    const id = document.getElementById('committee-id').value;
-    const errorBox = document.getElementById('committee-form-error');
-    errorBox.classList.add('hidden');
-
-    if (committeeGenerationChips.length === 0) {
-        errorBox.textContent = 'ต้องระบุครั้งที่อย่างน้อย 1 ครั้ง';
-        errorBox.classList.remove('hidden');
-        return;
-    }
-
-    const payload = {
-        generationNos: committeeGenerationChips,
-        fullName: document.getElementById('committee-fullName').value.trim(),
-        nickname: document.getElementById('committee-nickname').value.trim(),
-        imageUrl: document.getElementById('committee-imageUrl').value.trim(),
-        university: document.getElementById('committee-university').value.trim(),
-        universityLogoUrl: document.getElementById('committee-universityLogoUrl').value.trim(),
-        faculty: document.getElementById('committee-faculty').value.trim(),
-        major: document.getElementById('committee-major').value.trim(),
-        isVisible: document.getElementById('committee-isVisible').checked,
-    };
-
-    const url = id ? `/api/presidents/${id}` : '/api/presidents';
-    const method = id ? 'PUT' : 'POST';
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    Loader.setButtonLoading(submitBtn, 'กำลังบันทึก...');
-
-    fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    })
-        .then(async (res) => {
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.error || `HTTP ${res.status}`);
-            }
-            return res.json();
+function loadLookupOptions() {
+    fetch('/api/lookups/departments')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((items) => {
+            // เรียงตามชื่อ (asc) ตามปกติ แต่ดันฝ่ายวิชาการขึ้นมาอยู่การ์ดแรกเสมอ (เหมือนลิสต์หัวหน้าฝ่ายตอนสร้างค่าย) ฝ่ายที่ผูกกับระบบวิชาการโดยตรง ให้เห็นก่อนฝ่ายอื่น
+            const sortedItems = [...items].sort((a, b) => {
+                if (a.name === 'ฝ่ายวิชาการ') return -1;
+                if (b.name === 'ฝ่ายวิชาการ') return 1;
+                return 0;
+            });
+            populateSelectOptions('user-staff-department', sortedItems);
+            initSingleCardSelect('user-staff-department', DEPARTMENT_DESCRIPTIONS);
         })
-        .then(() => {
-            closeCommitteeForm();
-            showToast(id ? 'แก้ไขข้อมูลประธานค่ายสำเร็จ' : 'เพิ่มประธานค่ายสำเร็จ');
-            loadCommittees();
+        .catch((error) => console.error('โหลดรายชื่อฝ่ายงานไม่สำเร็จ:', error));
+
+    fetch('/api/lookups/positions')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((items) => {
+            populateSelectOptions('user-staff-position', items);
         })
-        .catch((error) => {
-            errorBox.textContent = error.message;
-            errorBox.classList.remove('hidden');
+        .catch((error) => console.error('โหลดรายชื่อตำแหน่งไม่สำเร็จ:', error));
+
+    fetch('/api/lookups/course-formats')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((items) => {
+            populateSelectOptions('user-participant-courseFormat', items);
         })
-        .finally(() => {
-            Loader.clearButtonLoading(submitBtn);
-        });
+        .catch((error) => console.error('โหลดรูปแบบคอร์สเรียนไม่สำเร็จ:', error));
+
+    fetch('/api/lookups/groups')
+        .then((res) => (res.ok ? res.json() : []))
+        .then((items) => {
+            populateSelectOptions('user-participant-group', items);
+        })
+        .catch((error) => console.error('โหลดรายชื่อกลุ่มไม่สำเร็จ:', error));
 }
 
-async function deleteCommittee(item) {
-    const confirmed = await adminConfirm(`ลบ "${item.fullName}" (ครั้งที่ ${item.generationNos.join(', ')}) ใช่หรือไม่?`);
-    if (!confirmed) return;
+// สลับโชว์/ซ่อนช่อง "ระบุกลุ่มวิชาที่สนใจ" ตามที่เลือก "OTHER" ในกล่องกลุ่มวิชาที่สนใจ (multi-select) หรือไม่ ใช้ร่วมกันทั้งฟอร์มสร้าง/แก้ไขน้องค่าย
+function syncInterestOtherVisibility(selectId, groupId) {
+    const select = document.getElementById(selectId);
+    const group = document.getElementById(groupId);
+    if (!select || !group) return;
+    const isOther = Array.from(select.selectedOptions).some((option) => option.value === 'OTHER');
+    group.classList.toggle('hidden', !isOther);
+}
 
-    fetch(`/api/presidents/${item.id}`, { method: 'DELETE' })
-        .then((res) => {
-            if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
-            showToast('ลบข้อมูลประธานค่ายสำเร็จ');
-            loadCommittees();
-        })
-        .catch((error) => {
-            console.error(error);
-            showToast('ลบข้อมูลไม่สำเร็จ', true);
-        });
+// สลับโชว์/ซ่อนช่อง "ระบุแผนการเรียน" ตามที่เลือกในดรอปดาวน์แผนการเรียน ใช้ร่วมกันทั้งฟอร์มสร้าง/แก้ไขน้องค่าย
+function syncStudyPlanOtherVisibility(selectId, groupId) {
+    const select = document.getElementById(selectId);
+    const group = document.getElementById(groupId);
+    if (!select || !group) return;
+    group.classList.toggle('hidden', select.value !== 'OTHER');
 }
 
 // ==========================================
@@ -1649,9 +1399,7 @@ function renderNewsPreviewModal(item, { showApprovalActions = false } = {}) {
     `;
 
     document.getElementById('news-approval-detail-title').textContent = 'ตัวอย่างประชาสัมพันธ์';
-    document.getElementById('news-approval-detail-subtitle').innerHTML = showApprovalActions
-        ? `สถานะ: ${NEWS_APPROVAL_STATUS_BADGE[item.approvalStatus] || ''}`
-        : 'แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก';
+    document.getElementById('news-approval-detail-subtitle').innerHTML = `สถานะ: ${NEWS_APPROVAL_STATUS_BADGE[item.approvalStatus] || ''}`;
 
     const actionsWrap = document.getElementById('news-approval-detail-actions');
     if (actionsWrap) actionsWrap.classList.toggle('hidden', !showApprovalActions);
@@ -2771,11 +2519,108 @@ function goToUserPage(role = 'ALL', page) {
     renderUserTable(role);
 }
 
-function openUserForm(item = null, role = 'ALL') {
+function handleUserRoleChange() {
+    const isStaff = document.getElementById('user-role').value === 'STAFF';
+
+    document.getElementById('user-staff-personal-fields').classList.toggle('hidden', !isStaff);
+    document.getElementById('user-participant-personal-fields').classList.toggle('hidden', isStaff);
+    document.getElementById('user-staff-work-fields').classList.toggle('hidden', !isStaff);
+    document.getElementById('user-participant-study-fields').classList.toggle('hidden', isStaff);
+}
+
+// แถบแท็บ "บัญชีเข้าสู่ระบบ / ข้อมูลส่วนตัว / ข้อมูลการทำงาน" ใน modal แก้ไข/เพิ่มผู้ใช้งาน ใช้คลาสเดียวกับแท็บแดชบอร์ด (.dashboard-tabs/.dashboard-tab)
+function switchUserFormTab(tab) {
+    document.querySelectorAll('#user-form-tabs .dashboard-tab').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.userFormTab === tab);
+    });
+    ['account', 'personal', 'work'].forEach((t) => {
+        document.getElementById(`user-form-panel-${t}`).classList.toggle('hidden', t !== tab);
+    });
+}
+
+// สลับโชว์/ซ่อนช่องสังกัด+อาชีพ / คณะ+สาขา ตามสถานะที่เลือก เหมือนหน้าลงทะเบียนพี่ค่าย (staff-form.html: handleOccupationStatusChange) เป๊ะ
+// แยกจาก handleUserStaffOccupationStatusChange() ด้านล่าง เพราะฟังก์ชันนี้ไม่ล้าง/เติมค่าใด ๆ ให้เรียกตอน populate ฟอร์มแก้ไขได้อย่างปลอดภัย (ไม่ทับข้อมูลจริงที่โหลดมา)
+function applyUserStaffOccupationVisibility(status) {
+    const affiliationGroup = document.getElementById('user-staff-affiliation-group');
+    const studentGroup = document.getElementById('user-staff-student-group');
+    if (!affiliationGroup || !studentGroup) return;
+    affiliationGroup.classList.toggle('hidden', !status);
+    studentGroup.classList.toggle('hidden', status !== 'studying');
+}
+
+// ผูกกับ onchange ของ select สถานะ - เหมือน applyUserStaffOccupationVisibility() แต่เพิ่มพฤติกรรมล้าง/เติมค่าอัตโนมัติตอนแอดมินสลับสถานะเองเหมือนหน้าลงทะเบียน
+// (เลือก "กำลังศึกษา" อาชีพเติม "นักศึกษา" ให้อัตโนมัติและล็อกแก้ไม่ได้ / เลือก "ประกอบอาชีพ" ล้างคณะ-สาขาทิ้งเพราะไม่เกี่ยวกันแล้ว)
+function handleUserStaffOccupationStatusChange() {
+    const status = document.getElementById('user-staff-occupationStatus').value;
+    applyUserStaffOccupationVisibility(status);
+
+    const occupationInput = document.getElementById('user-staff-occupation');
+    const facultyInput = document.getElementById('user-staff-faculty');
+    const majorInput = document.getElementById('user-staff-major');
+
+    if (status === 'studying') {
+        occupationInput.value = 'นักศึกษา';
+        occupationInput.readOnly = true;
+    } else if (status === 'working') {
+        if (occupationInput.readOnly) occupationInput.value = '';
+        occupationInput.readOnly = false;
+        facultyInput.value = '';
+        majorInput.value = '';
+    }
+}
+
+// รายการเงื่อนไขรหัสผ่านใต้ช่อง user-password เหมือนหน้าลงทะเบียน (updatePasswordChecklist ใน form.js/staff-form.js) - เกณฑ์ต้องตรงกับ isPasswordValid ฝั่ง backend (backend/lib/password.js) เสมอ
+function updateUserPasswordChecklist() {
+    const password = document.getElementById('user-password').value;
+    const rules = {
+        length: password.length >= 8,
+        lower: /[a-z]/.test(password),
+        upper: /[A-Z]/.test(password),
+        number: /\d/.test(password),
+        special: /[^A-Za-z0-9]/.test(password),
+    };
+    Object.entries(rules).forEach(([rule, met]) => {
+        document.querySelectorAll(`#user-password-checklist [data-rule="${rule}"], #user-password-checklist-categories [data-rule="${rule}"]`)
+            .forEach((li) => li.classList.toggle('met', met));
+    });
+}
+
+// จัดรูปแบบเบอร์โทรเป็น 0XX-XXX-XXXX ระหว่างพิมพ์ เหมือนหน้าลงทะเบียน (formatPhoneNumber/handleRegPhoneInput ใน form.js/staff-form.js) backend ตัดขีดออกเองอยู่แล้วตอนบันทึก (ดู buildStaffProfileData/buildParticipantProfileData) จึงจัดรูปแบบฝั่งนี้ได้อิสระไม่กระทบข้อมูลจริง
+function formatPhoneNumber(value) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 10);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function handleUserPhoneInput(event) {
+    const input = event.target;
+    const digitsBeforeCursor = input.value.slice(0, input.selectionStart).replace(/\D/g, '').length;
+    input.value = formatPhoneNumber(input.value);
+
+    let seen = 0;
+    let cursorPos = input.value.length;
+    for (let i = 0; i < input.value.length; i++) {
+        if (/\d/.test(input.value[i])) seen++;
+        if (seen === digitsBeforeCursor) {
+            cursorPos = i + 1;
+            break;
+        }
+    }
+    if (digitsBeforeCursor === 0) cursorPos = 0;
+    input.setSelectionRange(cursorPos, cursorPos);
+}
+
+// onSaved: callback เสริมที่เรียกหลังบันทึกสำเร็จ (นอกเหนือจาก loadUsers(role) ปกติ) ใช้กับตารางที่กรองย่อยอีกที เช่นตารางพี่ค่ายรายฝ่าย
+let userFormOnSaved = null;
+
+function openUserForm(item, role, onSaved) {
     const form = document.getElementById('user-form');
     const error = document.getElementById('user-form-error');
     form.reset();
     error.classList.add('hidden');
+    userFormOnSaved = onSaved || null;
+    switchUserFormTab('account');
 
     document.getElementById('user-modal-title').textContent = item ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มผู้ใช้งาน';
     document.getElementById('user-id').value = item ? item.id : '';
@@ -2787,13 +2632,61 @@ function openUserForm(item = null, role = 'ALL') {
     document.getElementById('user-password').required = !item;
     document.getElementById('user-password').placeholder = item
         ? 'เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน'
-        : 'อย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลข';
+        : 'อย่างน้อย 8 ตัวอักษร';
+    document.getElementById('user-confirm-password').value = '';
+    document.getElementById('user-confirm-password').required = !item;
+    document.getElementById('user-confirm-password').style.borderColor = '';
+    updateUserPasswordChecklist();
+
+    document.getElementById('user-staff-prefix').value = item?.prefix || '';
+    document.getElementById('user-staff-academicTitle').value = item?.academicTitle || '';
+    document.getElementById('user-staff-firstName').value = item?.firstName || '';
+    document.getElementById('user-staff-lastName').value = item?.lastName || '';
+    document.getElementById('user-staff-nickname').value = item?.nickname || '';
+    userStaffBirthDateSelects?.setValue(item?.birthDate ? toDateInputValue(item.birthDate) : '');
+    document.getElementById('user-staff-phone').value = formatPhoneNumber(item?.phone || '');
+    document.getElementById('user-staff-department').value = item?.department?.id || '';
+    refreshSingleCardSelect('user-staff-department');
+    document.getElementById('user-staff-position').value = item?.position?.id || '';
+    // สถานะ (ประกอบอาชีพ/กำลังศึกษา) ไม่มีคอลัมน์เก็บจริง เป็นแค่ตัวสลับ UI เหมือนหน้าลงทะเบียน (ดู schema.prisma: StaffProfile.faculty) เดาจากข้อมูลที่มีอยู่: มีคณะ/สาขา = กำลังศึกษา, ไม่มีแต่มีอาชีพ = ประกอบอาชีพ
+    const inferredStatus = item?.faculty || item?.major ? 'studying' : (item?.occupation ? 'working' : '');
+    document.getElementById('user-staff-occupationStatus').value = inferredStatus;
+    applyUserStaffOccupationVisibility(inferredStatus);
+    document.getElementById('user-staff-affiliation').value = item?.affiliation || '';
+    document.getElementById('user-staff-occupation').value = item?.occupation || '';
+    document.getElementById('user-staff-faculty').value = item?.faculty || '';
+    document.getElementById('user-staff-major').value = item?.major || '';
+
+    document.getElementById('user-participant-prefix').value = item?.prefix || '';
+    document.getElementById('user-participant-firstName').value = item?.firstName || '';
+    document.getElementById('user-participant-lastName').value = item?.lastName || '';
+    document.getElementById('user-participant-nickname').value = item?.nickname || '';
+    userParticipantBirthDateSelects?.setValue(item?.birthDate ? toDateInputValue(item.birthDate) : '');
+    document.getElementById('user-participant-phone').value = formatPhoneNumber(item?.phone || '');
+    document.getElementById('user-participant-parentPhone').value = formatPhoneNumber(item?.parentPhone || '');
+    document.getElementById('user-participant-courseFormat').value = item?.courseFormat?.id || '';
+    document.getElementById('user-participant-group').value = item?.group?.id || '';
+    document.getElementById('user-participant-studyPlan').value = item?.studyPlan || '';
+    document.getElementById('user-participant-studyPlanOther').value = item?.studyPlanOther || '';
+    const userParticipantInterestSelect = document.getElementById('user-participant-interestSubjectGroup');
+    const userParticipantInterestValues = new Set(Array.isArray(item?.interestSubjectGroup) ? item.interestSubjectGroup : []);
+    Array.from(userParticipantInterestSelect.options).forEach((option) => {
+        option.selected = userParticipantInterestValues.has(option.value);
+    });
+    refreshMultiCheckboxGroup('user-participant-interestSubjectGroup');
+    document.getElementById('user-participant-interestSubjectGroupOther').value = item?.interestSubjectGroupOther || '';
+    document.getElementById('user-participant-dreamInstitution').value = item?.dreamInstitution || '';
+
+    handleUserRoleChange();
+    syncStudyPlanOtherVisibility('user-participant-studyPlan', 'user-participant-studyPlanOther-group');
+    syncInterestOtherVisibility('user-participant-interestSubjectGroup', 'user-participant-interestSubjectGroupOther-group');
 
     document.getElementById('user-modal').classList.remove('hidden');
 }
 
 function closeUserForm() {
     document.getElementById('user-modal').classList.add('hidden');
+    userFormOnSaved = null;
 }
 
 function submitUserForm(event) {
@@ -2802,13 +2695,23 @@ function submitUserForm(event) {
     const id = document.getElementById('user-id').value;
     const currentRoleTab = document.getElementById('user-current-role-tab').value;
     const password = document.getElementById('user-password').value;
+    const confirmPassword = document.getElementById('user-confirm-password').value;
+    const confirmPasswordInput = document.getElementById('user-confirm-password');
     const role = document.getElementById('user-role').value;
     const errorBox = document.getElementById('user-form-error');
     errorBox.classList.add('hidden');
+    confirmPasswordInput.style.borderColor = '';
 
     // ตอนแก้ไข เว้นว่างรหัสผ่านได้ (แปลว่าไม่เปลี่ยน) แต่ถ้าพิมพ์มาต้องผ่านเงื่อนไขเดียวกับหน้าอื่นเสมอ
     if (password && !checkPasswordStrength(password)) {
-        errorBox.textContent = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และประกอบด้วยตัวอักษรและตัวเลขอย่างละ 1 ตัวขึ้นไป';
+        errorBox.textContent = 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และมีอย่างน้อย 3 ใน 4 ประเภทต่อไปนี้: ตัวพิมพ์เล็ก ตัวพิมพ์ใหญ่ ตัวเลข อักขระพิเศษ';
+        errorBox.classList.remove('hidden');
+        return;
+    }
+    // เช็คตรงกับ "ยืนยันรหัสผ่าน" เหมือนหน้าลงทะเบียน (staff-form.js/form.js) เฉพาะตอนกรอกรหัสผ่านใหม่เท่านั้น เว้นว่างทั้งคู่ตอนแก้ไข = ไม่เปลี่ยนรหัสผ่าน ไม่ต้องเช็ค
+    if (password && password !== confirmPassword) {
+        confirmPasswordInput.style.borderColor = 'var(--rose-600)';
+        errorBox.textContent = 'รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน';
         errorBox.classList.remove('hidden');
         return;
     }
@@ -2818,6 +2721,41 @@ function submitUserForm(event) {
         role,
     };
     if (password) payload.password = password;
+    // ไม่ส่ง isAdmin: Admin มอบ/ถอดสิทธิ์ผู้ดูแลระบบไม่ได้ (backend ปฏิเสธ) สิทธิ์นี้จัดการได้จากแผง WebManager เท่านั้น
+    if (role === 'STAFF') {
+        payload.profile = {
+            prefix: document.getElementById('user-staff-prefix').value,
+            academicTitle: document.getElementById('user-staff-academicTitle').value.trim(),
+            firstName: document.getElementById('user-staff-firstName').value.trim(),
+            lastName: document.getElementById('user-staff-lastName').value.trim(),
+            nickname: document.getElementById('user-staff-nickname').value.trim(),
+            birthDate: document.getElementById('user-staff-birthDate').value,
+            phone: document.getElementById('user-staff-phone').value.trim(),
+            departmentId: document.getElementById('user-staff-department').value,
+            positionId: document.getElementById('user-staff-position').value,
+            affiliation: document.getElementById('user-staff-affiliation').value.trim(),
+            occupation: document.getElementById('user-staff-occupation').value.trim(),
+            faculty: document.getElementById('user-staff-faculty').value.trim(),
+            major: document.getElementById('user-staff-major').value.trim(),
+        };
+    } else if (role === 'PARTICIPANT') {
+        payload.profile = {
+            prefix: document.getElementById('user-participant-prefix').value,
+            firstName: document.getElementById('user-participant-firstName').value.trim(),
+            lastName: document.getElementById('user-participant-lastName').value.trim(),
+            nickname: document.getElementById('user-participant-nickname').value.trim(),
+            birthDate: document.getElementById('user-participant-birthDate').value,
+            phone: document.getElementById('user-participant-phone').value.trim(),
+            parentPhone: document.getElementById('user-participant-parentPhone').value.trim(),
+            courseFormatId: document.getElementById('user-participant-courseFormat').value,
+            studyPlan: document.getElementById('user-participant-studyPlan').value,
+            studyPlanOther: document.getElementById('user-participant-studyPlanOther').value.trim(),
+            interestSubjectGroup: Array.from(document.getElementById('user-participant-interestSubjectGroup').selectedOptions).map((o) => o.value),
+            interestSubjectGroupOther: document.getElementById('user-participant-interestSubjectGroupOther').value.trim(),
+            dreamInstitution: document.getElementById('user-participant-dreamInstitution').value.trim(),
+            groupId: document.getElementById('user-participant-group').value,
+        };
+    }
 
     const url = id ? `/api/users/${id}` : '/api/users';
     const method = id ? 'PUT' : 'POST';
@@ -2837,9 +2775,12 @@ function submitUserForm(event) {
             return res.json();
         })
         .then(() => {
+            const onSaved = userFormOnSaved;
             closeUserForm();
             showToast(id ? 'แก้ไขผู้ใช้งานสำเร็จ' : 'เพิ่มผู้ใช้งานสำเร็จ');
             loadUsers(currentRoleTab);
+            if (payload.role !== currentRoleTab) loadUsers(payload.role);
+            if (onSaved) onSaved();
         })
         .catch((error) => {
             errorBox.textContent = error.message;
@@ -2873,7 +2814,10 @@ async function deleteUserItem(item, role = 'ALL') {
 // ประวัติการดำเนินการ (Activity Log)
 // แยกเป็น 2 กลุ่มตามผู้กระทำ: "ของ Admin" (WEBMANAGER/STAFF ซึ่งเป็นคนเดียวที่เข้าแผงจัดการเนื้อหาได้) และ "ของผู้ใช้" (PARTICIPANT)
 // ==========================================
-const adminActivityLogCache = {};
+const ACTIVITY_LOG_PAGE_SIZE = 30;
+const activityLogItemsCache = {};
+const activityLogCurrentPage = {};
+const activityLogSearchQuery = {};
 
 function loadActivityLogs(scope) {
     Loader.renderSkeletonTableRows(document.getElementById(`log-${scope}-table-body`), 4, 4);
@@ -2883,8 +2827,9 @@ function loadActivityLogs(scope) {
             return res.json();
         })
         .then((items) => {
-            adminActivityLogCache[scope] = items;
-            renderActivityLogTable(scope, items);
+            activityLogItemsCache[scope] = items;
+            activityLogCurrentPage[scope] = 1;
+            renderActivityLogTable(scope);
         })
         .catch((error) => {
             console.error('โหลดประวัติการดำเนินการไม่สำเร็จ:', error);
@@ -2892,18 +2837,81 @@ function loadActivityLogs(scope) {
         });
 }
 
-function renderActivityLogTable(scope, items) {
+function changeActivityLogPage(scope, delta) {
+    activityLogCurrentPage[scope] = (activityLogCurrentPage[scope] || 1) + delta;
+    renderActivityLogTable(scope);
+}
+
+function goToActivityLogPage(scope, page) {
+    activityLogCurrentPage[scope] = page;
+    renderActivityLogTable(scope);
+}
+
+function updateActivityLogPagination(scope, totalCount, totalPages) {
+    const pagination = document.getElementById(`log-${scope}-pagination`);
+    const prevBtn = document.getElementById(`log-${scope}-prev-btn`);
+    const nextBtn = document.getElementById(`log-${scope}-next-btn`);
+    if (!pagination || !prevBtn || !nextBtn) return;
+
+    pagination.classList.toggle('hidden', totalCount <= ACTIVITY_LOG_PAGE_SIZE);
+    prevBtn.disabled = activityLogCurrentPage[scope] <= 1;
+    nextBtn.disabled = activityLogCurrentPage[scope] >= totalPages;
+
+    const container = document.getElementById(`log-${scope}-page-numbers`);
+    if (!container) return;
+    container.innerHTML = '';
+    getPaginationRange(activityLogCurrentPage[scope], totalPages).forEach((page) => {
+        if (page === '...') {
+            const span = document.createElement('span');
+            span.className = 'admin-page-ellipsis';
+            span.textContent = '...';
+            container.appendChild(span);
+            return;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'admin-page-number-btn';
+        btn.textContent = page;
+        btn.classList.toggle('active', page === activityLogCurrentPage[scope]);
+        btn.addEventListener('click', () => goToActivityLogPage(scope, page));
+        container.appendChild(btn);
+    });
+}
+
+// ค้นหา: กรองจากข้อมูลทั้งหมดที่โหลดมา (ไม่ใช่แค่แถวที่แสดงอยู่หน้าปัจจุบัน) แล้วค่อยแบ่งหน้าผลลัพธ์ที่กรองแล้วอีกที
+function handleActivityLogSearch(scope, query) {
+    activityLogSearchQuery[scope] = query;
+    activityLogCurrentPage[scope] = 1;
+    renderActivityLogTable(scope);
+}
+
+function renderActivityLogTable(scope) {
     const tbody = document.getElementById(`log-${scope}-table-body`);
     const empty = document.getElementById(`log-${scope}-empty`);
+    const noMatch = document.getElementById(`log-${scope}-no-match`);
     if (!tbody || !empty) return;
+
+    const allItems = activityLogItemsCache[scope] || [];
+    const query = (activityLogSearchQuery[scope] || '').trim().toLowerCase();
+    const filtered = query
+        ? allItems.filter((item) => `${item.actorEmail} ${item.entityType} ${item.summary}`.toLowerCase().includes(query))
+        : allItems;
 
     tbody.innerHTML = '';
 
-    if (items.length === 0) {
+    if (allItems.length === 0) {
         empty.classList.remove('hidden');
+        if (noMatch) noMatch.classList.add('hidden');
+        updateActivityLogPagination(scope, 0, 1);
         return;
     }
     empty.classList.add('hidden');
+    if (noMatch) noMatch.classList.toggle('hidden', filtered.length > 0);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / ACTIVITY_LOG_PAGE_SIZE));
+    activityLogCurrentPage[scope] = Math.min(activityLogCurrentPage[scope] || 1, totalPages);
+    const start = (activityLogCurrentPage[scope] - 1) * ACTIVITY_LOG_PAGE_SIZE;
+    const items = filtered.slice(start, start + ACTIVITY_LOG_PAGE_SIZE);
 
     items.forEach((item) => {
         const row = document.createElement('tr');
@@ -2925,6 +2933,8 @@ function renderActivityLogTable(scope, items) {
         `;
         tbody.appendChild(row);
     });
+
+    updateActivityLogPagination(scope, filtered.length, totalPages);
 }
 
 // ==========================================
@@ -2951,19 +2961,24 @@ function setupAdminTableSearch({ inputId, tbodyId, noMatchId }) {
     });
 }
 
+let userStaffBirthDateSelects = null;
+let userParticipantBirthDateSelects = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     Loader.showFullPageLoader();
 
-    document.getElementById('committee-form').addEventListener('submit', submitCommitteeForm);
     document.getElementById('news-form').addEventListener('submit', submitNewsForm);
     document.getElementById('schedule-form').addEventListener('submit', submitScheduleForm);
     document.getElementById('user-form').addEventListener('submit', submitUserForm);
     initRichTextToolbar();
+    initMultiCheckboxGroup('user-participant-interestSubjectGroup');
 
     // date selects สำหรับช่องวันที่ใน form ข่าวและกำหนดการ (แทน input[type=date] เพื่อแก้ปัญหา iOS Safari แสดงปีพุทธศักราชเพี้ยน)
     newsPublishedAtSelects = setupDateSelects({ containerId: 'news-publishedAt-selects', hiddenId: 'news-publishedAt' });
     scheduleEventDateSelects = setupDateSelects({ containerId: 'schedule-eventDate-selects', hiddenId: 'schedule-eventDate' });
     scheduleEndDateSelects = setupDateSelects({ containerId: 'schedule-endDate-selects', hiddenId: 'schedule-endDate' });
+    userStaffBirthDateSelects = setupDateSelects({ containerId: 'user-staff-birthDate-selects', hiddenId: 'user-staff-birthDate', yearsBack: 100, yearsAhead: 0 });
+    userParticipantBirthDateSelects = setupDateSelects({ containerId: 'user-participant-birthDate-selects', hiddenId: 'user-participant-birthDate', yearsBack: 100, yearsAhead: 0 });
 
     if (localStorage.getItem('adminSidebarCollapsed') === '1') {
         const sidebar = document.querySelector('.admin-shell-sidebar');
@@ -2980,14 +2995,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ข้อมูลของแท็บอื่น ๆ (ข่าว/กำหนดการ/ทำเนียบ/ผู้ใช้) โหลดแบบ lazy ตอนเปิดแท็บนั้นจริง ๆ แทน (ดู ADMIN_TAB_LOAD_KEYS ด้านบน)
     const dashboardLoaded = initAdminDashboard();
     Promise.all([loadActivityLogs('admin'), loadActivityLogs('user')]).then(checkAdminNotificationBadge);
-
-    const committeeSearchInput = document.getElementById('committee-search');
-    if (committeeSearchInput) {
-        committeeSearchInput.addEventListener('input', () => {
-            committeeCurrentPage = 1;
-            renderCommitteeTable();
-        });
-    }
 
     const newsSearchInput = document.getElementById('news-search');
     if (newsSearchInput) {
@@ -3010,8 +3017,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input) input.addEventListener('input', () => renderUserTable(role));
     });
 
-    setupAdminTableSearch({ inputId: 'log-admin-search', tbodyId: 'log-admin-table-body', noMatchId: 'log-admin-no-match' });
-    setupAdminTableSearch({ inputId: 'log-user-search', tbodyId: 'log-user-table-body', noMatchId: 'log-user-no-match' });
+    document.getElementById('log-admin-search')?.addEventListener('input', (e) => handleActivityLogSearch('admin', e.target.value));
+    document.getElementById('log-user-search')?.addEventListener('input', (e) => handleActivityLogSearch('user', e.target.value));
 
     // รอแค่ข้อมูลที่แดชบอร์ด (แท็บที่เห็นก่อนเสมอตอนเปิดเข้ามา) ใช้จริง ไม่รอครบทุกแท็บ/ทุกตาราง
     Promise.allSettled([adminUserLoaded, dashboardLoaded])

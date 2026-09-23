@@ -2370,8 +2370,8 @@ function renderOralExamSessionCard(session) {
     const subjectEl = document.getElementById('oral-exam-session-subject');
     const courseEl = document.getElementById('oral-exam-session-course');
     if (subjectEl) subjectEl.textContent = session.subjectName || '-';
-    // รอบเก่าที่เปิดก่อนระบุคอร์สได้ (courseFormatName เป็น null) รับตามคอร์สของวิชา
-    if (courseEl) courseEl.textContent = session.courseFormatName || 'ตามคอร์สของวิชา';
+    // backend ส่งชื่อคอร์สจริงมาเสมอ (รอบเก่าที่ไม่ได้ผูกคอร์ส = คอร์สของวิชา หรือทุกคอร์สถ้าเป็นวิชา "ทั้งคู่" ดู resolveSessionCourseName)
+    if (courseEl) courseEl.textContent = session.courseFormatName || '-';
 }
 
 // กดที่ QR เพื่อขยายเต็มจอ (เผื่อฉายจอโปรเจกเตอร์ให้น้องค่ายที่นั่งไกลสแกนได้ถนัดขึ้น) - แพทเทิร์นเดียวกับ openScheduleFullscreen/closeScheduleFullscreen

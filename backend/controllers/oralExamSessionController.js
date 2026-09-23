@@ -58,6 +58,16 @@ async function buildQrWithLogo(qrPayload) {
   return `data:image/png;base64,${composited.toString('base64')}`;
 }
 
+// ชื่อคอร์สที่รอบนี้รับเช็คอิน: รอบที่ระบุคอร์สไว้ใช้คอร์สนั้น รอบเก่าที่เปิดก่อนมีช่องคอร์ส (courseFormatId: null) รับตามคอร์สของวิชา
+// ถ้าวิชาเป็น "ทั้งคู่" ด้วย = รับทุกคอร์ส แสดงชื่อทุกคอร์สแทนข้อความลอย ๆ
+async function resolveSessionCourseName(session) {
+  if (session.courseFormat?.name) return session.courseFormat.name;
+  if (session.subject?.courseFormat?.name) return session.subject.courseFormat.name;
+  const prisma = await getPrisma();
+  const all = await prisma.courseFormat.findMany({ orderBy: { id: 'asc' }, select: { name: true } });
+  return all.map((c) => c.name).join(', ') || null;
+}
+
 // qrImageDataUrl สร้างจาก qrPayload สด ๆ ทุกครั้ง (ไม่แคช) - เร็วพอสำหรับ endpoint ที่มีแค่พี่ค่าย 1 คน poll ทุก 4 วิ ไม่คุ้มที่จะเพิ่มความซับซ้อนเรื่อง cache
 async function serializeSession(session, req) {
   const qrPayload = buildCheckinUrl(req, session.token);
@@ -68,7 +78,7 @@ async function serializeSession(session, req) {
     subjectId: session.subjectId,
     subjectName: session.subject?.name ?? null,
     courseFormatId: session.courseFormatId,
-    courseFormatName: session.courseFormat?.name ?? null,
+    courseFormatName: await resolveSessionCourseName(session),
     token: session.token,
     status: session.status,
     openedAt: session.openedAt,
@@ -121,7 +131,7 @@ async function openSession(req, res) {
 
   const session = await prisma.oralExamSession.create({
     data: { subjectId, courseFormatId, openedByUserId: req.session.user.id, token: generateSessionToken(), maxParticipants },
-    include: { subject: { select: { name: true } }, courseFormat: { select: { name: true } } },
+    include: { subject: { select: { name: true, courseFormat: { select: { name: true } } } }, courseFormat: { select: { name: true } } },
   });
 
   await logActivity({
@@ -154,7 +164,7 @@ async function getActiveSession(req, res) {
     where: { subjectId, status: { in: ['OPEN', 'STARTED'] } },
     orderBy: { openedAt: 'desc' },
     include: {
-      subject: { select: { name: true } },
+      subject: { select: { name: true, courseFormat: { select: { name: true } } } },
       courseFormat: { select: { name: true } },
       attempts: {
         orderBy: { checkedInAt: 'asc' },

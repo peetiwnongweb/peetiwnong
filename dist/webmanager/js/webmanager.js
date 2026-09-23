@@ -49,7 +49,7 @@ function renderAvatar(el, avatarUrl, initial) {
     el.innerHTML = '';
     if (avatarUrl) {
         const img = document.createElement('img');
-        img.src = avatarUrl;
+        img.src = window.PTN_MEDIA_URL(avatarUrl);
         img.alt = '';
         img.style.width = '100%';
         img.style.height = '100%';
@@ -1046,7 +1046,7 @@ function renderCommitteeTable() {
                     <span class="custom-checkbox"></span>
                 </label>
             </td>
-            <td><img class="admin-row-thumb" src="${item.imageUrl || '/backend/uploads/presidents/profile.jpg'}" alt=""></td>
+            <td><img class="admin-row-thumb" src="${window.PTN_MEDIA_URL(item.imageUrl) || window.PTN_PLACEHOLDER_IMAGE}" alt=""></td>
             <td class="admin-cell-strong">${item.generationNos.join(', ')}</td>
             <td class="admin-cell-strong">${item.fullName}</td>
             <td>${item.nickname}</td>
@@ -1320,7 +1320,7 @@ function updateCommitteeImagePreview() {
     const img = document.getElementById('committee-imageUrl-preview-img');
     if (!wrap || !img) return;
     if (url) {
-        img.src = url;
+        img.src = window.PTN_MEDIA_URL(url);
         wrap.classList.remove('hidden');
     } else {
         img.src = '';
@@ -1334,7 +1334,7 @@ function updateCommitteeLogoPreview() {
     const img = document.getElementById('committee-universityLogoUrl-preview-img');
     if (!wrap || !img) return;
     if (url) {
-        img.src = url;
+        img.src = window.PTN_MEDIA_URL(url);
         wrap.classList.remove('hidden');
     } else {
         img.src = '';
@@ -2425,7 +2425,7 @@ function loadGalleryPhotos() {
                         <input type="checkbox" class="gallery-photo-checkbox">
                         <span class="custom-checkbox"></span>
                     </label>
-                    <img src="${photo.imageUrl}" alt="ภาพบรรยากาศค่าย">
+                    <img src="${window.PTN_MEDIA_URL(photo.imageUrl)}" alt="ภาพบรรยากาศค่าย">
                     <button type="button" class="gallery-photo-delete-btn" aria-label="ลบรูปนี้">&times;</button>
                 `;
                 card.querySelector('.gallery-photo-checkbox').addEventListener('change', (e) => toggleGalleryPhotoSelect(photo.id, e.target.checked, card));
@@ -3047,7 +3047,7 @@ function updateNewsImagePreview() {
     const img = document.getElementById('news-imageUrl-preview-img');
     if (!wrap || !img) return;
     if (url) {
-        img.src = url;
+        img.src = window.PTN_MEDIA_URL(url);
         wrap.classList.remove('hidden');
     } else {
         img.src = '';
@@ -4158,7 +4158,7 @@ function renderNewsPreviewModal(item, { showApprovalActions }) {
     });
     const imageHtml = item.imageUrl
         ? `<div style="position: relative; margin-top: 1rem;">
-            <img src="${escapeHtml(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">
+            <img src="${escapeHtml(window.PTN_MEDIA_URL(item.imageUrl))}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">
             <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')" aria-label="ดูรูปเต็ม">
                 <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
@@ -4212,7 +4212,7 @@ function closeNewsApprovalDetail() {
 
 // ดูรูปเต็มจอ ไม่ครอบตัด - ใช้ร่วมกันได้ทุกจุดที่มีรูปในกรอบเล็ก (ตอนนี้ใช้กับรูปประกอบในตัวอย่างประชาสัมพันธ์)
 function openImageLightbox(url) {
-    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-img').src = window.PTN_MEDIA_URL(url);
     document.getElementById('image-lightbox-modal').classList.remove('hidden');
 }
 

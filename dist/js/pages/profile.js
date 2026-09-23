@@ -256,7 +256,7 @@ function handleCustomAvatarUrlSubmit(event) {
         if (submitBtn) Loader.clearButtonLoading(submitBtn);
         showAvatarPickerError('ไม่สามารถโหลดรูปภาพจาก URL นี้ได้ กรุณาตรวจสอบ URL อีกครั้ง');
     };
-    testImage.src = url;
+    testImage.src = window.PTN_MEDIA_URL(url);
 }
 
 function saveAvatar() {

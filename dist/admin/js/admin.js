@@ -90,7 +90,7 @@ function renderAvatar(el, avatarUrl, initial) {
     el.innerHTML = '';
     if (avatarUrl) {
         const img = document.createElement('img');
-        img.src = avatarUrl;
+        img.src = window.PTN_MEDIA_URL(avatarUrl);
         img.alt = '';
         img.style.width = '100%';
         img.style.height = '100%';
@@ -301,6 +301,18 @@ function viewAllActivityLogs() {
     switchAdminSection('log');
 }
 
+function toggleNewsSubnav() {
+    const subnav = document.getElementById('news-subnav');
+    const toggleBtn = document.getElementById('admin-tab-news-toggle');
+    if (subnav && toggleBtn) {
+        const isCollapsed = subnav.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('active', !isCollapsed);
+        const caret = toggleBtn.querySelector('.admin-shell-nav-subcaret');
+        if (caret) {
+            caret.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+    }
+}
 function setAdminNavGroupCollapsed(targetId, collapsed) {
     const collapse = document.getElementById(targetId);
     if (collapse) collapse.classList.toggle('collapsed', collapsed);
@@ -341,6 +353,10 @@ const ADMIN_LAZY_LOADERS = {
     schedule: () => loadSchedules(),
     'approve-staff': () => loadUsers('STAFF'),
     'approve-participant': () => loadUsers('PARTICIPANT'),
+    'approve-news': () => loadNews(),
+    'staff-users': () => loadUsers('STAFF'),
+    'participant-users': () => loadUsers('PARTICIPANT'),
+    users: () => loadUsers('ALL'),
 };
 
 const ADMIN_TAB_LOAD_KEYS = {
@@ -349,8 +365,10 @@ const ADMIN_TAB_LOAD_KEYS = {
     committee: ['committee'],
     'approve-staff': ['approve-staff'],
     'approve-participant': ['approve-participant'],
-    'staff-users': ['approve-staff'],
-    'participant-users': ['approve-participant'],
+    'staff-users': ['staff-users'],
+    'participant-users': ['participant-users'],
+    'approve-news': ['approve-news'],
+    users: ['users'],
 };
 
 function loadAdminLazyKeys(keys) {
@@ -360,6 +378,9 @@ function loadAdminLazyKeys(keys) {
         ADMIN_LAZY_LOADERS[key]();
     });
 }
+
+// Sections ที่ไม่มี subnav แต่ต้อง load ข้อมูลเมื่อเปิด
+const ADMIN_SECTION_LOAD_KEYS = {};
 
 function switchAdminSection(section) {
     const sidebar = document.querySelector('.admin-shell-sidebar');
@@ -395,18 +416,33 @@ function switchAdminSection(section) {
         } else {
             // เข้าเมนูกลุ่มนี้ใหม่ (หรือเด้งออกจากโหมดย่อ) ให้ขยายเมนูย่อยและเข้ารายการแรกเสมอ
             setAdminNavGroupCollapsed(ownSubnavId, false);
-            const firstChild = document.querySelector(`#${ownSubnavId} .admin-shell-nav-child`);
+            const firstChild = document.querySelector(`#${ownSubnavId} .admin-shell-nav-child:not([id$="-toggle"]), #${ownSubnavId} .admin-shell-nav-grandchild:not([id$="-toggle"])`);
             if (firstChild) switchAdminTab(firstChild.id.replace('admin-tab-', ''));
         }
+    } else {
+        // Section ที่ไม่มี subnav: load ข้อมูล lazy
+        const sectionLoadKeys = ADMIN_SECTION_LOAD_KEYS[section];
+        if (sectionLoadKeys) loadAdminLazyKeys(sectionLoadKeys);
     }
+}
+
+function expandNestedSubnavForTab(tab) {
+    const btn = document.getElementById(`admin-tab-${tab}`);
+    if (!btn) return;
+    const nestedSubnav = btn.closest('.admin-shell-nav-collapse');
+    if (!nestedSubnav || !nestedSubnav.classList.contains('collapsed')) return;
+    nestedSubnav.classList.remove('collapsed');
+    const toggleBtn = document.getElementById(`admin-tab-${nestedSubnav.id.replace('-subnav', '')}-toggle`);
+    if (toggleBtn) toggleBtn.classList.add('expanded');
 }
 
 function switchAdminTab(tab) {
     document.querySelectorAll('.admin-panel').forEach((panel) => panel.classList.remove('active'));
-    document.querySelectorAll('.admin-shell-nav-child').forEach((btn) => btn.classList.remove('active'));
+    document.querySelectorAll('.admin-shell-nav-child, .admin-shell-nav-grandchild').forEach((btn) => btn.classList.remove('active'));
 
     document.getElementById(`admin-panel-${tab}`).classList.add('active');
     document.getElementById(`admin-tab-${tab}`).classList.add('active');
+    expandNestedSubnavForTab(tab);
     const loadKeys = ADMIN_TAB_LOAD_KEYS[tab];
     if (loadKeys) loadAdminLazyKeys(loadKeys);
 }
@@ -609,7 +645,7 @@ function renderCommitteeTable() {
                     <span class="custom-checkbox"></span>
                 </label>
             </td>
-            <td><img class="admin-row-thumb" src="${item.imageUrl || '/backend/uploads/presidents/profile.jpg'}" alt=""></td>
+            <td><img class="admin-row-thumb" src="${window.PTN_MEDIA_URL(item.imageUrl) || window.PTN_PLACEHOLDER_IMAGE}" alt=""></td>
             <td class="admin-cell-strong">${item.generationNos.join(', ')}</td>
             <td class="admin-cell-strong">${item.fullName}</td>
             <td>${item.nickname}</td>
@@ -956,6 +992,8 @@ let newsSortDirection = 'desc';
 
 function loadNews() {
     Loader.renderSkeletonTableRows(document.getElementById('news-table-body'), 5, 4);
+    const approvalBody = document.getElementById('news-approval-table-body');
+    if (approvalBody) Loader.renderSkeletonTableRows(approvalBody, 5, 4);
     fetch('/api/news')
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -966,6 +1004,11 @@ function loadNews() {
             newsCurrentPage = 1;
             newsSelectedIds.clear();
             renderNewsTable();
+
+            // อัปเดตตาราง "คอนุมัติประชาสัมพันธ์" ใช้ผลจาก fetch เดียวกัน
+            newsApprovalItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
+            newsApprovalCurrentPage = 1;
+            renderNewsApprovalTable();
         })
         .catch((error) => {
             console.error('โหลดข่าวสารไม่สำเร็จ:', error);
@@ -1072,12 +1115,13 @@ function renderNewsTable() {
                     <input type="checkbox" class="admin-visibility-toggle" ${isVisible ? 'checked' : ''}>
                 </label>
             </td>
-            <td>${adminActionButtonsHtml()}</td>
+            <td>${newsRowActionButtonsHtml()}</td>
         `;
         row.querySelector('.admin-row-checkbox').addEventListener('change', (e) => toggleNewsRowSelect(item.id, e.target.checked));
         row.querySelector('.admin-hot-toggle').addEventListener('change', (e) => toggleNewsHot(item, e.target.checked));
         row.querySelector('.admin-visibility-toggle').addEventListener('change', (e) => toggleNewsVisibility(item, e.target.checked));
         row.querySelector('[data-action="edit"]').addEventListener('click', () => openNewsForm(item));
+        row.querySelector('[data-action="view"]').addEventListener('click', () => openNewsPreview(item));
         row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteNewsItem(item));
         tbody.appendChild(row);
     });
@@ -1371,7 +1415,7 @@ function openNewsForm(item) {
     document.getElementById('news-modal-title').textContent = item ? 'แก้ไขประชาสัมพันธ์' : 'เพิ่มประชาสัมพันธ์';
     document.getElementById('news-id').value = item ? item.id : '';
     document.getElementById('news-tag').value = item ? item.tag : 'ANNOUNCE';
-    document.getElementById('news-publishedAt').value = item ? toDateInputValue(item.publishedAt) : toDateInputValue(new Date());
+    newsPublishedAtSelects?.setValue(item ? toDateInputValue(item.publishedAt) : toDateInputValue(new Date()));
     document.getElementById('news-title').value = item ? item.title : '';
     document.getElementById('news-summary').value = item ? item.summary : '';
     document.getElementById('news-detail').innerHTML = item ? item.detail : '';
@@ -1380,12 +1424,27 @@ function openNewsForm(item) {
     document.getElementById('news-isVisible').checked = item ? item.isVisible !== false : true;
 
     newsOriginalImageUrl = item && item.imageUrl ? item.imageUrl : '';
+    updateNewsImagePreview();
 
     document.getElementById('news-modal').classList.remove('hidden');
 }
 
 function closeNewsForm() {
     document.getElementById('news-modal').classList.add('hidden');
+}
+
+function updateNewsImagePreview() {
+    const url = document.getElementById('news-imageUrl')?.value.trim();
+    const wrap = document.getElementById('news-imageUrl-preview');
+    const img = document.getElementById('news-imageUrl-preview-img');
+    if (!wrap || !img) return;
+    if (url) {
+        img.src = window.PTN_MEDIA_URL(url);
+        wrap.classList.remove('hidden');
+    } else {
+        img.src = '';
+        wrap.classList.add('hidden');
+    }
 }
 
 // อัปโหลดรูปภาพประกอบข่าวโดยตรง (ไม่ครอบตัด เพราะแสดงผลด้วย object-fit: cover เสมออยู่แล้ว) แล้วเอา URL ที่ได้ไปใส่ในช่อง news-imageUrl ให้อัตโนมัติ
@@ -1413,6 +1472,7 @@ function uploadNewsImage(event) {
         })
         .then(({ url }) => {
             document.getElementById('news-imageUrl').value = url;
+            updateNewsImagePreview();
             if (status) status.classList.add('hidden');
         })
         .catch((error) => {
@@ -1502,6 +1562,252 @@ async function deleteNewsItem(item) {
         .catch((error) => {
             console.error(error);
             showToast('ลบประชาสัมพันธ์ไม่สำเร็จ', true);
+        });
+}
+
+function newsRowActionButtonsHtml() {
+    return `
+        <div class="admin-row-actions">
+            <button type="button" class="admin-icon-btn admin-icon-btn-edit" data-action="edit" aria-label="แก้ไข" title="แก้ไข">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                </svg>
+            </button>
+            <button type="button" class="admin-icon-btn admin-icon-btn-view" data-action="view" aria-label="ดูตัวอย่างจริงบนเว็บ" title="ดูตัวอย่างจริงบนเว็บ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+            <button type="button" class="admin-icon-btn admin-icon-btn-delete" data-action="delete" aria-label="ลบ" title="ลบ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+            </button>
+        </div>
+    `;
+}
+
+function formatNewsAuthorName(item) {
+    const profile = item.author && item.author.staffProfile;
+    const fullName = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(' ') : '';
+    return fullName || (item.author && item.author.email) || '-';
+}
+
+function renderNewsPreviewModal(item, { showApprovalActions = false } = {}) {
+    const grid = document.getElementById('news-approval-detail-grid');
+    const preview = document.getElementById('news-approval-detail-preview');
+    if (!grid || !preview) return;
+
+    const submittedDate = new Date(item.createdAt).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+    const publishedOnlyDate = new Date(item.publishedAt).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric',
+    });
+
+    const fields = [
+        ['สรุปย่อ (ใช้บนการ์ดหน้าแรก)', item.summary],
+        ['ผู้เขียน', formatNewsAuthorName(item)],
+        [showApprovalActions ? 'ส่งเมื่อ' : 'เผยแพร่เมื่อ', showApprovalActions ? submittedDate : publishedOnlyDate],
+    ];
+
+    grid.innerHTML = fields
+        .map(([label, value]) => `
+            <div class="approval-detail-item">
+                <span class="approval-detail-label">${escapeHtml(label)}</span>
+                <span class="approval-detail-value">${escapeHtml(value || '-')}</span>
+            </div>
+        `)
+        .join('');
+
+    const publishedDateText = new Date(item.publishedAt || item.createdAt).toLocaleDateString('th-TH', {
+        day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const imageHtml = item.imageUrl
+        ? `<div style="position: relative; margin-top: 1rem;">
+            <img src="${escapeHtml(window.PTN_MEDIA_URL(item.imageUrl))}" alt="ภาพประกอบประชาสัมพันธ์" class="w-full h-48 sm:h-64 object-cover rounded-xl" style="cursor: zoom-in;" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')">
+            <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${escapeHtml(item.imageUrl)}')" aria-label="ดูรูปเต็ม">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                </svg>
+            </button>
+        </div>`
+        : '';
+
+    preview.innerHTML = `
+        <span class="text-xs font-bold px-2.5 py-1 rounded bg-brand-50 text-brand-600 inline-block">${escapeHtml(NEWS_TAG_LABELS[item.tag] || item.tag)}</span>
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-900 leading-snug" style="margin-top: 0.75rem;">${escapeHtml(item.title)}</h2>
+        <div class="flex items-center gap-2 text-xs text-slate-400" style="margin-top: 0.5rem;">
+            <span>เผยแพร่เมื่อ: ${publishedDateText}</span>
+            <span>•</span>
+            <span>โดย: คณะกรรมการค่าย</span>
+        </div>
+        ${imageHtml}
+        <hr class="border-slate-100" style="margin: 1rem 0;">
+        <div class="news-detail-content text-slate-600 text-sm sm:text-base leading-relaxed font-light py-2" style="white-space: pre-line;">${item.detail || ''}</div>
+    `;
+
+    document.getElementById('news-approval-detail-title').textContent = 'ตัวอย่างประชาสัมพันธ์';
+    document.getElementById('news-approval-detail-subtitle').innerHTML = showApprovalActions
+        ? `สถานะ: ${NEWS_APPROVAL_STATUS_BADGE[item.approvalStatus] || ''}`
+        : 'แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก';
+
+    const actionsWrap = document.getElementById('news-approval-detail-actions');
+    if (actionsWrap) actionsWrap.classList.toggle('hidden', !showApprovalActions);
+
+    if (showApprovalActions) {
+        const approveBtn = document.getElementById('news-approval-detail-approve-btn');
+        const rejectBtn = document.getElementById('news-approval-detail-reject-btn');
+        if (approveBtn) approveBtn.onclick = () => { closeNewsApprovalDetail(); setNewsApprovalStatus(item, 'APPROVED'); };
+        if (rejectBtn) rejectBtn.onclick = () => { closeNewsApprovalDetail(); setNewsApprovalStatus(item, 'REJECTED'); };
+    }
+
+    document.getElementById('news-approval-detail-modal').classList.remove('hidden');
+}
+
+function openNewsPreview(item) {
+    renderNewsPreviewModal(item, { showApprovalActions: false });
+}
+
+
+function closeNewsApprovalDetail() {
+    document.getElementById('news-approval-detail-modal').classList.add('hidden');
+}
+
+function openImageLightbox(url) {
+    document.getElementById('image-lightbox-img').src = window.PTN_MEDIA_URL(url);
+    document.getElementById('image-lightbox-modal').classList.remove('hidden');
+}
+
+function closeImageLightbox() {
+    document.getElementById('image-lightbox-modal').classList.add('hidden');
+    document.getElementById('image-lightbox-img').src = '';
+}
+
+
+// ==========================================
+// อนุมัติประชาสัมพันธ์ (News Approval)
+// ==========================================
+const NEWS_APPROVAL_STATUS_BADGE = {
+    PENDING: '<span class="admin-badge admin-badge-pending">กำลังพิจารณา</span>',
+    REJECTED: '<span class="admin-badge admin-badge-delete">ถูกปฏิเสธ</span>',
+    APPROVED: '<span class="admin-badge admin-badge-create">อนุมัติแล้ว</span>',
+};
+
+const NEWS_APPROVAL_PAGE_SIZE = 10;
+let newsApprovalItems = [];
+let newsApprovalCurrentPage = 1;
+
+function renderNewsApprovalTable() {
+    const tbody = document.getElementById('news-approval-table-body');
+    const empty = document.getElementById('news-approval-empty');
+    if (!tbody || !empty) return;
+
+    const totalPages = Math.max(1, Math.ceil(newsApprovalItems.length / NEWS_APPROVAL_PAGE_SIZE));
+    if (newsApprovalCurrentPage > totalPages) newsApprovalCurrentPage = totalPages;
+    const start = (newsApprovalCurrentPage - 1) * NEWS_APPROVAL_PAGE_SIZE;
+    const pageItems = newsApprovalItems.slice(start, start + NEWS_APPROVAL_PAGE_SIZE);
+
+    tbody.innerHTML = '';
+    empty.classList.toggle('hidden', newsApprovalItems.length !== 0);
+
+    pageItems.forEach((item) => {
+        const submittedDate = new Date(item.createdAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="admin-cell-strong">${escapeHtml(item.title)}</td>
+            <td>${escapeHtml(formatNewsAuthorName(item))}</td>
+            <td>${submittedDate}</td>
+            <td>${NEWS_APPROVAL_STATUS_BADGE[item.approvalStatus] || ''}</td>
+            <td>
+                <div class="admin-row-actions">
+                    <button type="button" class="btn-outline admin-detail-btn" style="padding: 0.4rem 0.75rem; font-size: 0.78rem;">ดูรายละเอียด</button>
+                    <button type="button" class="admin-approve-btn">อนุมัติ</button>
+                    <button type="button" class="admin-reject-btn">ปฏิเสธ</button>
+                </div>
+            </td>
+        `;
+        row.querySelector('.admin-detail-btn').addEventListener('click', () => openNewsApprovalDetail(item));
+        row.querySelector('.admin-approve-btn').addEventListener('click', () => setNewsApprovalStatus(item, 'APPROVED'));
+        row.querySelector('.admin-reject-btn').addEventListener('click', () => setNewsApprovalStatus(item, 'REJECTED'));
+        tbody.appendChild(row);
+    });
+
+    updateNewsApprovalPagination(newsApprovalItems.length, totalPages);
+}
+
+function updateNewsApprovalPagination(totalCount, totalPages) {
+    const pagination = document.getElementById('news-approval-pagination');
+    const prevBtn = document.getElementById('news-approval-prev-btn');
+    const nextBtn = document.getElementById('news-approval-next-btn');
+    if (!pagination || !prevBtn || !nextBtn) return;
+
+    pagination.classList.toggle('hidden', totalCount <= NEWS_APPROVAL_PAGE_SIZE);
+    prevBtn.disabled = newsApprovalCurrentPage <= 1;
+    nextBtn.disabled = newsApprovalCurrentPage >= totalPages;
+    renderNewsApprovalPageNumbers(totalPages);
+}
+
+function renderNewsApprovalPageNumbers(totalPages) {
+    const container = document.getElementById('news-approval-page-numbers');
+    if (!container) return;
+
+    container.innerHTML = '';
+    getPaginationRange(newsApprovalCurrentPage, totalPages).forEach((page) => {
+        if (page === '...') {
+            const span = document.createElement('span');
+            span.className = 'admin-page-ellipsis';
+            span.textContent = '...';
+            container.appendChild(span);
+            return;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'admin-page-number-btn';
+        btn.textContent = page;
+        btn.classList.toggle('active', page === newsApprovalCurrentPage);
+        btn.addEventListener('click', () => goToNewsApprovalPage(page));
+        container.appendChild(btn);
+    });
+}
+
+function goToNewsApprovalPage(page) {
+    newsApprovalCurrentPage = page;
+    renderNewsApprovalTable();
+}
+
+function changeNewsApprovalPage(delta) {
+    newsApprovalCurrentPage += delta;
+    renderNewsApprovalTable();
+}
+
+function openNewsApprovalDetail(item) {
+    renderNewsPreviewModal(item, { showApprovalActions: true });
+}
+
+async function setNewsApprovalStatus(item, approvalStatus) {
+    const label = approvalStatus === 'APPROVED' ? 'อนุมัติ' : 'ปฏิเสธ';
+    const confirmed = await adminConfirm(`${label}ประชาสัมพันธ์ "${item.title}" ใช่หรือไม่?`, {
+        title: `ยืนยันการ${label}`,
+        confirmText: label,
+        variant: approvalStatus === 'APPROVED' ? 'approve' : 'reject',
+    });
+    if (!confirmed) return;
+
+    fetch(`/api/news/${item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvalStatus }),
+    })
+        .then((res) => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            showToast(`${label}ประชาสัมพันธ์สำเร็จ`);
+            loadNews();
+        })
+        .catch((error) => {
+            console.error(error);
+            showToast(`${label}ประชาสัมพันธ์ไม่สำเร็จ`, true);
         });
 }
 
@@ -1839,7 +2145,9 @@ function openScheduleForm(item) {
 
     document.getElementById('schedule-modal-title').textContent = item ? 'แก้ไขกำหนดการ' : 'เพิ่มกำหนดการ';
     document.getElementById('schedule-id').value = item ? item.id : '';
-    document.getElementById('schedule-eventDate').value = item ? toDateInputValue(item.eventDate) : toDateInputValue(new Date());
+    scheduleEventDateSelects?.setValue(item ? toDateInputValue(item.eventDate) : toDateInputValue(new Date()));
+    // "วันที่สิ้นสุด" เป็นแค่ตัวช่วยคำนวณข้อความช่วงวันที่ตอนกรอกครั้งแรก ไม่มีคอลัมน์เก็บจริงใน Schedule (ดู schema) จึงไม่มีค่าให้ดึงกลับมาตอนแก้ไข เคลียร์ทุกครั้งที่เปิดฟอร์ม
+    scheduleEndDateSelects?.clear();
     document.getElementById('schedule-badgeColor').value = item ? item.badgeColor : 'BRAND';
     document.getElementById('schedule-dateText').value = item ? item.dateText : '';
     document.getElementById('schedule-mobileDate').value = item && item.mobileDate ? item.mobileDate : '';
@@ -2192,16 +2500,26 @@ async function deleteApprovalItem(item, role) {
 const USER_PAGE_SIZE = 20;
 const USER_SORTABLE_COLUMNS = ['email', 'createdAt'];
 
-const userState = { STAFF: [], PARTICIPANT: [] };
-const userCurrentPage = { STAFF: 1, PARTICIPANT: 1 };
-const userSelectedIds = { STAFF: new Set(), PARTICIPANT: new Set() };
-const userSortColumn = { STAFF: 'createdAt', PARTICIPANT: 'createdAt' };
-const userSortDirection = { STAFF: 'desc', PARTICIPANT: 'desc' };
+const userState = { STAFF: [], PARTICIPANT: [], ALL: [] };
+const userCurrentPage = { STAFF: 1, PARTICIPANT: 1, ALL: 1 };
+const userSelectedIds = { STAFF: new Set(), PARTICIPANT: new Set(), ALL: new Set() };
+const userSortColumn = { STAFF: 'createdAt', PARTICIPANT: 'createdAt', ALL: 'createdAt' };
+const userSortDirection = { STAFF: 'desc', PARTICIPANT: 'desc', ALL: 'desc' };
 
-function loadUsers(role) {
-    Loader.renderSkeletonTableRows(document.getElementById(`user-table-body-${role}`), 5, 4);
-    Loader.renderSkeletonTableRows(document.getElementById(`approval-table-body-${role}`), 5, 3);
-    fetch(`/api/users?role=${role}`)
+function loadUsers(role = 'ALL') {
+    const tableBodyId = role === 'ALL' ? 'user-table-body' : `user-table-body-${role}`;
+    const approvalBodyId = `approval-table-body-${role}`;
+    
+    const tableBody = document.getElementById(tableBodyId);
+    if (tableBody) Loader.renderSkeletonTableRows(tableBody, 5, 4);
+    
+    if (role !== 'ALL') {
+        const approvalBody = document.getElementById(approvalBodyId);
+        if (approvalBody) Loader.renderSkeletonTableRows(approvalBody, 5, 3);
+    }
+
+    const url = role === 'ALL' ? '/api/users' : `/api/users?role=${role}`;
+    fetch(url)
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.json();
@@ -2212,9 +2530,10 @@ function loadUsers(role) {
             userSelectedIds[role].clear();
             renderUserTable(role);
 
-            // ใช้ผลจาก fetch เดียวกันนี้อัปเดตตาราง "คำขอลงทะเบียน" ไปด้วยเลย (เดิมยิง /api/users?role= แยกอีกรอบซ้ำซ้อนใน loadApprovalQueue())
-            const pendingItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
-            renderApprovalTable(role, pendingItems);
+            if (role !== 'ALL') {
+                const pendingItems = items.filter((item) => item.approvalStatus !== 'APPROVED');
+                renderApprovalTable(role, pendingItems);
+            }
         })
         .catch((error) => {
             console.error(`โหลดข้อมูลผู้ใช้งาน (${role}) ไม่สำเร็จ:`, error);
@@ -2222,8 +2541,9 @@ function loadUsers(role) {
         });
 }
 
-function getFilteredUserItems(role) {
-    const searchInput = document.getElementById(`user-search-${role}`);
+function getFilteredUserItems(role = 'ALL') {
+    const searchId = role === 'ALL' ? 'user-search' : `user-search-${role}`;
+    const searchInput = document.getElementById(searchId);
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     let items = userState[role] || [];
     if (query) {
@@ -2232,16 +2552,20 @@ function getFilteredUserItems(role) {
     return sortUserItems(role, items);
 }
 
-function sortUserItems(role, items) {
+function sortUserItems(role = 'ALL', items) {
     const column = userSortColumn[role];
     const direction = userSortDirection[role] === 'asc' ? 1 : -1;
     return [...items].sort((a, b) => {
         if (column === 'createdAt') return (new Date(a.createdAt) - new Date(b.createdAt)) * direction;
-        return String(a[column]).localeCompare(String(b[column]), 'th') * direction;
+        return String(a[column] || '').localeCompare(String(b[column] || ''), 'th') * direction;
     });
 }
 
-function setUserSort(role, column) {
+// Support both setUserSort('email') and setUserSort('STAFF', 'email')
+function setUserSort(arg1, arg2) {
+    const role = arg2 ? arg1 : 'ALL';
+    const column = arg2 || arg1;
+    
     if (userSortColumn[role] === column) {
         userSortDirection[role] = userSortDirection[role] === 'asc' ? 'desc' : 'asc';
     } else {
@@ -2252,9 +2576,10 @@ function setUserSort(role, column) {
     renderUserTable(role);
 }
 
-function updateUserSortIndicators(role) {
+function updateUserSortIndicators(role = 'ALL') {
     USER_SORTABLE_COLUMNS.forEach((column) => {
-        const icon = document.querySelector(`[data-sort-icon-user-${role}="${column}"]`);
+        const iconSelector = role === 'ALL' ? `[data-sort-icon-user="${column}"]` : `[data-sort-icon-user-${role}="${column}"]`;
+        const icon = document.querySelector(iconSelector);
         if (!icon) return;
         if (userSortColumn[role] !== column) {
             icon.classList.remove('active');
@@ -2266,10 +2591,14 @@ function updateUserSortIndicators(role) {
     });
 }
 
-function renderUserTable(role) {
-    const tbody = document.getElementById(`user-table-body-${role}`);
-    const empty = document.getElementById(`user-empty-${role}`);
-    const noMatch = document.getElementById(`user-no-match-${role}`);
+function renderUserTable(role = 'ALL') {
+    const tbodyId = role === 'ALL' ? 'user-table-body' : `user-table-body-${role}`;
+    const emptyId = role === 'ALL' ? 'user-empty' : `user-empty-${role}`;
+    const noMatchId = role === 'ALL' ? 'user-no-match' : `user-no-match-${role}`;
+    
+    const tbody = document.getElementById(tbodyId);
+    const empty = document.getElementById(emptyId);
+    const noMatch = document.getElementById(noMatchId);
     if (!tbody || !empty) return;
 
     const items = userState[role] || [];
@@ -2286,12 +2615,14 @@ function renderUserTable(role) {
     pageItems.forEach((item) => {
         const row = document.createElement('tr');
         const checked = userSelectedIds[role].has(item.id);
-        const createdDate = new Date(item.createdAt).toLocaleDateString('th-TH', {
-            day: 'numeric', month: 'short', year: 'numeric',
-        });
         const adminBadgeCell = role === 'STAFF'
             ? `<td>${item.isAdmin ? '<span class="admin-bool-badge admin-bool-badge--yes">✓</span>' : '<span class="admin-bool-badge admin-bool-badge--no">✕</span>'}</td>`
             : '';
+        const fullName = [item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ') || '-';
+        const nameInfoCells = `<td>${fullName}</td><td>${item.nickname || '-'}</td>`;
+        const roleWorkCells = role === 'STAFF'
+            ? `<td>${item.position?.name || '-'}</td><td>${item.department?.name || '-'}</td>`
+            : `<td>${item.courseFormat?.name || '-'}</td><td>${item.group?.name || '-'}</td>`;
         row.innerHTML = `
             <td>
                 <label class="admin-checkbox-wrap">
@@ -2299,8 +2630,8 @@ function renderUserTable(role) {
                     <span class="custom-checkbox"></span>
                 </label>
             </td>
-            <td class="admin-cell-strong">${item.email}</td>
-            <td>${createdDate}</td>
+            ${nameInfoCells}
+            ${roleWorkCells}
             ${adminBadgeCell}
             <td>${adminActionButtonsHtml()}</td>
         `;
@@ -2323,7 +2654,11 @@ function toggleUserRowSelect(role, id, checked) {
     updateUserSelectAllState(role);
 }
 
-function toggleUserSelectAll(role, checked) {
+// Support both toggleUserSelectAll(true) and toggleUserSelectAll('STAFF', true)
+function toggleUserSelectAll(arg1, arg2) {
+    const role = arg2 !== undefined ? arg1 : 'ALL';
+    const checked = arg2 !== undefined ? arg2 : arg1;
+    
     const filtered = getFilteredUserItems(role);
     const start = (userCurrentPage[role] - 1) * USER_PAGE_SIZE;
     const pageItems = filtered.slice(start, start + USER_PAGE_SIZE);
@@ -2334,8 +2669,9 @@ function toggleUserSelectAll(role, checked) {
     renderUserTable(role);
 }
 
-function updateUserSelectAllState(role, currentPageItems) {
-    const selectAll = document.getElementById(`user-select-all-${role}`);
+function updateUserSelectAllState(role = 'ALL', currentPageItems) {
+    const selectAllId = role === 'ALL' ? 'user-select-all' : `user-select-all-${role}`;
+    const selectAll = document.getElementById(selectAllId);
     if (!selectAll) return;
 
     let pageItems = currentPageItems;
@@ -2347,9 +2683,11 @@ function updateUserSelectAllState(role, currentPageItems) {
     selectAll.checked = pageItems.length > 0 && pageItems.every((item) => userSelectedIds[role].has(item.id));
 }
 
-function updateUserBulkBar(role) {
-    const btn = document.getElementById(`user-bulk-delete-btn-${role}`);
-    const countEl = document.getElementById(`user-selected-count-${role}`);
+function updateUserBulkBar(role = 'ALL') {
+    const btnId = role === 'ALL' ? 'user-bulk-delete-btn' : `user-bulk-delete-btn-${role}`;
+    const countId = role === 'ALL' ? 'user-selected-count' : `user-selected-count-${role}`;
+    const btn = document.getElementById(btnId);
+    const countEl = document.getElementById(countId);
     const n = userSelectedIds[role].size;
 
     if (btn) btn.disabled = n === 0;
@@ -2359,7 +2697,7 @@ function updateUserBulkBar(role) {
     }
 }
 
-async function bulkDeleteUsers(role) {
+async function bulkDeleteUsers(role = 'ALL') {
     const ids = Array.from(userSelectedIds[role]);
     if (ids.length === 0) return;
     const confirmed = await adminConfirm(`ลบผู้ใช้งานที่เลือกไว้ ${ids.length} รายการ ใช่หรือไม่?`);
@@ -2380,10 +2718,14 @@ async function bulkDeleteUsers(role) {
         });
 }
 
-function updateUserPagination(role, filteredCount, totalPages) {
-    const pagination = document.getElementById(`user-pagination-${role}`);
-    const prevBtn = document.getElementById(`user-prev-btn-${role}`);
-    const nextBtn = document.getElementById(`user-next-btn-${role}`);
+function updateUserPagination(role = 'ALL', filteredCount, totalPages) {
+    const paginationId = role === 'ALL' ? 'user-pagination' : `user-pagination-${role}`;
+    const prevBtnId = role === 'ALL' ? 'user-prev-btn' : `user-prev-btn-${role}`;
+    const nextBtnId = role === 'ALL' ? 'user-next-btn' : `user-next-btn-${role}`;
+    
+    const pagination = document.getElementById(paginationId);
+    const prevBtn = document.getElementById(prevBtnId);
+    const nextBtn = document.getElementById(nextBtnId);
     if (!pagination || !prevBtn || !nextBtn) return;
 
     pagination.classList.toggle('hidden', filteredCount <= USER_PAGE_SIZE);
@@ -2392,8 +2734,9 @@ function updateUserPagination(role, filteredCount, totalPages) {
     renderUserPageNumbers(role, totalPages);
 }
 
-function renderUserPageNumbers(role, totalPages) {
-    const container = document.getElementById(`user-page-numbers-${role}`);
+function renderUserPageNumbers(role = 'ALL', totalPages) {
+    const containerId = role === 'ALL' ? 'user-page-numbers' : `user-page-numbers-${role}`;
+    const container = document.getElementById(containerId);
     if (!container) return;
 
     container.innerHTML = '';
@@ -2415,17 +2758,20 @@ function renderUserPageNumbers(role, totalPages) {
     });
 }
 
-function goToUserPage(role, page) {
-    userCurrentPage[role] = page;
-    renderUserTable(role);
-}
-
-function changeUserPage(role, delta) {
+// Support both changeUserPage(-1) and changeUserPage('STAFF', -1)
+function changeUserPage(arg1, arg2) {
+    const role = arg2 !== undefined ? arg1 : 'ALL';
+    const delta = arg2 !== undefined ? arg2 : arg1;
     userCurrentPage[role] += delta;
     renderUserTable(role);
 }
 
-function openUserForm(item, role) {
+function goToUserPage(role = 'ALL', page) {
+    userCurrentPage[role] = page;
+    renderUserTable(role);
+}
+
+function openUserForm(item = null, role = 'ALL') {
     const form = document.getElementById('user-form');
     const error = document.getElementById('user-form-error');
     form.reset();
@@ -2435,7 +2781,7 @@ function openUserForm(item, role) {
     document.getElementById('user-id').value = item ? item.id : '';
     document.getElementById('user-current-role-tab').value = role;
     document.getElementById('user-email').value = item ? item.email : '';
-    document.getElementById('user-role').value = item ? item.role : role;
+    document.getElementById('user-role').value = item ? item.role : (role !== 'ALL' ? role : 'STAFF');
     document.getElementById('user-role-group').classList.toggle('hidden', !!item);
     document.getElementById('user-password').value = '';
     document.getElementById('user-password').required = !item;
@@ -2472,7 +2818,6 @@ function submitUserForm(event) {
         role,
     };
     if (password) payload.password = password;
-    // Admin (พี่ค่ายที่ isAdmin) ไม่มีสิทธิ์มอบ/ถอดสิทธิ์ผู้ดูแลระบบ จึงไม่ส่ง isAdmin เลยจากแผงนี้ (ทำได้เฉพาะใน /webmanager)
 
     const url = id ? `/api/users/${id}` : '/api/users';
     const method = id ? 'PUT' : 'POST';
@@ -2495,7 +2840,6 @@ function submitUserForm(event) {
             closeUserForm();
             showToast(id ? 'แก้ไขผู้ใช้งานสำเร็จ' : 'เพิ่มผู้ใช้งานสำเร็จ');
             loadUsers(currentRoleTab);
-            if (payload.role !== currentRoleTab) loadUsers(payload.role);
         })
         .catch((error) => {
             errorBox.textContent = error.message;
@@ -2506,7 +2850,7 @@ function submitUserForm(event) {
         });
 }
 
-async function deleteUserItem(item, role) {
+async function deleteUserItem(item, role = 'ALL') {
     const confirmed = await adminConfirm(`ลบผู้ใช้งาน "${item.email}" ใช่หรือไม่?`);
     if (!confirmed) return;
 
@@ -2615,6 +2959,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('schedule-form').addEventListener('submit', submitScheduleForm);
     document.getElementById('user-form').addEventListener('submit', submitUserForm);
     initRichTextToolbar();
+
+    // date selects สำหรับช่องวันที่ใน form ข่าวและกำหนดการ (แทน input[type=date] เพื่อแก้ปัญหา iOS Safari แสดงปีพุทธศักราชเพี้ยน)
+    newsPublishedAtSelects = setupDateSelects({ containerId: 'news-publishedAt-selects', hiddenId: 'news-publishedAt' });
+    scheduleEventDateSelects = setupDateSelects({ containerId: 'schedule-eventDate-selects', hiddenId: 'schedule-eventDate' });
+    scheduleEndDateSelects = setupDateSelects({ containerId: 'schedule-endDate-selects', hiddenId: 'schedule-endDate' });
 
     if (localStorage.getItem('adminSidebarCollapsed') === '1') {
         const sidebar = document.querySelector('.admin-shell-sidebar');

@@ -474,7 +474,7 @@ function renderAvatar(el, avatarUrl, initial) {
     el.innerHTML = '';
     if (avatarUrl) {
         const img = document.createElement('img');
-        img.src = avatarUrl;
+        img.src = window.PTN_MEDIA_URL(avatarUrl);
         img.alt = '';
         img.style.width = '100%';
         img.style.height = '100%';

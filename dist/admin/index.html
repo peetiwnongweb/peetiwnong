@@ -2,7 +2,7 @@
 <html lang="th">
 
 <head>
-    <script src="/js/config.js"></script>
+    <script src="/js/config.js?v=20260923-1"></script>
     <script>
         (function () {
             if (localStorage.getItem('adminTheme') === 'dark') {
@@ -57,7 +57,7 @@
 
                 <div class="admin-shell-nav-divider"></div>
 
-                <span class="admin-shell-nav-group-label">PAGE</span>
+                <span class="admin-shell-nav-group-label">WEB PAGE SETTING</span>
                 <div class="admin-shell-nav-group">
                 <button class="admin-shell-nav-parent" onclick="switchAdminSection('home')" id="section-nav-home">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,13 +68,34 @@
                 </button>
                 <div class="admin-shell-nav-collapse collapsed" id="home-subnav">
                     <div class="admin-shell-nav-children">
-                        <button class="admin-shell-nav-child active" onclick="switchAdminTab('news')" id="admin-tab-news">
+                        <button class="admin-shell-nav-child" onclick="toggleNewsSubnav()" id="admin-tab-news-toggle">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                     d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                             </svg>
                             ประชาสัมพันธ์
+                            <svg class="admin-shell-nav-subcaret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
                         </button>
+                        <div class="admin-shell-nav-collapse collapsed" id="news-subnav">
+                            <div class="admin-shell-nav-grandchildren">
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('approve-news')" id="admin-tab-approve-news">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                    </svg>
+                                    การอนุมัติประชาสัมพันธ์
+                                </button>
+                                <button class="admin-shell-nav-grandchild" onclick="switchAdminTab('news')" id="admin-tab-news">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                    จัดการประชาสัมพันธ์
+                                </button>
+                            </div>
+                        </div>
                         <button class="admin-shell-nav-child" onclick="switchAdminTab('schedule')" id="admin-tab-schedule">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -131,7 +152,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                             d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                     </svg>
-                    <span class="admin-shell-nav-label">จัดการผู้ใช้งาน</span>
+                    <span class="admin-shell-nav-label">จัดการข้อมูลผู้ใช้</span>
                 </button>
                 <div class="admin-shell-nav-collapse collapsed" id="user-subnav">
                     <div class="admin-shell-nav-children">
@@ -151,6 +172,7 @@
                         </button>
                     </div>
                 </div>
+
 
                 <div class="admin-shell-nav-divider"></div>
 
@@ -177,13 +199,6 @@
                                     d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                             </svg>
                             Log Users
-                        </button>
-                        <button class="admin-shell-nav-child" onclick="switchAdminTab('log-system')" id="admin-tab-log-system">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M21.75 17.25v-.228a4.5 4.5 0 00-.12-1.03l-2.268-9.64a3.375 3.375 0 00-3.285-2.602H7.923a3.375 3.375 0 00-3.285 2.602l-2.268 9.64a4.5 4.5 0 00-.12 1.03v.228m19.5 0a3 3 0 01-3 3H5.25a3 3 0 01-3-3m19.5 0a3 3 0 00-3-3H5.25a3 3 0 00-3 3m16.5 0h.008v.008h-.008v-.008zm-3 0h.008v.008h-.008v-.008z" />
-                            </svg>
-                            Log System
                         </button>
                     </div>
                 </div>
@@ -405,6 +420,58 @@
                         </div>
                     </section>
 
+                    <!-- การอนุมัติประชาสัมพันธ์ -->
+                    <section id="admin-panel-approve-news" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">การอนุมัติประชาสัมพันธ์</h2>
+                                <p class="admin-panel-desc">ตรวจสอบและอนุมัติ/ปฏิเสธประชาสัมพันธ์ที่พี่ค่ายส่งเข้ามา ก่อนเผยแพร่ขึ้นหน้าเว็บจริง</p>
+                            </div>
+                            <div class="admin-toolbar-actions">
+                                <button type="button" class="btn-outline" onclick="loadNews()">
+                                    <svg class="admin-refresh-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                    </svg>
+                                    รีเฟรช
+                                </button>
+                            </div>
+                        </div>
+                        <div class="admin-toggle-row-grid">
+                            <div class="admin-toggle-row admin-toggle-row-standalone">
+                                <label class="admin-toggle-switch large">
+                                    <input type="checkbox" id="news-auto-approve-toggle" onchange="submitAutoApprove('news', this.checked)">
+                                </label>
+                                <div>
+                                    <span class="admin-toggle-label">
+                                        อนุมัติประชาสัมพันธ์อัตโนมัติ
+                                        <span id="news-auto-approve-status-dot" class="registration-status-dot"></span>
+                                    </span>
+                                    <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายส่งเข้ามาเผยแพร่ขึ้นหน้าเว็บทันทีโดยไม่ต้องรอตรวจสอบ ปิดไว้ = ต้องรอ Admin/Owner กดอนุมัติที่ตารางด้านล่างก่อนเสมอ (ข่าวที่ Admin/Owner เขียนเองอนุมัติทันทีอยู่แล้วไม่ว่าสวิตช์นี้จะเปิดหรือปิด)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>หัวข้อประชาสัมพันธ์</th>
+                                        <th>ผู้เขียน</th>
+                                        <th>ส่งเมื่อ</th>
+                                        <th>สถานะ</th>
+                                        <th class="admin-col-actions admin-col-actions-wide">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="news-approval-table-body"></tbody>
+                            </table>
+                            <p id="news-approval-empty" class="admin-empty hidden">ยังไม่มีประชาสัมพันธ์ที่รอตรวจสอบ</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="news-approval-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="news-approval-prev-btn" onclick="changeNewsApprovalPage(-1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="news-approval-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="news-approval-next-btn" onclick="changeNewsApprovalPage(1)">ถัดไป</button>
+                        </div>
+                    </section>
+
                     <!-- ประชาสัมพันธ์ -->
                     <section id="admin-panel-news" class="admin-panel">
                         <div class="admin-panel-header flex items-center justify-between">
@@ -521,7 +588,6 @@
 
                 <!-- ================= SECTION: อนุมัติการลงทะเบียน (Approve Registration) ================= -->
                 <section id="admin-section-approve-registration" class="admin-section">
-                    <!-- พี่ค่าย -->
                     <section id="admin-panel-approve-staff" class="admin-panel active">
                         <div class="admin-panel-header flex items-center justify-between">
                             <div>
@@ -588,8 +654,6 @@
                             <p id="approval-empty-STAFF" class="admin-empty hidden">ยังไม่มีคำขอลงทะเบียนพี่ค่ายที่รอตรวจสอบ</p>
                         </div>
                     </section>
-
-                    <!-- น้องค่าย -->
                     <section id="admin-panel-approve-participant" class="admin-panel">
                         <div class="admin-panel-header flex items-center justify-between">
                             <div>
@@ -614,7 +678,7 @@
                                     เปิดรับลงทะเบียนน้องค่าย
                                     <span data-registration-status-dot="participant" class="registration-status-dot"></span>
                                 </span>
-                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่ม "ลงทะเบียนน้องค่าย" ที่หน้าแรกกดได้ตามปกติ ปิดไว้ = กดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย) — ต้องมีค่ายที่กำลังดำเนินการอยู่จริงด้วยเสมอ</p>
+                                <p class="admin-field-hint admin-toggle-hint">เปิดไว้ = ปุ่ม "ลงทะเบียนน้องค่าย" ที่หน้าแรกกดได้ตามปกติ ปิดไว้ = กดไม่ได้ (บังคับฝั่งเซิร์ฟเวอร์ด้วย) เหมือนกับสวิตช์ที่แท็บ "ขั้นตอนดำเนินการค่าย"</p>
                             </div>
                         </div>
                         <div class="admin-toggle-row-grid">
@@ -697,8 +761,10 @@
                                                 <span class="custom-checkbox"></span>
                                             </label>
                                         </th>
-                                        <th class="admin-sortable" onclick="setUserSort('STAFF', 'email')">อีเมล <span class="admin-sort-icon" data-sort-icon-user-STAFF="email"></span></th>
-                                        <th class="admin-sortable" onclick="setUserSort('STAFF', 'createdAt')">สร้างเมื่อ <span class="admin-sort-icon" data-sort-icon-user-STAFF="createdAt"></span></th>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>ชื่อเล่น</th>
+                                        <th>ตำแหน่ง</th>
+                                        <th>ฝ่ายงาน</th>
                                         <th>สิทธิ์แอดมิน</th>
                                         <th class="admin-col-actions">จัดการ</th>
                                     </tr>
@@ -752,8 +818,10 @@
                                                 <span class="custom-checkbox"></span>
                                             </label>
                                         </th>
-                                        <th class="admin-sortable" onclick="setUserSort('PARTICIPANT', 'email')">อีเมล <span class="admin-sort-icon" data-sort-icon-user-PARTICIPANT="email"></span></th>
-                                        <th class="admin-sortable" onclick="setUserSort('PARTICIPANT', 'createdAt')">สร้างเมื่อ <span class="admin-sort-icon" data-sort-icon-user-PARTICIPANT="createdAt"></span></th>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>ชื่อเล่น</th>
+                                        <th>คอร์สเรียน</th>
+                                        <th>กลุ่ม</th>
                                         <th class="admin-col-actions">จัดการ</th>
                                     </tr>
                                 </thead>
@@ -769,6 +837,8 @@
                         </div>
                     </section>
                 </section>
+
+
 
                 <!-- ================= SECTION: ประวัติการดำเนินการ (Activity Log) ================= -->
                 <section id="admin-section-log" class="admin-section">
@@ -804,6 +874,11 @@
                             <p id="log-admin-empty" class="admin-empty hidden">ยังไม่มีประวัติการดำเนินการ</p>
                             <p id="log-admin-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
                         </div>
+                        <div class="admin-pagination hidden" id="log-admin-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="log-admin-prev-btn" onclick="changeActivityLogPage('admin', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="log-admin-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="log-admin-next-btn" onclick="changeActivityLogPage('admin', 1)">ถัดไป</button>
+                        </div>
                     </section>
 
                     <!-- ของผู้ใช้ -->
@@ -838,19 +913,10 @@
                             <p id="log-user-empty" class="admin-empty hidden">ยังไม่มีประวัติการดำเนินการ</p>
                             <p id="log-user-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
                         </div>
-                    </section>
-
-                    <!-- Log ระบบ -->
-                    <section id="admin-panel-log-system" class="admin-panel">
-                        <div class="admin-placeholder">
-                            <div class="admin-placeholder-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                        d="M21.75 17.25v-.228a4.5 4.5 0 00-.12-1.03l-2.268-9.64a3.375 3.375 0 00-3.285-2.602H7.923a3.375 3.375 0 00-3.285 2.602l-2.268 9.64a4.5 4.5 0 00-.12 1.03v.228m19.5 0a3 3 0 01-3 3H5.25a3 3 0 01-3-3m19.5 0a3 3 0 00-3-3H5.25a3 3 0 00-3 3m16.5 0h.008v.008h-.008v-.008zm-3 0h.008v.008h-.008v-.008z" />
-                                </svg>
-                            </div>
-                            <h2 class="admin-placeholder-title">Log ระบบ</h2>
-                            <p class="admin-placeholder-desc">ส่วนนี้อยู่ระหว่างการพัฒนา เตรียมไว้สำหรับบันทึก log ของระบบต่าง ๆ ในอนาคต (เช่น อีเมล, งานเบื้องหลัง, ข้อผิดพลาดของเซิร์ฟเวอร์) ปัจจุบันยังไม่มีข้อมูล</p>
+                        <div class="admin-pagination hidden" id="log-user-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="log-user-prev-btn" onclick="changeActivityLogPage('user', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="log-user-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="log-user-next-btn" onclick="changeActivityLogPage('user', 1)">ถัดไป</button>
                         </div>
                     </section>
                 </section>
@@ -963,16 +1029,30 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="news-publishedAt">วันที่เผยแพร่</label>
-                                    <input class="form-input" type="date" id="news-publishedAt">
+                                    <div id="news-publishedAt-selects"></div>
+                                    <input type="hidden" id="news-publishedAt">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="news-imageUrl">รูปภาพ</label>
-                                    <input class="form-input" type="text" id="news-imageUrl" placeholder="/backend/uploads/news/xxx.jpg">
-                                    <input class="admin-file-input" type="file" accept="image/*" id="news-imageUrl-file" onchange="uploadNewsImage(event)">
-                                    <p class="admin-field-hint hidden" id="news-imageUrl-status"></p>
+                                    <div class="news-image-upload">
+                                        <div class="news-image-preview hidden" id="news-imageUrl-preview">
+                                            <img id="news-imageUrl-preview-img" src="" alt="ตัวอย่างรูปภาพประกอบประชาสัมพันธ์">
+                                        </div>
+                                        <input class="form-input" type="text" id="news-imageUrl" placeholder="/backend/uploads/news/xxx.jpg" oninput="updateNewsImagePreview()">
+                                        <input class="admin-file-input" type="file" accept="image/*" id="news-imageUrl-file" onchange="uploadNewsImage(event)">
+                                        <p class="admin-field-hint hidden" id="news-imageUrl-status"></p>
+                                    </div>
                                 </div>
                                 <div class="checkbox-group">
-                                    <input type="checkbox" id="news-isHot" class="form-checkbox">
+                                    <label class="ios-checkbox">
+                                        <input type="checkbox" id="news-isHot">
+                                        <div class="checkbox-wrapper">
+                                            <div class="checkbox-bg"></div>
+                                            <svg class="checkbox-icon" viewBox="0 0 24 24" fill="none">
+                                                <path class="check-path" d="M4 12l6 6L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </label>
                                     <label for="news-isHot" class="checkbox-label">ติดป้าย "สำคัญ" (ประกาศเด่น)</label>
                                 </div>
                                 <div class="admin-toggle-row">
@@ -992,19 +1072,31 @@
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="news-summary">สรุปย่อ</label>
-                                    <input class="form-input" type="text" id="news-summary" required>
+                                    <textarea class="form-input admin-textarea" id="news-summary" rows="3" style="min-height: 0;" required></textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="news-detail">รายละเอียด</label>
-                            <div class="admin-richtext-toolbar">
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">รายการ</button>
-                                <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">ลิงก์</button>
+                            <div class="admin-richtext-editor">
+                                <div class="admin-richtext-toolbar">
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="bold" title="ตัวหนา"><strong>B</strong></button>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="italic" title="ตัวเอียง"><em>I</em></button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="insertUnorderedList" title="รายการหัวข้อย่อย">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                        </svg>
+                                    </button>
+                                    <span class="admin-richtext-divider" aria-hidden="true"></span>
+                                    <button type="button" class="admin-richtext-btn" data-richtext-cmd="createLink" title="แทรกลิงก์">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="admin-textarea admin-richtext" id="news-detail" contenteditable="true" data-placeholder="พิมพ์รายละเอียดประชาสัมพันธ์..."></div>
                             </div>
-                            <div class="form-input admin-textarea admin-richtext" id="news-detail" contenteditable="true" data-placeholder="พิมพ์รายละเอียดประชาสัมพันธ์..."></div>
                         </div>
                         <div class="admin-form-actions">
                             <button type="button" class="admin-cancel-btn" onclick="closeNewsForm()">ยกเลิก</button>
@@ -1036,12 +1128,14 @@
                         <input type="hidden" id="schedule-id">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="schedule-eventDate">วันที่เริ่ม (สำหรับเรียงลำดับ)</label>
-                                <input class="form-input" type="date" id="schedule-eventDate" required onchange="autoFillScheduleDateText()">
+                                <label class="form-label" for="schedule-eventDate">วันที่เริ่ม (สำหรับเรียงลำดับ) <span class="required-mark">*</span></label>
+                                <div id="schedule-eventDate-selects"></div>
+                                <input type="hidden" id="schedule-eventDate" onchange="autoFillScheduleDateText()">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="schedule-endDate">วันที่สิ้นสุด (ถ้ามีหลายวัน)</label>
-                                <input class="form-input" type="date" id="schedule-endDate" onchange="autoFillScheduleDateText()">
+                                <div id="schedule-endDate-selects"></div>
+                                <input type="hidden" id="schedule-endDate" onchange="autoFillScheduleDateText()">
                             </div>
                         </div>
                         <div class="form-grid">
@@ -1212,10 +1306,52 @@
         </div>
     </div>
 
+    <!-- ================= MODAL: ดูรายละเอียด/ตัวอย่างประชาสัมพันธ์ ================= -->
+    <div id="news-approval-detail-modal" class="modal hidden" aria-labelledby="news-approval-detail-title" role="dialog" aria-modal="true">
+        <div class="modal-wrapper">
+            <div onclick="closeNewsApprovalDetail()" class="modal-backdrop" aria-hidden="true"></div>
+            <span class="modal-trick" aria-hidden="true">&#8203;</span>
+            <div class="modal-box news-box modal-box-lg">
+                <div class="modal-close-btn">
+                    <button type="button" onclick="closeNewsApprovalDetail()">
+                        <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-content-wide">
+                    <h2 id="news-approval-detail-title" class="admin-modal-title">ตัวอย่างประชาสัมพันธ์</h2>
+                    <p class="admin-panel-desc" id="news-approval-detail-subtitle" style="margin: 0.15rem 0 1rem;">แสดงผลเหมือนที่จะเห็นจริงบนหน้าเว็บหลัก</p>
+                    <div class="approval-detail-grid" id="news-approval-detail-grid"></div>
+                    <div class="news-live-preview-frame" id="news-approval-detail-preview"></div>
+                    <div class="admin-confirm-actions hidden" id="news-approval-detail-actions" style="margin-top: 1.5rem;">
+                        <button type="button" class="admin-approve-btn" id="news-approval-detail-approve-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">อนุมัติ</button>
+                        <button type="button" class="admin-reject-btn" id="news-approval-detail-reject-btn" style="padding: 0.6rem 1.25rem; font-size: 0.9rem;">ปฏิเสธ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ดูรูปเต็มจอ ================= -->
+    <div id="image-lightbox-modal" class="modal hidden image-lightbox-modal" role="dialog" aria-modal="true">
+        <div onclick="closeImageLightbox()" class="modal-backdrop" aria-hidden="true"></div>
+        <div class="image-lightbox-close-btn">
+            <button type="button" onclick="closeImageLightbox()" aria-label="ปิด">
+                <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <img id="image-lightbox-img" class="image-lightbox-img" src="" alt="รูปภาพขนาดเต็ม">
+    </div>
+
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
-    <script src="js/admin.js?v=20260920-3"></script>
+    <script src="../js/layout/date-select.js?v=20260916-1"></script>
+    <script src="js/admin.js?v=20260923-1"></script>
     <script src="js/admin-dashboard.js?v=20260919-2"></script>
 </body>
+
 
 </html>

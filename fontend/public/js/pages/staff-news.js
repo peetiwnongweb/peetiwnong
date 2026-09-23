@@ -93,7 +93,7 @@ function handleNewsWriteImageUpload(event) {
         .then(({ url }) => {
             newsWriteImageUrl = url;
             const preview = document.getElementById('news-write-image-preview');
-            preview.src = url;
+            preview.src = window.PTN_MEDIA_URL(url);
             document.getElementById('news-write-image-preview-wrap').classList.remove('hidden');
         })
         .catch((error) => {
@@ -240,7 +240,7 @@ function startEditNews(item) {
 
     const previewWrap = document.getElementById('news-write-image-preview-wrap');
     if (item.imageUrl) {
-        document.getElementById('news-write-image-preview').src = item.imageUrl;
+        document.getElementById('news-write-image-preview').src = window.PTN_MEDIA_URL(item.imageUrl);
         previewWrap.classList.remove('hidden');
     } else {
         previewWrap.classList.add('hidden');
@@ -435,7 +435,7 @@ function viewNewsDetail(newsId) {
             <p class="news-item-meta">${NEWS_TAG_LABELS[item.tag] || item.tag} · ส่งเมื่อ ${formatNewsDate(item.createdAt)}</p>
             ${item.imageUrl ? `
             <div style="position: relative;">
-                <img src="${item.imageUrl}" alt="ภาพประกอบประชาสัมพันธ์" class="news-detail-image" style="cursor: zoom-in;" onclick="openImageLightbox('${item.imageUrl}')">
+                <img src="${window.PTN_MEDIA_URL(item.imageUrl)}" alt="ภาพประกอบประชาสัมพันธ์" class="news-detail-image" style="cursor: zoom-in;" onclick="openImageLightbox('${item.imageUrl}')">
                 <button type="button" class="news-detail-zoom-btn" onclick="openImageLightbox('${item.imageUrl}')" aria-label="ดูรูปเต็ม">
                     <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
@@ -458,7 +458,7 @@ function closeNewsDetailModal() {
 
 // ดูรูปประกอบข่าวแบบเต็มจอ ไม่ถูกครอบตัด (รูปในกรอบตัวอย่างแสดงแบบ object-cover ครอบตัดไว้)
 function openImageLightbox(url) {
-    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-img').src = window.PTN_MEDIA_URL(url);
     document.getElementById('image-lightbox-modal').classList.remove('hidden');
 }
 

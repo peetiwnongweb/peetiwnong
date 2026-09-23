@@ -62,7 +62,7 @@ function renderNewsSummary(limit = 3) {
         card.innerHTML = `
             <div class="news-img-wrap">
                 ${hotBadge}
-                <img src="${window.PTN_MEDIA_URL(news.imageUrl) || window.PTN_MEDIA_URL('/backend/uploads/news/news.jpg')}" alt="ภาพประกอบประชาสัมพันธ์" class="news-thumbnail">
+                <img src="${window.PTN_MEDIA_URL(news.imageUrl) || window.PTN_PLACEHOLDER_IMAGE}" alt="ภาพประกอบประชาสัมพันธ์" class="news-thumbnail">
             </div>
             <div class="news-content grow flex flex-col justify-between">
                 <div class="news-info">
@@ -116,7 +116,7 @@ function renderNews(filter = 'all', keyword = '') {
             card.innerHTML = `
                 <div class="news-img-wrap">
                     ${hotBadge}
-                    <img src="${window.PTN_MEDIA_URL(news.imageUrl) || window.PTN_MEDIA_URL('/backend/uploads/news/news.jpg')}" alt="ภาพประกอบประชาสัมพันธ์" class="news-thumbnail">
+                    <img src="${window.PTN_MEDIA_URL(news.imageUrl) || window.PTN_PLACEHOLDER_IMAGE}" alt="ภาพประกอบประชาสัมพันธ์" class="news-thumbnail">
                 </div>
                 <div class="news-content grow flex flex-col justify-between">
                     <div class="news-info">
@@ -212,7 +212,7 @@ function closeNewsModal() {
 
 // ดูรูปประกอบข่าวแบบเต็มจอ ไม่ถูกครอบตัด (รูปในการ์ด/หน้ารายละเอียดแสดงแบบ object-cover ครอบตัดไว้)
 function openImageLightbox(url) {
-    document.getElementById('image-lightbox-img').src = url;
+    document.getElementById('image-lightbox-img').src = window.PTN_MEDIA_URL(url);
     document.getElementById('image-lightbox-modal').classList.remove('hidden');
 }
 

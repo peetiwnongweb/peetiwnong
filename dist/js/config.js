@@ -13,6 +13,14 @@ window.PTN_MEDIA_URL = function (url) {
     return url;
 };
 
+// ลิงก์ <a href> / window.open ที่ชี้ไป /api/... ไม่ผ่าน fetch() ตัวดักด้านล่าง ต้องต่อโดเมน backend เอง
+window.PTN_API_URL = function (path) {
+    return API_BASE_URL + path;
+};
+
+// ใช้แทนรูปที่ไม่มี (รูปประธานค่าย/ข่าวที่ยังไม่ได้อัปโหลด) - ไฟล์นี้อยู่บน Pages เอง ไม่ต้องไปขอจาก backend
+window.PTN_PLACEHOLDER_IMAGE = '/assets/images/logo/logo1.png';
+
 const originalFetch = window.fetch;
 
 window.fetch = async function () {

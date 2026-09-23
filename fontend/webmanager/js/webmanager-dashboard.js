@@ -929,10 +929,10 @@ function renderDashboardUsage(panel, d) {
                 <div class="dash-export">
                     <button type="button" class="dashboard-refresh-btn" onclick="toggleDashboardExportMenu()">${DASH_ICONS.cloud.replace('<svg', '<svg style="width:1rem;height:1rem"')}<span>ส่งออก CSV</span></button>
                     <div class="dash-export-menu" id="dashboard-export-menu" hidden>
-                        <a href="/api/dashboard/usage/export?type=hourly&range=${d.range.key}">รายชั่วโมง (${rangeLabel[d.range.key]})</a>
-                        <a href="/api/dashboard/usage/export?type=endpoints&range=${d.range.key}">รายวันต่อ endpoint (${rangeLabel[d.range.key]})</a>
-                        <a href="/api/dashboard/usage/export?type=users&range=${d.range.key}">ผู้ใช้ต่อวัน (${rangeLabel[d.range.key]})</a>
-                        <a href="/api/dashboard/usage/export?type=snapshots">ขนาดฐานข้อมูลรายวัน (ทั้งหมด)</a>
+                        <a href="${window.PTN_API_URL(`/api/dashboard/usage/export?type=hourly&range=${d.range.key}`)}">รายชั่วโมง (${rangeLabel[d.range.key]})</a>
+                        <a href="${window.PTN_API_URL(`/api/dashboard/usage/export?type=endpoints&range=${d.range.key}`)}">รายวันต่อ endpoint (${rangeLabel[d.range.key]})</a>
+                        <a href="${window.PTN_API_URL(`/api/dashboard/usage/export?type=users&range=${d.range.key}`)}">ผู้ใช้ต่อวัน (${rangeLabel[d.range.key]})</a>
+                        <a href="${window.PTN_API_URL(`/api/dashboard/usage/export?type=snapshots`)}">ขนาดฐานข้อมูลรายวัน (ทั้งหมด)</a>
                     </div>
                 </div>
             </div>

@@ -306,7 +306,8 @@ function handleLoginSubmit(event) {
             closeAuthModal();
             sessionStorage.setItem('ptnJustLoggedIn', '1');
             // ล็อกอินแล้วอยู่หน้าเดิมต่อเลย (ปกติคือหน้าแรก เพราะโมดัลนี้เปิดใช้ได้จากทุกหน้า) ไม่พุ่งไปหน้าตั้งค่าโปรไฟล์อัตโนมัติ
-            showWelcomeToast();
+            // รีเฟรชหน้าเพื่อให้ state ของผู้ใช้ถูกต้องสมบูรณ์
+            location.reload();
         })
         .catch((error) => {
             showAuthToast(error.message, false);
@@ -473,7 +474,7 @@ function renderAvatar(el, avatarUrl, initial) {
     el.innerHTML = '';
     if (avatarUrl) {
         const img = document.createElement('img');
-        img.src = avatarUrl;
+        img.src = window.PTN_MEDIA_URL(avatarUrl);
         img.alt = '';
         img.style.width = '100%';
         img.style.height = '100%';

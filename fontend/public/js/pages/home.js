@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
         card.className = 'track-card flex flex-col';
         card.innerHTML = `
           <div class="track-profile-wrapper flex justify-center">
-            <img src="${window.PTN_MEDIA_URL(track.imageUrl) || window.PTN_MEDIA_URL('/backend/uploads/presidents/profile.jpg')}" alt="image" class="track-profile-img">
+            <img src="${window.PTN_MEDIA_URL(track.imageUrl) || window.PTN_PLACEHOLDER_IMAGE}" alt="image" class="track-profile-img">
           </div>
           <div class="track-card-body flex flex-col items-center justify-center gap-[0.6rem] flex-1">
             <span class="track-role role-president">ประธานค่ายครั้งที่ ${track.generationNos.join(', ')}</span>
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const faculty = document.getElementById('hero-card-faculty');
     const major = document.getElementById('hero-card-major');
 
-    if (image) image.src = window.PTN_MEDIA_URL(latest.imageUrl) || window.PTN_MEDIA_URL('/backend/uploads/presidents/profile.jpg');
+    if (image) image.src = window.PTN_MEDIA_URL(latest.imageUrl) || window.PTN_PLACEHOLDER_IMAGE;
     if (badge) badge.innerText = `ประธานค่ายครั้งที่ ${Math.max(...latest.generationNos)}`;
     if (nickname) nickname.innerText = latest.nickname || '';
     if (name) name.innerText = latest.fullName || '';

@@ -2,7 +2,7 @@
 <html lang="th">
 
 <head>
-    <script src="/js/config.js"></script>
+    <script src="/js/config.js?v=20260923-1"></script>
     <script>
         (function () {
             if (localStorage.getItem('webmanagerTheme') === 'dark') {
@@ -1390,7 +1390,7 @@
                                         <div class="committee-photo-preview hidden" id="committee-imageUrl-preview">
                                             <img id="committee-imageUrl-preview-img" src="" alt="ตัวอย่างรูปภาพประธานค่าย">
                                         </div>
-                                        <input class="form-input" type="text" id="committee-imageUrl" placeholder="/backend/uploads/presidents/xxx.jpg" oninput="updateCommitteeImagePreview()">
+                                        <input class="form-input" type="text" id="committee-imageUrl" placeholder="/media/presidents/xxx" oninput="updateCommitteeImagePreview()">
                                         <input class="admin-file-input" type="file" accept="image/*" id="committee-imageUrl-file" onchange="openImageCropModal(event, 'committee-imageUrl')">
                                         <p class="admin-field-hint hidden" id="committee-imageUrl-status"></p>
                                     </div>
@@ -1553,7 +1553,7 @@
                                         <div class="news-image-preview hidden" id="news-imageUrl-preview">
                                             <img id="news-imageUrl-preview-img" src="" alt="ตัวอย่างรูปภาพประกอบประชาสัมพันธ์">
                                         </div>
-                                        <input class="form-input" type="text" id="news-imageUrl" placeholder="/backend/uploads/news/xxx.jpg" oninput="updateNewsImagePreview()">
+                                        <input class="form-input" type="text" id="news-imageUrl" placeholder="/media/news/xxx" oninput="updateNewsImagePreview()">
                                         <input class="admin-file-input" type="file" accept="image/*" id="news-imageUrl-file" onchange="uploadNewsImage(event)">
                                         <p class="admin-field-hint hidden" id="news-imageUrl-status"></p>
                                     </div>
@@ -2196,8 +2196,8 @@
     <script src="../js/layout/otp-input.js?v=20260916-1"></script>
     <script src="../js/layout/loader.js?v=20260920-1"></script>
     <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/webmanager.js?v=20260920-6"></script>
-    <script src="js/webmanager-dashboard.js?v=20260919-1"></script>
+    <script src="js/webmanager.js?v=20260923-1"></script>
+    <script src="js/webmanager-dashboard.js?v=20260923-1"></script>
 </body>
 
 </html>

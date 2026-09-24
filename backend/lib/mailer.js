@@ -18,12 +18,9 @@ function renderEmailWrapper(heading, bodyHtml) {
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <!-- อีเมลไคลเอนต์ส่วนใหญ่ (โดยเฉพาะ Outlook) ตัด <link> ฟอนต์ภายนอกทิ้งอยู่ดี แต่บางตัว (Apple Mail, webmail บางเจ้า) รองรับ
-       เลยลองโหลดฟอนต์เดียวกับเว็บไว้ ถ้าไม่รองรับก็ fallback ไปที่ font-family stack ปกติ ไม่กระทบอะไร -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
-  <!--[if mso]><style>* { font-family: 'Segoe UI', Tahoma, sans-serif !important; }</style><![endif]-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEETIWNONG Academics Camp</title>
+  <!-- ไม่โหลดฟอนต์/สไตล์จากภายนอก (Google Fonts ฯลฯ) - ตัวกรองสแปมให้คะแนนลบกับอีเมลที่ดึงทรัพยากรภายนอก ใช้ font-family stack ของเครื่องแทน -->
 </head>
 <body style="margin:0; padding:0;">
     <div style="background-color:#f8fafc; padding:32px 16px; font-family:'Prompt', 'Sarabun', 'Segoe UI', Tahoma, sans-serif;">
@@ -69,17 +66,35 @@ function encodeSubject(subject) {
   return `=?UTF-8?B?${Buffer.from(subject, 'utf8').toString('base64')}?=`;
 }
 
+// base64 ต้องตัดบรรทัดละไม่เกิน 76 ตัวอักษรตามมาตรฐาน MIME (RFC 2045) บรรทัดยาวผิดมาตรฐานโดนตัวกรองสแปมบางเจ้าหักคะแนน
+function toBase64Lines(text) {
+  return Buffer.from(text, 'utf8').toString('base64').replace(/.{1,76}/g, '$&\r\n').trimEnd();
+}
+
+// แนบทั้งเวอร์ชันข้อความธรรมดา (text/plain) และ HTML (multipart/alternative) - อีเมลที่มีแต่ HTML ล้วนโดนตัวกรองสแปมให้คะแนนแย่กว่า
+// และบางกล่องจดหมาย (โดยเฉพาะของหน่วยงาน/Outlook) คัดทิ้งหรือส่งเข้าขยะง่ายกว่า
 // Gmail API รับอีเมลเป็นข้อความ RFC 2822 ดิบทั้งฉบับ เข้ารหัส base64url (ไม่ใช่ base64 ธรรมดา ต้องแทน +/ ด้วย -_ และตัด padding ออก)
-function buildRawMessage({ from, to, subject, html }) {
+function buildRawMessage({ from, to, subject, html, text }) {
+  const boundary = `ptn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   const message = [
     `From: ${from}`,
     `To: ${to}`,
     `Subject: ${encodeSubject(subject)}`,
     'MIME-Version: 1.0',
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    `--${boundary}`,
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    toBase64Lines(text),
+    `--${boundary}`,
     'Content-Type: text/html; charset=UTF-8',
     'Content-Transfer-Encoding: base64',
     '',
-    Buffer.from(html, 'utf8').toString('base64'),
+    toBase64Lines(html),
+    `--${boundary}--`,
+    '',
   ].join('\r\n');
 
   return Buffer.from(message, 'utf8')
@@ -89,7 +104,7 @@ function buildRawMessage({ from, to, subject, html }) {
     .replace(/=+$/, '');
 }
 
-async function sendMail({ to, subject, html }) {
+async function sendMail({ to, subject, html, text }) {
   const user = process.env.GMAIL_USER;
   const from = process.env.EMAIL_FROM || `PeeTiwNong Camp <${user}>`;
   const gmail = await getGmailClient();
@@ -97,7 +112,7 @@ async function sendMail({ to, subject, html }) {
   try {
     await gmail.users.messages.send({
       userId: 'me',
-      requestBody: { raw: buildRawMessage({ from, to, subject, html }) },
+      requestBody: { raw: buildRawMessage({ from, to, subject, html, text }) },
     });
   } catch (error) {
     throw new Error(`ส่งอีเมลไม่สำเร็จ: ${error.message}`);
@@ -116,7 +131,17 @@ async function sendOtpEmail(to, otpCode, purpose = 'reset') {
     <p style="margin:0; font-size:13px; color:#94a3b8; line-height:1.6;">รหัสนี้จะหมดอายุภายใน 10 นาที หากคุณไม่ได้เป็นผู้ร้องขอ กรุณาเพิกเฉยต่ออีเมลนี้</p>
   `;
 
-  await sendMail({ to, subject: content.subject, html: renderEmailWrapper(content.heading, body) });
+  const text = [
+    content.heading,
+    '',
+    `รหัส OTP ของคุณคือ: ${otpCode}`,
+    '',
+    'รหัสนี้จะหมดอายุภายใน 10 นาที หากคุณไม่ได้เป็นผู้ร้องขอ กรุณาเพิกเฉยต่ออีเมลนี้',
+    '',
+    'ค่ายวิชาการ "พี่ติวน้อง" - PEETIWNONG Academics Camp',
+  ].join('\n');
+
+  await sendMail({ to, subject: content.subject, html: renderEmailWrapper(content.heading, body), text });
 }
 
 // แจ้งผลตอนบัญชีที่สมัครเองได้รับการอนุมัติแล้ว (เข้าสู่ระบบได้ทันที)
@@ -132,6 +157,14 @@ async function sendApprovalEmail(to, role) {
     to,
     subject: 'การลงทะเบียนของคุณได้รับการอนุมัติแล้ว - PeeTiwNong Camp',
     html: renderEmailWrapper('ลงทะเบียนสำเร็จ!', body),
+    text: [
+      'ลงทะเบียนสำเร็จ!',
+      '',
+      `บัญชี${roleLabel}ของคุณได้รับการตรวจสอบและอนุมัติเรียบร้อยแล้ว`,
+      'ตอนนี้คุณสามารถเข้าสู่ระบบด้วยอีเมลและรหัสผ่านที่ตั้งไว้ตอนลงทะเบียนได้ทันทีที่หน้าเว็บไซต์หลักของค่าย',
+      '',
+      'ค่ายวิชาการ "พี่ติวน้อง" - PEETIWNONG Academics Camp',
+    ].join('\n'),
   });
 }
 

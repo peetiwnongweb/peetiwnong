@@ -119,6 +119,31 @@ async function sendMail({ to, subject, html, text }) {
   }
 }
 
+// ส่งผ่าน Brevo (transactional API) จากโดเมนของค่ายเอง ใช้กับ OTP โดยเฉพาะ - อีเมลอัตโนมัติจาก @gmail.com ส่วนตัวถูกหลายกล่องจดหมาย
+// (Outlook/อีเมลโรงเรียน) คัดเข้าขยะหรือกักไว้เงียบ ๆ ส่วนอีเมลอื่น (แจ้งผลอนุมัติ) ยังส่งผ่าน Gmail ตามเดิม
+// ยังไม่ได้ตั้งค่า BREVO_API_KEY/BREVO_SENDER_EMAIL = ส่ง OTP ผ่าน Gmail ไปก่อน ไม่ทำให้ระบบพัง
+function isBrevoConfigured() {
+  return !!(process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL);
+}
+
+async function sendMailViaBrevo({ to, subject, html, text }) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({
+      sender: { email: process.env.BREVO_SENDER_EMAIL, name: process.env.BREVO_SENDER_NAME || 'PEETIWNONG Academics Camp' },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`ส่งอีเมลไม่สำเร็จ (Brevo ${res.status}): ${body.slice(0, 300)}`);
+  }
+}
+
 // purpose: 'reset' (ลืมรหัสผ่าน) หรือ 'register' (สมัครลงทะเบียนใหม่) แค่เปลี่ยนหัวเรื่อง/ข้อความให้ตรงบริบท เนื้อหา OTP เหมือนกัน
 async function sendOtpEmail(to, otpCode, purpose = 'reset') {
   const content = OTP_EMAIL_CONTENT[purpose] || OTP_EMAIL_CONTENT.reset;
@@ -141,7 +166,8 @@ async function sendOtpEmail(to, otpCode, purpose = 'reset') {
     'ค่ายวิชาการ "พี่ติวน้อง" - PEETIWNONG Academics Camp',
   ].join('\n');
 
-  await sendMail({ to, subject: content.subject, html: renderEmailWrapper(content.heading, body), text });
+  const message = { to, subject: content.subject, html: renderEmailWrapper(content.heading, body), text };
+  await (isBrevoConfigured() ? sendMailViaBrevo(message) : sendMail(message));
 }
 
 // แจ้งผลตอนบัญชีที่สมัครเองได้รับการอนุมัติแล้ว (เข้าสู่ระบบได้ทันที)

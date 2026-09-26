@@ -14,7 +14,7 @@ async function listActivityLogs(req, res) {
   const logs = await prisma.activityLog.findMany({
     ...(roles && { where: { actorRole: { in: roles } } }),
     orderBy: { createdAt: 'desc' },
-    take: 200,
+    take: Math.min(Math.max(Number(req.query.limit) || 200, 1), 200),
   });
   res.json(logs);
 }

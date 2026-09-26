@@ -2220,7 +2220,8 @@ function startOralExamPolling() {
 function pollOralExamActiveSession() {
     if (oralExamPollInFlight || !currentOralExamSubjectId) return Promise.resolve();
     oralExamPollInFlight = true;
-    return fetch(`/api/oral-exam-sessions/active?subjectId=${currentOralExamSubjectId}`)
+    // withQr=0: poll แค่รายชื่อคิว ไม่ต้องส่งรูป QR ซ้ำทุก 4 วิ (QR วาดไว้แล้วตอนเปิดรอบ)
+    return fetch(`/api/oral-exam-sessions/active?subjectId=${currentOralExamSubjectId}&withQr=0`)
         .then((res) => (res.ok ? res.json() : null))
         .then((session) => {
             // session หายไปหรือไม่ใช่รอบเดิมที่กำลังแสดงอยู่ (ปิด/หมดอายุจากที่อื่น หรือประเมินครบแล้วจนไม่มี pending เหลือ) ไม่ต้อง auto ซ่อนของที่ค้างแสดงอยู่ ให้พี่ค่ายกดยกเลิกเอง/รีเฟรชหน้าเองถ้าจะเริ่มใหม่

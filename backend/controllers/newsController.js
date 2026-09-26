@@ -1,4 +1,5 @@
 const { getPrisma } = require('../lib/prisma');
+const { cachedValue } = require('../lib/responseCache');
 const { logActivity } = require('../lib/activityLog');
 const { uploadFile, deleteFile, pathFromPublicUrl, buildUniqueFilename, resizeImageForUpload } = require('../lib/driveImageStorage');
 
@@ -45,8 +46,9 @@ async function deleteImage(req, res) {
 async function listNews(req, res) {
   const prisma = await getPrisma();
   // เผยแพร่จริงบนหน้าเว็บสาธารณะได้ก็ต่อเมื่อทั้งเปิดเผยแพร่ (isVisible) และผ่านการอนุมัติแล้วเท่านั้น กันข่าวที่พี่ค่ายส่งเข้ามาแต่ยังไม่ได้อนุมัติหลุดออกเว็บ
-  const where = req.query.visibleOnly === 'true' ? { isVisible: true, approvalStatus: 'APPROVED' } : {};
-  const news = await prisma.news.findMany({ where, orderBy: { publishedAt: 'desc' }, include: AUTHOR_INCLUDE });
+  const visibleOnly = req.query.visibleOnly === 'true';
+  const where = visibleOnly ? { isVisible: true, approvalStatus: 'APPROVED' } : {};
+  const news = await cachedValue(`news:${visibleOnly}`, () => prisma.news.findMany({ where, orderBy: { publishedAt: 'desc' }, include: AUTHOR_INCLUDE }));
   res.json(news);
 }
 

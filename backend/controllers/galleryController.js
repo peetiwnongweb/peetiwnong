@@ -1,4 +1,5 @@
 const { getPrisma } = require('../lib/prisma');
+const { cachedValue } = require('../lib/responseCache');
 const { logActivity } = require('../lib/activityLog');
 const { uploadFile, deleteFile, pathFromPublicUrl, buildUniqueFilename, resizeImageForUpload } = require('../lib/driveImageStorage');
 
@@ -7,7 +8,7 @@ const MAX_GALLERY_PHOTOS = 20;
 
 async function listPhotos(req, res) {
   const prisma = await getPrisma();
-  const photos = await prisma.galleryPhoto.findMany({ orderBy: { createdAt: 'asc' } });
+  const photos = await cachedValue('gallery:all', () => prisma.galleryPhoto.findMany({ orderBy: { createdAt: 'asc' } }));
   res.json(photos);
 }
 

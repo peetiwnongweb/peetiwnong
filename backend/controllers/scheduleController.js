@@ -1,12 +1,14 @@
 const { getPrisma } = require('../lib/prisma');
+const { cachedValue } = require('../lib/responseCache');
 const { logActivity } = require('../lib/activityLog');
 
 const VALID_COLORS = ['EMERALD', 'ROSE', 'BRAND', 'INDIGO'];
 
 async function listSchedules(req, res) {
   const prisma = await getPrisma();
-  const where = req.query.visibleOnly === 'true' ? { isVisible: true } : {};
-  const schedules = await prisma.schedule.findMany({ where, orderBy: { eventDate: 'asc' } });
+  const visibleOnly = req.query.visibleOnly === 'true';
+  const where = visibleOnly ? { isVisible: true } : {};
+  const schedules = await cachedValue(`schedules:${visibleOnly}`, () => prisma.schedule.findMany({ where, orderBy: { eventDate: 'asc' } }));
   res.json(schedules);
 }
 

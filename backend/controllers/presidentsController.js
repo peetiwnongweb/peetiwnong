@@ -1,13 +1,17 @@
 const { getPrisma } = require('../lib/prisma');
+const { cachedValue } = require('../lib/responseCache');
 const { logActivity } = require('../lib/activityLog');
 const { uploadFile, deleteFile, pathFromPublicUrl, buildUniqueFilename } = require('../lib/driveImageStorage');
 
 async function listPresidents(req, res) {
   const prisma = await getPrisma();
-  const where = req.query.visibleOnly === 'true' ? { isVisible: true } : {};
-  const committees = await prisma.committee.findMany({ where });
-  // เรียงตามครั้งที่น้อยที่สุดของแต่ละคน (generationNos) จากน้อยไปมาก - Postgres/Prisma เรียงตาม min ของ array คอลัมน์โดยตรงไม่ได้
-  committees.sort((a, b) => Math.min(...a.generationNos) - Math.min(...b.generationNos));
+  const visibleOnly = req.query.visibleOnly === 'true';
+  const where = visibleOnly ? { isVisible: true } : {};
+  const committees = await cachedValue(`presidents:${visibleOnly}`, async () => {
+    const rows = await prisma.committee.findMany({ where });
+    // เรียงตามครั้งที่น้อยที่สุดของแต่ละคน (generationNos) จากน้อยไปมาก - Postgres/Prisma เรียงตาม min ของ array คอลัมน์โดยตรงไม่ได้
+    return rows.sort((a, b) => Math.min(...a.generationNos) - Math.min(...b.generationNos));
+  });
   res.json(committees);
 }
 

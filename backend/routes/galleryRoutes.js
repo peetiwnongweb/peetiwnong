@@ -1,9 +1,12 @@
 const express = require('express');
+const { invalidateOnWrite } = require('../lib/responseCache');
 const { listPhotos, uploadPhoto, deletePhoto } = require('../controllers/galleryController');
 const { requireAdminAccess } = require('../middleware/requireAuth');
 const { uploadGalleryImage, describeUploadError } = require('../middleware/upload');
 
 const router = express.Router();
+// เพิ่ม/แก้/ลบสำเร็จ = ล้าง cache รายการของข้อมูลชุดนี้ทันที (ดู backend/lib/responseCache.js)
+router.use(invalidateOnWrite('gallery'));
 
 router.get('/', listPhotos);
 

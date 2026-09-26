@@ -212,7 +212,7 @@ document.addEventListener('click', (event) => {
 
 function loadAdminNotifications() {
     Loader.renderSkeletonCards(document.getElementById('admin-notif-list'), 3);
-    fetch('/api/activity-logs')
+    fetch('/api/activity-logs?limit=8')
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.json();

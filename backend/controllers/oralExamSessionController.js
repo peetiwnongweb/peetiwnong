@@ -68,11 +68,22 @@ async function resolveSessionCourseName(session) {
   return all.map((c) => c.name).join(', ') || null;
 }
 
-// qrImageDataUrl สร้างจาก qrPayload สด ๆ ทุกครั้ง (ไม่แคช) - เร็วพอสำหรับ endpoint ที่มีแค่พี่ค่าย 1 คน poll ทุก 4 วิ ไม่คุ้มที่จะเพิ่มความซับซ้อนเรื่อง cache
-async function serializeSession(session, req) {
+// สร้างรูป QR (ใช้ sharp ซึ่งกิน CPU) ครั้งเดียวต่อ 1 ลิงก์แล้วจำไว้ - ช่วงค่ายมีพี่ค่ายหลายคนเปิดรอบสอบ poll พร้อมกันทุก 4 วิ
+// ถ้าสร้างใหม่ทุกครั้งจะกิน CPU ของ Render แผนฟรีจนทั้งเว็บช้า เก็บแค่ 50 อันล่าสุด (1 รอบสอบ = 1 ลิงก์)
+const qrImageCache = new Map();
+async function getQrImageDataUrl(qrPayload) {
+  if (qrImageCache.has(qrPayload)) return qrImageCache.get(qrPayload);
+  const dataUrl = await buildQrWithLogo(qrPayload);
+  qrImageCache.set(qrPayload, dataUrl);
+  if (qrImageCache.size > 50) qrImageCache.delete(qrImageCache.keys().next().value);
+  return dataUrl;
+}
+
+// withQr: false = ไม่แนบรูป QR (รูปใหญ่หลายสิบ KB) ใช้กับการ poll คิวทุก 4 วิ ซึ่งหน้าเว็บใช้แค่รายชื่อผู้เข้าสอบ ไม่ได้วาด QR ใหม่
+async function serializeSession(session, req, { withQr = true } = {}) {
   const qrPayload = buildCheckinUrl(req, session.token);
   // 480px แม้แสดงในการ์งปกติแค่ 320px แต่ตอนกดขยายเต็มจอ (ดู .oral-exam-qr-fullscreen-image) ขยายได้ถึง 75vw/75vh ซึ่งอาจใหญ่กว่านี้มาก ต้องมีความละเอียดต้นทางสูงพอไม่ให้ภาพแตก
-  const qrImageDataUrl = await buildQrWithLogo(qrPayload);
+  const qrImageDataUrl = withQr ? await getQrImageDataUrl(qrPayload) : undefined;
   return {
     id: session.id,
     subjectId: session.subjectId,
@@ -182,7 +193,7 @@ async function getActiveSession(req, res) {
   if (!session) return res.json(null);
 
   res.json({
-    ...(await serializeSession(session, req)),
+    ...(await serializeSession(session, req, { withQr: req.query.withQr !== '0' })),
     attempts: session.attempts.map((a) => ({
       id: a.id,
       participantProfileId: a.participantProfileId,

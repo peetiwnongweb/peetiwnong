@@ -1,4 +1,5 @@
 const express = require('express');
+const { invalidateOnWrite } = require('../lib/responseCache');
 const {
   listNews, createNews, updateNews, deleteNews, uploadImage, deleteImage,
   submitNews, listMyNews, updateMyNews, deleteMyNews,
@@ -9,6 +10,8 @@ const { uploadNewsImage, describeUploadError } = require('../middleware/upload')
 const requireStaffOrWebManager = requireRole('STAFF', 'WEBMANAGER');
 
 const router = express.Router();
+// เพิ่ม/แก้/ลบสำเร็จ = ล้าง cache รายการของข้อมูลชุดนี้ทันที (ดู backend/lib/responseCache.js)
+router.use(invalidateOnWrite('news'));
 
 router.get('/', listNews);
 router.post('/', requireAdminAccess, createNews);

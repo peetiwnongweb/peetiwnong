@@ -1,4 +1,5 @@
 const express = require('express');
+const { invalidateOnWrite } = require('../lib/responseCache');
 const {
   listPresidents,
   createPresident,
@@ -11,6 +12,8 @@ const { requireWebManagerAccess } = require('../middleware/requireAuth');
 const { uploadPresidentImage, describeUploadError } = require('../middleware/upload');
 
 const router = express.Router();
+// เพิ่ม/แก้/ลบสำเร็จ = ล้าง cache รายการของข้อมูลชุดนี้ทันที (ดู backend/lib/responseCache.js)
+router.use(invalidateOnWrite('presidents'));
 
 router.get('/', listPresidents);
 // ทำเนียบประธานค่ายเป็นของ WebManager เท่านั้น (Admin ในหน้า /admin ไม่มีสิทธิ์แก้ไข ดูได้แค่ที่แสดงบนเว็บหลักผ่าน GET ด้านบน)

@@ -2126,6 +2126,7 @@ function refreshMultiCheckboxGroup(selectId) {
 
 // คำอธิบายฝ่ายงานแต่ละฝ่าย เหมือนช่อง "ฝ่ายงานที่สนใจร่วมทำงาน" ในหน้าลงทะเบียนพี่ค่าย (staff-form.html) เป๊ะ - ผูกกับ "ชื่อฝ่าย" เพราะตารางฝ่ายงานไม่มีคอลัมน์คำอธิบายเก็บไว้
 const DEPARTMENT_DESCRIPTIONS = {
+    'ฝ่ายบริหาร': 'ประธานค่าย รองประธานค่าย และเลขานุการ',
     'ฝ่ายวิชาการ': 'ออกแบบเนื้อหาและดูแลกิจกรรมด้านวิชาการ',
     'ฝ่ายกิจกรรมและสันทนาการ': 'ออกแบบและดูแลกิจกรรมนันทนาการ',
     'ฝ่ายปกครองบริการและอาคารสถานที่': 'ดูแลความปลอดภัยและสถานที่',
@@ -2203,6 +2204,10 @@ let campVicePresidentPendingStaff = null;
 
 function addPendingCampVicePresident() {
     if (!campVicePresidentPendingStaff) return;
+    if (campVicePresidents.length >= 2) {
+        showToast('รองประธานค่ายมีได้ไม่เกิน 2 คน', true);
+        return;
+    }
     campVicePresidents.push(campVicePresidentPendingStaff);
     renderCampVicePresidentChips();
     campVicePresidentPendingStaff = null;
@@ -2242,7 +2247,8 @@ function openCampCreateForm(camp = null) {
     ]).then(([staffOptions, departments]) => {
         campStaffOptions = staffOptions;
         // เรียงตามชื่อ (asc) ตามปกติ แต่ดันฝ่ายวิชาการขึ้นมาอยู่แถวแรกของฟอร์มนี้ (ฝ่ายที่ผูกกับระบบวิชาการโดยตรง ให้กรอกก่อนฝ่ายอื่น)
-        campDepartments = [...departments].sort((a, b) => {
+        // ฝ่ายบริหาร = ประธาน/รองประธาน/เลขานุการ ซึ่งมีช่องกรอกของตัวเองด้านบนแล้ว ไม่มี "หัวหน้าฝ่าย" จึงไม่แสดงเป็นแถวหัวหน้าฝ่าย
+        campDepartments = departments.filter((d) => d.name !== 'ฝ่ายบริหาร').sort((a, b) => {
             if (a.name === 'ฝ่ายวิชาการ') return -1;
             if (b.name === 'ฝ่ายวิชาการ') return 1;
             return 0;
@@ -2271,7 +2277,7 @@ function openCampCreateForm(camp = null) {
         `).join('');
 
         campDepartmentHeadSelects = {};
-        departments.forEach((dept) => {
+        campDepartments.forEach((dept) => {
             campDepartmentHeadSelects[dept.id] = createStaffSelect(`camp-dept-head-select-${dept.id}`, {
                 placeholder: `ค้นหาหัวหน้าฝ่าย${dept.name}...`,
                 onSelect: () => {},

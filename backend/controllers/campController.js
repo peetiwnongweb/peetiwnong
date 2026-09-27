@@ -1,4 +1,5 @@
 const { getPrisma } = require('../lib/prisma');
+const { POSITION_LIMITS, HEAD_DEPARTMENTS } = require('../lib/staffPositionLimits');
 const { logActivity } = require('../lib/activityLog');
 const { getWipePreviewCounts, wipeCampData, collectStudyDocumentDriveFileIds, deleteWipedDocumentFiles } = require('../lib/campWipe');
 const { runBackup } = require('../lib/campBackup');
@@ -79,8 +80,10 @@ async function validateCampLeadership(body, prisma) {
     .map((d) => ({ departmentId: Number(d.departmentId), userId: Number(d.userId) }))
     .filter((d) => d.departmentId && d.userId);
 
-  // ฝ่ายไหนยังไม่มีหัวหน้าก็ได้ แต่ฝ่ายที่ส่งมาต้องมีอยู่จริงและไม่ซ้ำกัน
-  const departments = await prisma.campDepartment.findMany({ select: { id: true } });
+  if (vicePresidentUserIds.length > POSITION_LIMITS['รองประธานค่าย']) return { error: `รองประธานค่ายมีได้ไม่เกิน ${POSITION_LIMITS['รองประธานค่าย']} คน` };
+
+  // ฝ่ายไหนยังไม่มีหัวหน้าก็ได้ แต่ฝ่ายที่ส่งมาต้องเป็น 1 ใน 5 ฝ่ายที่มีหัวหน้าฝ่าย (ไม่รวมฝ่ายบริหาร) และไม่ซ้ำกัน
+  const departments = await prisma.campDepartment.findMany({ where: { name: { in: HEAD_DEPARTMENTS } }, select: { id: true } });
   const departmentIds = departments.map((d) => d.id);
   const suppliedIds = departmentHeads.map((d) => d.departmentId);
   if (suppliedIds.some((id) => !departmentIds.includes(id))) return { error: 'พบฝ่ายที่ไม่มีอยู่จริงในระบบ' };
@@ -115,6 +118,12 @@ async function findLeadershipPositions(prisma) {
 
 // มอบตำแหน่ง/ฝ่ายจริงใน StaffProfile ให้คนที่ถูกเลือก (ข้ามตำแหน่งที่ยังว่าง)
 async function assignLeadershipPositions(tx, positions, { presidentUserId, secretaryUserId, vicePresidentUserIds, departmentHeads }) {
+  // คนที่ถือตำแหน่งบริหาร/หัวหน้าฝ่ายอยู่ (เช่นตั้งเองจากหน้าแก้ไขผู้ใช้) แต่ไม่อยู่ในคณะทำงานชุดนี้ กลับเป็นทีมงานค่าย กันตำแหน่งเกินจำนวน
+  const assigned = [presidentUserId, secretaryUserId, ...vicePresidentUserIds, ...departmentHeads.map((d) => d.userId)].filter(Boolean);
+  await tx.staffProfile.updateMany({
+    where: { userId: { notIn: assigned }, positionId: { in: [positions.posPresident.id, positions.posVice.id, positions.posSecretary.id, positions.posHead.id] } },
+    data: { positionId: positions.posTeam.id },
+  });
   await tx.staffProfile.update({ where: { userId: presidentUserId }, data: { positionId: positions.posPresident.id } });
   if (secretaryUserId) {
     await tx.staffProfile.update({ where: { userId: secretaryUserId }, data: { positionId: positions.posSecretary.id } });

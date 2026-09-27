@@ -130,6 +130,7 @@ async function sendMailViaBrevo({ to, subject, html, text }) {
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: { 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+    signal: AbortSignal.timeout(10000), // Brevo ค้างเกิน 10 วิ = ถือว่าล้มเหลว ไปส่งผ่าน Gmail แทน (ดู sendOtpEmail)
     body: JSON.stringify({
       sender: { email: process.env.BREVO_SENDER_EMAIL, name: process.env.BREVO_SENDER_NAME || 'PEETIWNONG Academics Camp' },
       to: [{ email: to }],
@@ -167,7 +168,14 @@ async function sendOtpEmail(to, otpCode, purpose = 'reset') {
   ].join('\n');
 
   const message = { to, subject: content.subject, html: renderEmailWrapper(content.heading, body), text };
-  await (isBrevoConfigured() ? sendMailViaBrevo(message) : sendMail(message));
+  if (!isBrevoConfigured()) return sendMail(message);
+  // Brevo ส่งไม่สำเร็จ (เกินโควตา 300 ฉบับ/วันของแผนฟรี, key ผิด, โดเมนยังไม่ยืนยัน, Brevo ล่ม) = ส่งผ่าน Gmail แทนทันที ผู้ใช้ยังได้ OTP
+  try {
+    await sendMailViaBrevo(message);
+  } catch (error) {
+    console.error(`[mailer] Brevo ล้มเหลว เปลี่ยนไปส่ง OTP ผ่าน Gmail: ${error.message}`);
+    await sendMail(message);
+  }
 }
 
 // แจ้งผลตอนบัญชีที่สมัครเองได้รับการอนุมัติแล้ว (เข้าสู่ระบบได้ทันที)

@@ -3809,7 +3809,7 @@ function submitCreateOwnerForm(event) {
         })
         .then(() => {
             document.getElementById('create-owner-form').reset();
-            showToast('เพิ่มบัญชี Owner สำเร็จ');
+            showToast('เพิ่มบัญชี SuperAdmin สำเร็จ');
             loadOwners();
         })
         .catch((error) => {
@@ -3830,8 +3830,8 @@ function loadOwners() {
             renderOwnerTable(items);
         })
         .catch((error) => {
-            console.error('โหลดข้อมูลบัญชี Owner ไม่สำเร็จ:', error);
-            showToast('โหลดข้อมูลบัญชี Owner ไม่สำเร็จ', true);
+            console.error('โหลดข้อมูลบัญชี SuperAdmin ไม่สำเร็จ:', error);
+            showToast('โหลดข้อมูลบัญชี SuperAdmin ไม่สำเร็จ', true);
         });
 }
 
@@ -3868,7 +3868,7 @@ function renderOwnerTable(items) {
             // ตั้งใจไม่ใช้ attribute disabled เพื่อให้กดแล้วยังเด้งบอกเหตุผลได้ (ปุ่ม disabled จริง ๆ จะไม่ยิง click event เลย มีแค่ tooltip ที่ต้องชี้ค้างถึงจะเห็น)
             deleteBtn.addEventListener('click', () => {
                 if (isSelf) {
-                    showToast('ลบไม่ได้ เพราะเป็นบัญชีที่กำลังล็อกอินอยู่ในขณะนี้ (กันล็อกตัวเองออกจากระบบ) ให้ล็อกอินด้วยบัญชี Owner อื่นแล้วมาลบแทน', true);
+                    showToast('ลบไม่ได้ เพราะเป็นบัญชีที่กำลังล็อกอินอยู่ในขณะนี้ (กันล็อกตัวเองออกจากระบบ) ให้ล็อกอินด้วยบัญชี SuperAdmin อื่นแล้วมาลบแทน', true);
                     return;
                 }
                 deleteOwnerItem(item);
@@ -3879,7 +3879,7 @@ function renderOwnerTable(items) {
 }
 
 async function deleteOwnerItem(item) {
-    const confirmed = await adminConfirm(`ลบบัญชี Owner "${item.email}" ใช่หรือไม่? บัญชีนี้จะเข้าระบบไม่ได้อีกทันที`);
+    const confirmed = await adminConfirm(`ลบบัญชี SuperAdmin "${item.email}" ใช่หรือไม่? บัญชีนี้จะเข้าระบบไม่ได้อีกทันที`);
     if (!confirmed) return;
 
     fetch(`/api/users/${item.id}`, { method: 'DELETE' })
@@ -3888,11 +3888,11 @@ async function deleteOwnerItem(item) {
                 const body = await res.json().catch(() => ({}));
                 throw new Error(body.error || `HTTP ${res.status}`);
             }
-            showToast('ลบบัญชี Owner สำเร็จ');
+            showToast('ลบบัญชี SuperAdmin สำเร็จ');
             loadOwners();
         })
         .catch((error) => {
-            showToast(error.message || 'ลบบัญชี Owner ไม่สำเร็จ', true);
+            showToast(error.message || 'ลบบัญชี SuperAdmin ไม่สำเร็จ', true);
         });
 }
 

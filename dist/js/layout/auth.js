@@ -499,6 +499,17 @@ function renderAvatar(el, avatarUrl, initial) {
     }
 }
 
+// WebManager ใช้ปุ่มเดียวกับลิงก์ Admin ของพี่ค่ายผู้ดูแลระบบ แต่ขึ้นเป็น "Superadmin" และพาไปหน้า /webmanager/ แทน
+// เปลี่ยนแค่ข้อความท้ายปุ่ม (text node หลังไอคอน svg) ไม่แตะไอคอน
+function pointAdminLinkForRole(link, isWebManager) {
+    if (!link) return;
+    const label = isWebManager ? 'Superadmin' : 'Admin';
+    const target = isWebManager ? '/webmanager/' : '/admin/';
+    link.onclick = () => { window.location.href = target; };
+    const textNode = [...link.childNodes].reverse().find((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+    if (textNode) textNode.textContent = ` ${label} `;
+}
+
 function loginUser(userData) {
     isUserLoggedIn = true;
     const isWebManager = userData.role === 'WEBMANAGER';
@@ -543,6 +554,7 @@ function loginUser(userData) {
 
     const adminLink = document.getElementById('user-menu-admin-link');
     if (adminLink) adminLink.classList.toggle('hidden', !hasAdminAccess || isSimulating);
+    pointAdminLinkForRole(adminLink, isWebManager);
 
     // WebManager ไม่มีโปรไฟล์พี่ค่าย/น้องค่ายจริง ซ่อน "โปรไฟล์" ไว้ตอนไม่ได้จำลอง แต่โชว์ตอนจำลองให้เหมือนบทบาทจริง (แม้หน้าจะว่างเพราะไม่มีข้อมูลจริงก็ตาม)
     const profileLinkDesktop = document.getElementById('user-menu-profile-link');
@@ -569,6 +581,7 @@ function loginUser(userData) {
     if (mMenuAccountRole) mMenuAccountRole.textContent = subLabel;
     if (mMenuProfileLink) mMenuProfileLink.classList.toggle('hidden', isWebManager && !isSimulating);
     if (mMenuAdminLink) mMenuAdminLink.classList.toggle('hidden', !hasAdminAccess || isSimulating);
+    pointAdminLinkForRole(mMenuAdminLink, isWebManager);
 
     // ลิงก์ "โปรไฟล์" พาไปหน้าที่ถูกต้องตาม role (STAFF/PARTICIPANT มีหน้าโปรไฟล์จริง)
     // ตอน WebManager จำลองอยู่ก็ให้เข้าหน้าโปรไฟล์ของโซนที่กำลังจำลองได้เหมือนกัน (ข้อมูลจะว่างเพราะไม่มีโปรไฟล์จริง แต่โครงหน้าต้องขึ้นได้ ไม่ใช่ stub เฉย ๆ)

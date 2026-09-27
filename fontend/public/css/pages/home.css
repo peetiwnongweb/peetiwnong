@@ -617,19 +617,13 @@ html {
   /* เดิมใช้ backdrop-filter (กระจกฝ้า) แต่เจอบั๊กจริงบน iOS มุมโค้งเป็นเหลี่ยม
      ลองแก้ด้วย border-radius/-webkit-mask-image แล้วยังไม่หาย จึงตัด backdrop-filter ออกไปเลย
      เปลี่ยนมาใช้พื้นขาวโปร่งแสงทึบกว่าเดิมแทน (ไม่เบลอสิ่งที่อยู่ข้างหลัง) รับประกันมุมโค้งถูกต้องทุกเบราว์เซอร์ */
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 247, 237, 0.85));
-  border-radius: 1.75rem;
-  box-shadow: 0 30px 60px -15px rgba(234, 88, 12, 0.28), 0 10px 20px -10px rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.22);
   padding: 1.5rem;
-  border: 1px solid rgba(253, 186, 116, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   position: relative;
   z-index: 10;
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
-}
-
-.visual-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 36px 70px -18px rgba(234, 88, 12, 0.35), 0 12px 24px -10px rgba(15, 23, 42, 0.14);
 }
 
 /* soft glow accent behind the card */
@@ -638,7 +632,7 @@ html {
   position: absolute;
   inset: -1rem;
   border-radius: 1.75rem;
-  background: linear-gradient(135deg, rgba(255,150,84,0.22), rgba(250,204,21,0.18));
+  background: linear-gradient(135deg, rgba(255,150,84,0.06), rgba(250,204,21,0.06));
   z-index: -1;
   filter: blur(10px);
   pointer-events: none;
@@ -646,27 +640,13 @@ html {
 
 .card-header-gradient {
   position: relative;
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   padding: 1.5rem;
   margin: 0;
-  /* ใช้โทนไล่สีเดียวกับปุ่มอื่น ๆ ในเว็บ (เช่น .hero-btn-primary, .card-nickname) ให้เป็นโทนเดียวกันทั้งเว็บ
-     ซ้อนแสงวงกลมด้านบนซ้าย + ลายจุดจาง ๆ ให้มีมิติ ไม่แบนเป็นสีเดียว */
-  background:
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.28), transparent 45%),
-    radial-gradient(circle at 85% 95%, rgba(255, 255, 255, 0.16), transparent 40%),
-    linear-gradient(135deg, var(--brand-600), var(--indigo-600));
-  box-shadow: 0 14px 28px -8px rgba(234, 88, 12, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  /* ใช้โทนไล่สีเดียวกับปุ่มอื่น ๆ ในเว็บ (เช่น .hero-btn-primary, .card-nickname) ให้เป็นโทนเดียวกันทั้งเว็บ */
+  background: linear-gradient(to right, var(--brand-600), var(--indigo-600));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-}
-
-.card-header-gradient::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
-  background-size: 14px 14px;
-  pointer-events: none;
-  z-index: 0;
 }
 
 /* ดาวตกแต่งกรอบสีส้ม ลอยอยู่หลังรูปโปรไฟล์/ข้อความเสมอ (z-index ต่ำกว่า) กะพริบเบา ๆ ไม่รบกวนการอ่าน */
@@ -700,32 +680,14 @@ html {
 }
 
 /* ป้ายครั้งที่อยู่นอกกรอบกระจก เป็นตัวหนังสือสีส้มเรียบ ๆ ไม่มีกล่อง/พื้นหลัง แต่ตัวใหญ่เด่นเป็นจุดสนใจแรก */
-/* ขนาบซ้ายขวาด้วยเส้นไล่สีจาง ๆ ให้ดูเป็นหัวข้อประกาศเกียรติ + ตัวอักษรไล่สีส้ม */
 .card-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  display: block;
   font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: 0.01em;
   text-align: center;
-  margin: 0 0 1rem;
+  margin: 0 0 0.85rem;
   color: var(--brand-600);
-}
-
-.card-badge::before,
-.card-badge::after {
-  content: '';
-  flex: 1;
-  max-width: 3rem;
-  height: 3px;
-  border-radius: 999px;
-  background: linear-gradient(to right, transparent, var(--brand-500));
-}
-
-.card-badge::after {
-  background: linear-gradient(to left, transparent, var(--brand-500));
 }
 
 /* .card-profile-wrapper layout: class="flex justify-center" (Tailwind) */
@@ -736,25 +698,17 @@ html {
 .card-profile-img {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   object-fit: cover;
-  border: 4px solid rgba(255, 255, 255, 0.95);
-  /* วงแสงสีขาวจาง ๆ รอบกรอบรูป ให้รูปเด่นขึ้นจากพื้นส้ม */
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.18), 0 18px 35px -10px rgba(0, 0, 0, 0.4);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
 }
 
-/* ชื่อเล่นเป็นป้ายโปร่งแสง (inline-block + จัดกลางด้วย width:fit-content) */
 .card-nickname {
-  display: block;
-  width: fit-content;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 600;
   text-align: center;
-  margin: 1.1rem auto 0.4rem;
-  padding: 0.2rem 1rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  margin: 0.9rem 0 0.2rem;
   color: white;
   letter-spacing: 0.02em;
 }
@@ -766,18 +720,10 @@ html {
   margin: 0;
   line-height: 1.3;
   color: white;
-  text-shadow: 0 2px 10px rgba(124, 45, 18, 0.35);
 }
 
-/* แผงมหาวิทยาลัย: พื้นขาว + แถบส้มด้านซ้าย แยกจากหัวการ์ดชัดเจน */
 .card-features {
-  margin-top: 1.25rem;
-  padding: 1rem;
-  border-radius: 1.1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(253, 186, 116, 0.45);
-  border-left: 4px solid var(--brand-500);
-  box-shadow: 0 8px 20px -12px rgba(234, 88, 12, 0.35);
+  margin-top: 1.5rem;
 }
 
 /* .feature-item layout: class="flex items-center gap-3" (Tailwind) */
@@ -795,12 +741,11 @@ html {
   aspect-ratio: 1 / 1;
   object-fit: contain;
   flex-shrink: 0;
-  padding: 0.45rem;
+  padding: 0.5rem;
   /* ไม่ใช้ backdrop-filter (บั๊กมุมโค้งเป็นเหลี่ยมบน iOS เหมือนจุดอื่นในการ์ดนี้) */
-  background: white;
-  border: 1px solid var(--slate-100, #f1f5f9);
-  border-radius: 50%;
-  box-shadow: 0 6px 16px -6px rgba(15, 23, 42, 0.25);
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0.75rem;
 }
 
 .icon-brand {
@@ -809,23 +754,22 @@ html {
 }
 
 .feature-text h3 {
-  font-weight: 700;
-  color: var(--slate-900, #0f172a);
+  font-weight: 600;
+  color: var(--slate-800);
   margin: 0;
   font-size: 1.05rem;
-  line-height: 1.35;
 }
 
 .feature-text h4 {
   font-weight: 600;
-  margin: 0.15rem 0 0;
-  color: var(--brand-600);
-  font-size: 0.92rem;
+  margin: 0;
+  color: var(--slate-800);
+  font-size: 0.95rem;
 }
 
 .feature-text p {
-  font-size: 0.82rem;
-  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  margin: 0;
   color: var(--slate-500);
 }
 
@@ -1299,12 +1243,7 @@ html {
 
   .card-badge {
     font-size: 1.3rem;
-    margin-bottom: 0.6rem;
-  }
-
-  .card-features {
-    padding: 0.75rem;
-    margin-top: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .card-nickname {

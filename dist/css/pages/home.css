@@ -662,21 +662,31 @@ html {
   z-index: 1;
 }
 
+/* แสงวิบวับ: ประกายแฉก 4 มุมสีขาวเรืองแสง ค่อย ๆ โผล่-หมุน-หายไปทีละดวงสลับกัน */
 .header-star {
   position: absolute;
-  color: rgba(255, 255, 255, 0.55);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.12));
-  animation: header-star-twinkle 2.8s ease-in-out infinite;
+  color: #fff;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 8px rgba(255, 237, 180, 0.85));
+  animation: header-star-sparkle 2.6s ease-in-out infinite;
 }
 
-.header-star.star-1 { width: 1.15rem; height: 1.15rem; top: 0.75rem; left: 1.1rem; animation-delay: 0s; }
-.header-star.star-2 { width: 0.7rem; height: 0.7rem; top: 1.4rem; right: 1.6rem; animation-delay: 0.7s; }
-.header-star.star-3 { width: 0.55rem; height: 0.55rem; bottom: 1.1rem; left: 2.4rem; animation-delay: 1.4s; }
-.header-star.star-4 { width: 0.85rem; height: 0.85rem; bottom: 0.8rem; right: 1.2rem; animation-delay: 2.1s; }
+.header-star.star-1 { width: 1.2rem; height: 1.2rem; top: 0.7rem; left: 1rem; animation-delay: 0s; }
+.header-star.star-2 { width: 0.75rem; height: 0.75rem; top: 1.5rem; right: 1.5rem; animation-delay: 0.45s; }
+.header-star.star-3 { width: 0.6rem; height: 0.6rem; bottom: 1.2rem; left: 2.3rem; animation-delay: 0.9s; }
+.header-star.star-4 { width: 1rem; height: 1rem; bottom: 0.75rem; right: 1.1rem; animation-delay: 1.35s; }
+.header-star.star-5 { width: 0.55rem; height: 0.55rem; top: 45%; left: 0.55rem; animation-delay: 1.8s; }
+.header-star.star-6 { width: 0.7rem; height: 0.7rem; top: 38%; right: 0.6rem; animation-delay: 2.2s; }
 
-@keyframes header-star-twinkle {
-  0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(0deg); }
-  50% { opacity: 0.9; transform: scale(1.1) rotate(8deg); }
+@keyframes header-star-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  15% { opacity: 1; transform: scale(1.15) rotate(45deg); }
+  30% { opacity: 0.85; transform: scale(0.9) rotate(90deg); }
+  45% { opacity: 0; transform: scale(0.2) rotate(135deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-star { animation: none; opacity: 0.7; }
 }
 
 /* ป้ายครั้งที่อยู่นอกกรอบกระจก เป็นตัวหนังสือสีส้มเรียบ ๆ ไม่มีกล่อง/พื้นหลัง แต่ตัวใหญ่เด่นเป็นจุดสนใจแรก */

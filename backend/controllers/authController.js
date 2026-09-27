@@ -172,7 +172,7 @@ async function me(req, res) {
 async function updateAvatar(req, res) {
   if (!req.session.user) return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบ' });
   if (req.session.user.role === 'SUPERADMIN') {
-    return res.status(403).json({ error: 'บัญชี Owner ใช้รูปโปรไฟล์คงที่ ไม่สามารถเปลี่ยนได้' });
+    return res.status(403).json({ error: 'บัญชี SuperAdmin ใช้รูปโปรไฟล์คงที่ ไม่สามารถเปลี่ยนได้' });
   }
 
   const { avatarUrl } = req.body;

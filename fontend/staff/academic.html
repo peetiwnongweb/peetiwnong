@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20260927-20">
     <link rel="stylesheet" href="../css/pages/form.css?v=20260927-20">
     <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20260927-20">
-    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20260927-20">
+    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20260927-21">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
     <script src="../js/layout/time-select.js?v=20260927-20"></script>
     <script src="../js/layout/auth.js?v=20260927-20"></script>
     <script src="../js/layout/nav.js?v=20260927-20"></script>
-    <script src="../js/pages/staff-academic.js?v=20260927-20"></script>
+    <script src="../js/pages/staff-academic.js?v=20260927-21"></script>
 </head>
 
 <body>
@@ -444,7 +444,7 @@
                 <div class="course-tab-bar" id="schedule-course-tab-bar" style="max-width: 760px; margin: 0 auto 1.5rem;"></div>
 
                 <div class="activity-card" style="max-width: 760px; margin: 0 auto 2rem;">
-                    <p class="profile-section-title">เพิ่มรายการตารางเรียน</p>
+                    <p class="profile-section-title" id="schedule-form-title">เพิ่มรายการตารางเรียน</p>
                     <form id="schedule-create-form">
                         <div class="form-grid mb-6">
                             <div class="form-group">
@@ -493,8 +493,9 @@
                             <input type="text" id="schedule-note-input" class="form-input" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)">
                         </div>
                         <div class="form-actions">
-                            <span></span>
-                            <button type="submit" class="btn-primary">เพิ่มรายการ</button>
+                            <button type="button" class="btn-outline hidden" id="schedule-cancel-edit-btn">ยกเลิกการแก้ไข</button>
+                            <span id="schedule-cancel-edit-spacer"></span>
+                            <button type="submit" class="btn-primary" id="schedule-submit-btn">เพิ่มรายการ</button>
                         </div>
                     </form>
                 </div>

@@ -53,7 +53,7 @@ function spinnerHTML(size) {
 }
 
 // โหลดเดอร์เต็มหน้าจอ: ใช้ตอนหน้าเว็บกำลังโหลดข้อมูลก้อนแรกตั้งแต่เปิดหน้ามา (ครอบทั้ง DOMContentLoaded ไปจนกว่าจะเรียก fetch ครั้งแรกเสร็จ)
-// inject markup เข้า document.body เองตอนเรียกใช้ครั้งแรก ไม่ต้องใส่ไว้ในทุกไฟล์ HTML ล่วงหน้า - ใช้ path แบบ absolute (/assets/...) เพราะไฟล์นี้ถูกโหลดจากหลายความลึกของ URL ไม่เท่ากัน (public/staff/participant/webmanager/admin)
+// inject markup เข้า document.body เองตอนเรียกใช้ครั้งแรก ไม่ต้องใส่ไว้ในทุกไฟล์ HTML ล่วงหน้า - ใช้ path แบบ absolute (/assets/...) เพราะไฟล์นี้ถูกโหลดจากหลายความลึกของ URL ไม่เท่ากัน (public/staff/participant/superadmin/admin)
 function ensureFullPageLoaderEl() {
     let el = document.getElementById('full-page-loader');
     if (el) return el;

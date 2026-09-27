@@ -1,5 +1,5 @@
 // ==========================================
-// แดชบอร์ด WebManager (6 แท็บ) - โหลดต่อจาก webmanager.js จึงใช้ helper ของไฟล์นั้นได้ (escapeHtml, showToast, switchAdminSection, switchAdminTab,
+// แดชบอร์ด WebManager (6 แท็บ) - โหลดต่อจาก superadmin.js จึงใช้ helper ของไฟล์นั้นได้ (escapeHtml, showToast, switchAdminSection, switchAdminTab,
 // ACTIVITY_ACTION_LABELS, STUDY_PLAN_LABELS, INTEREST_SUBJECT_GROUP_LABELS, submitRegistrationOpen, Loader)
 // ข้อมูลทุกแท็บมาจาก /api/dashboard/* (ดู backend/controllers/dashboardController.js) โหลดเฉพาะแท็บที่เปิดดู แท็บภาพรวมโหลดตอนเข้าหน้า
 // กราฟทั้งหมดวาดเป็น SVG เองในไฟล์นี้ ไม่ใช้ไลบรารีภายนอก (ข้อมูลไม่กี่สิบจุด ไม่คุ้มโหลดไลบรารีเพิ่ม)
@@ -350,7 +350,7 @@ async function loadDashboardTab(tab, { force = false } = {}) {
 // ==========================================
 function renderDashboardOverview(panel, d) {
     const camp = d.camp;
-    // 3 ขั้นเดียวกับวิซาร์ด "ขั้นตอนดำเนินการค่าย" (LIFECYCLE_STEP_ORDER ใน webmanager.js): สร้าง+กำหนดคณะทำงาน → ดำเนินการ → จบ
+    // 3 ขั้นเดียวกับวิซาร์ด "ขั้นตอนดำเนินการค่าย" (LIFECYCLE_STEP_ORDER ใน superadmin.js): สร้าง+กำหนดคณะทำงาน → ดำเนินการ → จบ
     const lifecycle = (() => {
         const hasCamp = !!camp;
         const ended = hasCamp && camp.isEnded;

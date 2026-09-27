@@ -170,7 +170,7 @@ function handleNewsWriteRichTextPaste(event) {
     document.execCommand('insertHTML', false, `<a href="${escapeHtml(text)}" target="_blank" rel="noopener noreferrer">${escapeHtml(text)}</a>`);
 }
 
-// ผูกปุ่ม B/I/หัวข้อย่อย/ลิงก์ ของ rich text editor เข้ากับช่อง news-write-detail (ก๊อปพฤติกรรมจาก initRichTextToolbar() ใน webmanager.js เป๊ะ)
+// ผูกปุ่ม B/I/หัวข้อย่อย/ลิงก์ ของ rich text editor เข้ากับช่อง news-write-detail (ก๊อปพฤติกรรมจาก initRichTextToolbar() ใน superadmin.js เป๊ะ)
 function initNewsWriteRichTextToolbar() {
     document.querySelectorAll('.admin-richtext-btn').forEach((btn) => {
         btn.addEventListener('mousedown', (event) => event.preventDefault());

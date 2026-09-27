@@ -109,7 +109,7 @@ function loadAdminUser() {
         })
         .catch(() => {
             // ไม่ได้ล็อกอิน (เช่นก๊อปลิงก์มาเปิด/session หมดอายุ) = เด้งไปหน้า login ของ WebManager เพื่อให้เข้าสู่ระบบต่อได้เลย
-            window.location.replace('/webmanager/login.html');
+            window.location.replace('/superadmin/login.html');
         });
 }
 
@@ -230,7 +230,7 @@ async function adminLogout() {
     // ป้องกันกรณี CORS error หรือ network issue ทำให้ finally() ไม่ทำงาน
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
-    window.location.href = '/webmanager/login.html';
+    window.location.href = '/superadmin/login.html';
 }
 
 function toggleAdminUserMenu() {
@@ -627,7 +627,7 @@ function adminConfirmResolve(result) {
 }
 
 // ==========================================
-// แดชบอร์ด (Dashboard) - ย้ายไปอยู่ js/webmanager-dashboard.js ทั้งหมด (โหลดต่อจากไฟล์นี้ ใช้ helper เช่น escapeHtml/showToast/switchAdminSection จากไฟล์นี้ได้)
+// แดชบอร์ด (Dashboard) - ย้ายไปอยู่ js/superadmin-dashboard.js ทั้งหมด (โหลดต่อจากไฟล์นี้ ใช้ helper เช่น escapeHtml/showToast/switchAdminSection จากไฟล์นี้ได้)
 // ==========================================
 
 // ==========================================

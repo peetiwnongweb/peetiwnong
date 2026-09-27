@@ -16,7 +16,7 @@
   margin: 0 0 1.5rem 0;
 }
 
-/* กล่องลากไฟล์วางสำหรับอัปโหลดเอกสาร (โครงเดียวกับ .gallery-dropzone ใน webmanager.css แต่หน้านี้ไม่ได้โหลด stylesheet นั้น) */
+/* กล่องลากไฟล์วางสำหรับอัปโหลดเอกสาร (โครงเดียวกับ .gallery-dropzone ใน superadmin.css แต่หน้านี้ไม่ได้โหลด stylesheet นั้น) */
 .gallery-dropzone {
   display: flex;
   flex-direction: column;

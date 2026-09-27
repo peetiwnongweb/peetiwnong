@@ -3178,7 +3178,7 @@ body {
   padding: 0;
 }
 
-/* สรุปสถานะในหน้าขั้น "ดำเนินการค่าย" (render จาก renderLifecycleRunStatus ใน webmanager.js) */
+/* สรุปสถานะในหน้าขั้น "ดำเนินการค่าย" (render จาก renderLifecycleRunStatus ใน superadmin.js) */
 .lifecycle-run-status {
   margin: 0.75rem 0 1rem;
 }

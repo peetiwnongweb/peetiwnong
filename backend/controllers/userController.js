@@ -4,6 +4,7 @@ const { logActivity } = require('../lib/activityLog');
 const { sendApprovalEmail } = require('../lib/mailer');
 const { getLatestGenerationNo } = require('../lib/camp');
 const { isPasswordValid, PASSWORD_REQUIREMENTS_MESSAGE } = require('../lib/password');
+const { checkPositionLimit } = require('../lib/staffPositionLimits');
 
 const VALID_ROLES = ['WEBMANAGER', 'STAFF', 'PARTICIPANT'];
 // บัญชี Owner ทุกบัญชีใช้รูปโปรไฟล์คงที่รูปเดียวกัน (ล็อกไว้ เปลี่ยนไม่ได้ - ดู updateAvatar ใน authController.js)
@@ -221,6 +222,10 @@ async function createUser(req, res) {
 
   const existingEmail = await prisma.user.findUnique({ where: { email } });
   if (existingEmail) return res.status(409).json({ error: 'มีอีเมลนี้อยู่แล้ว' });
+  if (staffProfileData) {
+    const limitError = await checkPositionLimit(prisma, { userId: null, positionId: staffProfileData.positionId, departmentId: staffProfileData.departmentId });
+    if (limitError) return res.status(400).json({ error: limitError });
+  }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const needsStaffProfile = role === 'STAFF' && (isAdmin || staffProfileData);
@@ -300,6 +305,17 @@ async function updateUser(req, res) {
     };
     if (password) {
       data.passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    // เช็คจำนวนตำแหน่งจากค่าหลังแก้ (ฟิลด์ที่ไม่ได้ส่งมาใช้ค่าเดิม เช่น Admin เปลี่ยนแค่ฝ่ายของหัวหน้าฝ่าย)
+    if (staffProfileData) {
+      const current = await prisma.staffProfile.findUnique({ where: { userId: id }, select: { positionId: true, departmentId: true } });
+      const limitError = await checkPositionLimit(prisma, {
+        userId: id,
+        positionId: staffProfileData.positionId !== undefined ? staffProfileData.positionId : current?.positionId,
+        departmentId: staffProfileData.departmentId !== undefined ? staffProfileData.departmentId : current?.departmentId,
+      });
+      if (limitError) return res.status(400).json({ error: limitError });
     }
 
     await prisma.user.update({ where: { id }, data });

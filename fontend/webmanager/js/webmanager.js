@@ -2204,6 +2204,10 @@ let campVicePresidentPendingStaff = null;
 
 function addPendingCampVicePresident() {
     if (!campVicePresidentPendingStaff) return;
+    if (campVicePresidents.length >= 2) {
+        showToast('รองประธานค่ายมีได้ไม่เกิน 2 คน', true);
+        return;
+    }
     campVicePresidents.push(campVicePresidentPendingStaff);
     renderCampVicePresidentChips();
     campVicePresidentPendingStaff = null;

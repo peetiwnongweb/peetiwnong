@@ -11,11 +11,14 @@ const STUDY_ENTITY_TYPES = [
   'SUBJECT', 'PARTICIPANT_SUBJECT_SCORE', 'CLASS_SCHEDULE', 'STUDY_DOCUMENT',
   'ORAL_EXAM_SESSION', 'ORAL_EXAM_ATTEMPT', 'ORAL_EXAM_SCORE_BAND', 'GRADE_BAND', 'SCORE_WEIGHT_SETTING',
 ];
-const NOT_STUDY = { entityType: { notIn: STUDY_ENTITY_TYPES } };
+// "activity" = ระบบกิจกรรม (กิจกรรม/คะแนนกลุ่ม/กลุ่ม) ไม่ว่าใครทำ แยกออกมาเหมือน study
+const ACTIVITY_ENTITY_TYPES = ['CAMP_ACTIVITY', 'ACTIVITY_SCORE', 'GROUP'];
+const NOT_SPLIT = { entityType: { notIn: [...STUDY_ENTITY_TYPES, ...ACTIVITY_ENTITY_TYPES] } };
 const SCOPE_WHERE = {
-  admin: { AND: [{ actorRole: { in: ['SUPERADMIN', 'STAFF', 'HOST', 'ADMIN'] } }, { NOT: SELF_REGISTER }, NOT_STUDY] },
-  user: { AND: [{ OR: [{ actorRole: 'PARTICIPANT' }, SELF_REGISTER] }, NOT_STUDY] },
+  admin: { AND: [{ actorRole: { in: ['SUPERADMIN', 'STAFF', 'HOST', 'ADMIN'] } }, { NOT: SELF_REGISTER }, NOT_SPLIT] },
+  user: { AND: [{ OR: [{ actorRole: 'PARTICIPANT' }, SELF_REGISTER] }, NOT_SPLIT] },
   study: { entityType: { in: STUDY_ENTITY_TYPES } },
+  activity: { entityType: { in: ACTIVITY_ENTITY_TYPES } },
 };
 
 async function listActivityLogs(req, res) {

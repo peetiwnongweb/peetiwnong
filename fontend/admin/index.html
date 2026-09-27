@@ -213,6 +213,13 @@
                             </svg>
                             Log การเรียน
                         </button>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('log-activity')" id="admin-tab-log-activity">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
+                            </svg>
+                            Log กิจกรรม
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -908,6 +915,45 @@
                             <button type="button" class="admin-page-nav-btn" id="log-study-next-btn" onclick="changeActivityLogPage('study', 1)">ถัดไป</button>
                         </div>
                     </section>
+
+                    <!-- ของระบบกิจกรรม -->
+                    <section id="admin-panel-log-activity" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ประวัติการดำเนินการของระบบกิจกรรม</h2>
+                                <p class="admin-panel-desc">กิจกรรม คะแนนกลุ่ม และการจัดกลุ่ม (ทุกคนที่ทำ) ย้อนหลัง 200 รายการล่าสุด</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="log-activity-search" class="admin-search-input" placeholder="ค้นหาผู้ดำเนินการ, ประเภท, รายละเอียด...">
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>เวลา</th>
+                                        <th>ผู้ดำเนินการ</th>
+                                        <th>การกระทำ</th>
+                                        <th>ประเภทข้อมูล</th>
+                                        <th>รายละเอียด</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="log-activity-table-body"></tbody>
+                            </table>
+                            <p id="log-activity-empty" class="admin-empty hidden">ยังไม่มีประวัติการดำเนินการ</p>
+                            <p id="log-activity-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="log-activity-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="log-activity-prev-btn" onclick="changeActivityLogPage('activity', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="log-activity-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="log-activity-next-btn" onclick="changeActivityLogPage('activity', 1)">ถัดไป</button>
+                        </div>
+                    </section>
                 </section>
             </main>
         </div>
@@ -1518,7 +1564,7 @@
     <script src="../js/layout/otp-input.js?v=20260927-9"></script>
     <script src="../js/layout/loader.js?v=20260927-9"></script>
     <script src="../js/layout/date-select.js?v=20260927-9"></script>
-    <script src="js/admin.js?v=20260927-12"></script>
+    <script src="js/admin.js?v=20260927-13"></script>
     <script src="js/admin-dashboard.js?v=20260927-9"></script>
 </body>
 

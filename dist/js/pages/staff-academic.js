@@ -30,6 +30,7 @@ function showActivitiesToast(message, isSuccess) {
 const EDIT_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
 </svg>`;
+const PENCIL_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" /></svg>`;
 const TRASH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
     <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
 </svg>`;
@@ -254,6 +255,7 @@ function handleScoreCourseSelect(id) {
 
 function handleScheduleCourseSelect(id) {
     selectedScheduleCourseId = id;
+    if (editingScheduleEntryId) resetScheduleForm();
     renderCourseTabBar('schedule-course-tab-bar', selectedScheduleCourseId, handleScheduleCourseSelect);
     renderScheduleSubjectSelect();
     loadSchedule();
@@ -1339,18 +1341,23 @@ function renderTimetableGrid(wrap, entries, options = {}) {
             const deleteBtn = options.editable
                 ? `<button type="button" class="timetable-cell-delete-btn" data-entry-id="${entry.id}" title="ลบ">${TRASH_ICON}</button>`
                 : '';
+            const editBtn = options.editable && options.onEdit
+                ? `<button type="button" class="timetable-cell-delete-btn timetable-cell-edit-btn" data-entry-id="${entry.id}" title="แก้ไข">${PENCIL_ICON}</button>`
+                : '';
+            const editingClass = entry.id === editingScheduleEntryId ? 'timetable-entry--editing' : '';
 
             const entryTypeClass = entry.subject ? 'timetable-entry--subject' : 'timetable-entry--note';
             const editableClass = options.editable ? 'timetable-entry--editable' : '';
 
             return `
-                <div class="timetable-entry ${entryTypeClass} ${editableClass}"
+                <div class="timetable-entry ${entryTypeClass} ${editableClass} ${editingClass}"
                      style="left: ${leftPct}%; width: ${widthPct}%; top: ${lane * TIMETABLE_LANE_HEIGHT_REM + TIMETABLE_LANE_OFFSET_REM}rem;"
                      data-entry-id="${entry.id}">
                     <p class="timetable-cell-title">${title}</p>
                     <p class="timetable-cell-time">${entry.startTime}-${entry.endTime}</p>
                     ${noteLine}
                     ${instructorLine}
+                    ${editBtn}
                     ${deleteBtn}
                 </div>
             `;
@@ -1374,8 +1381,17 @@ function renderTimetableGrid(wrap, entries, options = {}) {
         </div>
     `;
 
+    if (options.editable && options.onEdit) {
+        wrap.querySelectorAll('.timetable-cell-edit-btn').forEach((btn) => {
+            const entry = entries.find((e) => e.id === Number(btn.dataset.entryId));
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                options.onEdit(entry);
+            });
+        });
+    }
     if (options.editable && options.onDelete) {
-        wrap.querySelectorAll('.timetable-cell-delete-btn').forEach((btn) => {
+        wrap.querySelectorAll('.timetable-cell-delete-btn:not(.timetable-cell-edit-btn)').forEach((btn) => {
             const entryId = Number(btn.dataset.entryId);
             const entry = entries.find((e) => e.id === entryId);
             btn.addEventListener('click', (event) => {
@@ -1405,6 +1421,8 @@ let scheduleStartSelects = null;
 let scheduleEndSelects = null;
 let scheduleFormInstructorIds = [];
 let scheduleFormInstructorPool = [];
+// id ของรายการที่กำลังแก้ไขในฟอร์ม (null = โหมดเพิ่มรายการใหม่) - ฟอร์มเดียวใช้ทั้งเพิ่มและแก้ไข
+let editingScheduleEntryId = null;
 
 // เลือกวิชาในฟอร์มเพิ่มตารางเรียนแล้ว ให้โผล่ช่องเลือกผู้สอน จำกัดตัวเลือกเฉพาะผู้สอนที่ถูกมอบหมายให้วิชานั้นจริง ๆ (จากแท็บ "จัดการผู้สอน")
 // และเลือกวิชากับกิจกรรมพร้อมกันไม่ได้ (backend เช็คซ้ำอีกชั้น) - เลือกวิชาแล้วปิดช่องกิจกรรมไว้
@@ -1497,7 +1515,7 @@ function loadSchedule() {
         .then((entries) => {
             currentScheduleEntries = entries;
             empty.classList.toggle('hidden', entries.length !== 0);
-            renderTimetableGrid(wrap, entries, { editable: academicTier === 'manager', onDelete: deleteScheduleEntry });
+            renderTimetableGrid(wrap, entries, { editable: academicTier === 'manager', onDelete: deleteScheduleEntry, onEdit: startScheduleEdit });
             renderScheduleFullscreenIfOpen();
             scheduleActivitySuggestions = [...new Set(entries.map((e) => e.activityName).filter(Boolean))];
         })
@@ -1512,7 +1530,7 @@ function renderScheduleFullscreenIfOpen() {
     const modal = document.getElementById('schedule-fullscreen-modal');
     const fsWrap = document.getElementById('schedule-fullscreen-grid-wrap');
     if (!modal || !fsWrap || modal.classList.contains('hidden')) return;
-    renderTimetableGrid(fsWrap, currentScheduleEntries, { editable: academicTier === 'manager', onDelete: deleteScheduleEntry });
+    renderTimetableGrid(fsWrap, currentScheduleEntries, { editable: academicTier === 'manager', onDelete: deleteScheduleEntry, onEdit: startScheduleEdit });
 }
 
 function openScheduleFullscreen() {
@@ -1566,6 +1584,70 @@ function initScheduleActivityCombobox() {
     input.addEventListener('blur', () => list.classList.add('hidden'));
 }
 
+// ล้างฟอร์มกลับเป็นโหมด "เพิ่มรายการ" (ใช้ทั้งหลังเพิ่ม/แก้สำเร็จ และตอนกดยกเลิกการแก้ไข)
+function resetScheduleForm() {
+    const subjectSelect = document.getElementById('schedule-subject-select');
+    const activityInput = document.getElementById('schedule-activity-input');
+    editingScheduleEntryId = null;
+    scheduleDateSelects?.clear();
+    if (subjectSelect) { subjectSelect.value = ''; subjectSelect.disabled = false; }
+    if (activityInput) { activityInput.value = ''; activityInput.disabled = false; }
+    updateScheduleInstructorOptions();
+    scheduleStartSelects?.clear();
+    scheduleEndSelects?.clear();
+    const noteInput = document.getElementById('schedule-note-input');
+    if (noteInput) noteInput.value = '';
+    document.getElementById('schedule-form-title').textContent = 'เพิ่มรายการตารางเรียน';
+    document.getElementById('schedule-submit-btn').textContent = 'เพิ่มรายการ';
+    document.getElementById('schedule-cancel-edit-btn').classList.add('hidden');
+    document.getElementById('schedule-cancel-edit-spacer').classList.remove('hidden');
+    loadScheduleHighlightOnly();
+}
+
+// วาดตารางใหม่จากข้อมูลเดิม (ไม่ fetch) แค่ให้กรอบไฮไลต์การ์ดที่กำลังแก้ไขตามทัน
+function loadScheduleHighlightOnly() {
+    const wrap = document.getElementById('schedule-grid-wrap');
+    if (wrap && currentScheduleEntries.length) {
+        renderTimetableGrid(wrap, currentScheduleEntries, { editable: academicTier === 'manager', onDelete: deleteScheduleEntry, onEdit: startScheduleEdit });
+    }
+    renderScheduleFullscreenIfOpen();
+}
+
+// กดดินสอบนการ์ด: เติมค่าเดิมลงฟอร์มด้านบน แล้วเปลี่ยนเป็นโหมดแก้ไข (เช่น เปลี่ยนผู้สอน/เวลา/วิชา)
+function startScheduleEdit(entry) {
+    closeScheduleFullscreen();
+    editingScheduleEntryId = entry.id;
+
+    const subjectSelect = document.getElementById('schedule-subject-select');
+    const activityInput = document.getElementById('schedule-activity-input');
+    scheduleDateSelects?.setValue(String(entry.classDate).slice(0, 10));
+    scheduleStartSelects?.setValue(entry.startTime);
+    scheduleEndSelects?.setValue(entry.endTime);
+
+    subjectSelect.disabled = false;
+    subjectSelect.value = entry.subjectId ? String(entry.subjectId) : '';
+    updateScheduleInstructorOptions();
+    if (entry.subjectId) {
+        // ใช้ผู้สอนของคาบนี้จริง ๆ (ไม่ใช่ค่าตั้งต้นของวิชา) + ให้เลือกได้ทั้งผู้สอนของวิชาและผู้สอนเดิมของคาบนี้
+        const entryInstructors = entry.instructors || [];
+        scheduleFormInstructorIds = entryInstructors.map((i) => i.userId);
+        const poolIds = new Set(scheduleFormInstructorPool.map((i) => i.userId));
+        scheduleFormInstructorPool = [...scheduleFormInstructorPool, ...entryInstructors.filter((i) => !poolIds.has(i.userId))];
+        renderScheduleInstructorChips();
+    }
+    activityInput.disabled = Boolean(entry.subjectId);
+    activityInput.value = entry.activityName || '';
+    handleScheduleActivityInput();
+    document.getElementById('schedule-note-input').value = entry.note || '';
+
+    document.getElementById('schedule-form-title').textContent = `แก้ไขรายการตารางเรียน (${entry.startTime}-${entry.endTime})`;
+    document.getElementById('schedule-submit-btn').textContent = 'บันทึกการแก้ไข';
+    document.getElementById('schedule-cancel-edit-btn').classList.remove('hidden');
+    document.getElementById('schedule-cancel-edit-spacer').classList.add('hidden');
+    loadScheduleHighlightOnly();
+    document.getElementById('schedule-create-form').closest('.activity-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function handleScheduleCreateSubmit(event) {
     event.preventDefault();
     const dateInput = document.getElementById('schedule-date-input');
@@ -1586,13 +1668,14 @@ function handleScheduleCreateSubmit(event) {
         return;
     }
 
-    Loader.setButtonLoading(btn, 'กำลังเพิ่ม...');
+    const isEditing = Boolean(editingScheduleEntryId);
+    Loader.setButtonLoading(btn, isEditing ? 'กำลังบันทึก...' : 'กำลังเพิ่ม...');
 
-    fetch('/api/class-schedules', {
-        method: 'POST',
+    fetch(isEditing ? `/api/class-schedules/${editingScheduleEntryId}` : '/api/class-schedules', {
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            courseFormatId: selectedScheduleCourseId,
+            ...(isEditing ? {} : { courseFormatId: selectedScheduleCourseId }),
             classDate: dateInput.value,
             subjectId: subjectSelect.value || null,
             instructorUserIds: scheduleFormInstructorIds,
@@ -1604,21 +1687,13 @@ function handleScheduleCreateSubmit(event) {
     })
         .then(async (res) => {
             if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
-            scheduleDateSelects?.clear();
-            subjectSelect.value = '';
-            subjectSelect.disabled = false;
-            activityInput.value = '';
-            activityInput.disabled = false;
-            updateScheduleInstructorOptions();
-            scheduleStartSelects?.clear();
-            scheduleEndSelects?.clear();
-            noteInput.value = '';
-            showActivitiesToast('เพิ่มรายการตารางเรียนสำเร็จ', true);
+            resetScheduleForm();
+            showActivitiesToast(isEditing ? 'แก้ไขรายการตารางเรียนสำเร็จ' : 'เพิ่มรายการตารางเรียนสำเร็จ', true);
             loadSchedule();
         })
         .catch((error) => {
             console.error(error);
-            showActivitiesToast(error.message || 'เพิ่มรายการตารางเรียนไม่สำเร็จ', false);
+            showActivitiesToast(error.message || (isEditing ? 'แก้ไขรายการตารางเรียนไม่สำเร็จ' : 'เพิ่มรายการตารางเรียนไม่สำเร็จ'), false);
         })
         .finally(() => {
             Loader.clearButtonLoading(btn);
@@ -2693,6 +2768,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('score-table-export-excel-btn')?.addEventListener('click', exportScoreTableToExcel);
     document.getElementById('score-table-search-input')?.addEventListener('input', (event) => filterScoreTableRows(event.target.value));
     document.getElementById('schedule-create-form')?.addEventListener('submit', handleScheduleCreateSubmit);
+    document.getElementById('schedule-cancel-edit-btn')?.addEventListener('click', resetScheduleForm);
     scheduleDateSelects = setupDateSelects({ containerId: 'schedule-date-selects', hiddenId: 'schedule-date-input' });
     scheduleStartSelects = setupTimeSelects({ containerId: 'schedule-start-selects', hiddenId: 'schedule-start-input' });
     scheduleEndSelects = setupTimeSelects({ containerId: 'schedule-end-selects', hiddenId: 'schedule-end-input' });

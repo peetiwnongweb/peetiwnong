@@ -892,10 +892,16 @@
   color: var(--brand-600);
 }
 
-/* การ์ดที่กำลังแก้ไขอยู่ในฟอร์มด้านบน */
-.timetable-entry--editing {
-  outline: 2px solid var(--brand-500);
-  outline-offset: 1px;
+/* การ์ดที่กำลังแก้ไขอยู่ในฟอร์มด้านบน: เปลี่ยนสีกรอบ/พื้นเป็นโทนส้มอ่อน + แถบส้มด้านซ้าย (ไม่ใช้ outline ที่ล้นทับการ์ดข้าง ๆ) */
+.timetable-entry.timetable-entry--editing {
+  background-color: #fff7ed;
+  border-color: #fdba74;
+  box-shadow: inset 4px 0 0 var(--brand-500), 0 4px 12px rgba(249, 115, 22, 0.18);
+  z-index: 2;
+}
+
+.timetable-entry--editing .timetable-cell-title {
+  color: var(--brand-600);
 }
 
 /* ช่องชื่อกิจกรรม: หน้าตาเหมือนช่องเลือกวิชา (ไอคอนลูกศรลง) แต่ยังเป็น input พิมพ์เองได้

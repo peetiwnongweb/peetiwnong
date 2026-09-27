@@ -43,7 +43,7 @@ async function main() {
   });
 
   console.log(`\nสร้างบัญชี WebManager สำเร็จ: ${created.email} (id ${created.id})`);
-  console.log('ลองล็อกอินที่ /webmanager/login.html ด้วยอีเมล/รหัสผ่านนี้เพื่อยืนยันก่อนลบบัญชีทดสอบเดิม\n');
+  console.log('ลองล็อกอินที่ /superadmin/login.html ด้วยอีเมล/รหัสผ่านนี้เพื่อยืนยันก่อนลบบัญชีทดสอบเดิม\n');
   process.exit(0);
 }
 

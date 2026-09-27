@@ -322,7 +322,7 @@ const ADMIN_NAV_GROUPS = {
 };
 
 // โหลดข้อมูลของแท็บแบบ lazy (ครั้งแรกที่สลับไปเปิดดูเท่านั้น) แทนที่จะยิงทุก endpoint พร้อมกันตอนเปิดหน้า Admin
-// เหตุผล/แพทเทิร์นเดียวกับ webmanager.js (ดูคอมเมนต์ ADMIN_LAZY_LOADERS ในไฟล์นั้น) key เดียวกัน = ข้อมูลชุดเดียวกัน ใช้ร่วมกันได้หลายแท็บโดยยิงแค่ครั้งเดียว
+// เหตุผล/แพทเทิร์นเดียวกับ superadmin.js (ดูคอมเมนต์ ADMIN_LAZY_LOADERS ในไฟล์นั้น) key เดียวกัน = ข้อมูลชุดเดียวกัน ใช้ร่วมกันได้หลายแท็บโดยยิงแค่ครั้งเดียว
 const loadedAdminKeys = new Set();
 
 const ADMIN_LAZY_LOADERS = {
@@ -1980,7 +1980,7 @@ async function deleteScheduleItem(item) {
 }
 
 // ==========================================
-// อนุมัติการลงทะเบียน (Approve Registration) - ก๊อปมาจาก webmanager.js (endpoint/สิทธิ์เดียวกัน requireAdminAccess อยู่แล้ว)
+// อนุมัติการลงทะเบียน (Approve Registration) - ก๊อปมาจาก superadmin.js (endpoint/สิทธิ์เดียวกัน requireAdminAccess อยู่แล้ว)
 // ==========================================
 const APPROVAL_STATUS_BADGE = {
     PENDING: '<span class="admin-badge admin-badge-pending">รออนุมัติ</span>',

@@ -1,9 +1,9 @@
 /* ==========================================
-   Loader กลาง: ใช้ร่วมทุกหน้า (public/staff/webmanager/admin/participant)
+   Loader กลาง: ใช้ร่วมทุกหน้า (public/staff/superadmin/admin/participant)
    - Skeleton: คอนเทนต์แบบมีโครง (list/card/table) ระหว่างรอ fetch
    - Spinner: การกระทำเดี่ยว (ปุ่ม submit) หรือค่าเดี่ยว (ตัวเลขสรุป)
    ตัวแปรสี --slate-100/--slate-200 มาจาก base/variables.css ซึ่งถูกสลับค่าใหม่ใต้ [data-theme="dark"]
-   อยู่แล้ว (ดู admin.css/webmanager.css) จึงรองรับ dark mode ให้อัตโนมัติโดยไม่ต้องเขียนซ้ำ
+   อยู่แล้ว (ดู admin.css/superadmin.css) จึงรองรับ dark mode ให้อัตโนมัติโดยไม่ต้องเขียนซ้ำ
    ========================================== */
 
 @keyframes skeleton-shimmer {

@@ -1,0 +1,3 @@
+# ลิงก์เก่า /webmanager ย้ายไปเป็น /superadmin แล้ว - ส่งต่ออัตโนมัติ กันบุ๊กมาร์กเดิมเข้าไม่ได้
+/webmanager /superadmin/ 301
+/webmanager/* /superadmin/:splat 301

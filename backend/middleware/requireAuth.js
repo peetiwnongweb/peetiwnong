@@ -19,7 +19,7 @@ function requireRole(...roles) {
   };
 }
 
-// เข้าถึงหลังบ้าน /admin (และ API ที่ใช้ร่วมกับ /webmanager) ได้เมื่อเป็นพี่ค่ายที่ได้รับสิทธิ์ผู้ดูแลระบบ (StaffProfile.isAdmin) หรือเป็น WebManager (สิทธิ์สูงสุด)
+// เข้าถึงหลังบ้าน /admin (และ API ที่ใช้ร่วมกับ /superadmin) ได้เมื่อเป็นพี่ค่ายที่ได้รับสิทธิ์ผู้ดูแลระบบ (StaffProfile.isAdmin) หรือเป็น WebManager (สิทธิ์สูงสุด)
 function requireAdminAccess(req, res, next) {
   const user = req.session && req.session.user;
   if (!user) {
@@ -32,7 +32,7 @@ function requireAdminAccess(req, res, next) {
   next();
 }
 
-// เข้าถึงหลังบ้าน /webmanager ได้เฉพาะ WebManager (สิทธิ์สูงสุด) เท่านั้น แยกออกจาก Admin โดยสิ้นเชิง
+// เข้าถึงหลังบ้าน /superadmin ได้เฉพาะ WebManager (สิทธิ์สูงสุด) เท่านั้น แยกออกจาก Admin โดยสิ้นเชิง
 function requireWebManagerAccess(req, res, next) {
   const user = req.session && req.session.user;
   if (!user) {

@@ -36,7 +36,7 @@ console.log('Copying public -> /');
 copyDirectory(path.join(srcDir, 'public'), distDir);
 
 // 2. Copy other directories into their respective folders in dist/
-const dirsToMap = ['assets', 'admin', 'webmanager', 'staff', 'participant'];
+const dirsToMap = ['assets', 'admin', 'superadmin', 'staff', 'participant'];
 for (const dir of dirsToMap) {
     const srcPath = path.join(srcDir, dir);
     if (fs.existsSync(srcPath)) {

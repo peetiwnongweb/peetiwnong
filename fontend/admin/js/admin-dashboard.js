@@ -1,7 +1,7 @@
 // ==========================================
 // แดชบอร์ด Admin (4 แท็บ: ภาพรวม/บุคลากร/งานวิชาการ/งานกิจกรรม) - โหลดต่อจาก admin.js จึงใช้ helper ของไฟล์นั้นได้ (escapeHtml, showToast, switchAdminSection, switchAdminTab, Loader)
 // ต่างจากแดชบอร์ด WebManager (6 แท็บ) ตรงที่ไม่มี "เว็บไซต์ & ระบบ" กับ "การใช้งานเว็บไซต์" ซึ่งเป็นข้อมูลระดับ Owner เท่านั้น (ดู backend/routes/dashboardRoutes.js)
-// แท็บบุคลากร/งานวิชาการ/งานกิจกรรม ก๊อปมาจาก fontend/webmanager/js/webmanager-dashboard.js (ใช้ endpoint เดียวกัน) ปรับปุ่ม "ไปหน้าอนุมัติ" ให้ชี้มาที่หน้า /admin เอง
+// แท็บบุคลากร/งานวิชาการ/งานกิจกรรม ก๊อปมาจาก fontend/superadmin/js/superadmin-dashboard.js (ใช้ endpoint เดียวกัน) ปรับปุ่ม "ไปหน้าอนุมัติ" ให้ชี้มาที่หน้า /admin เอง
 // แท็บภาพรวมไม่มี endpoint แยก (/api/dashboard/summary เป็นของ WebManager เท่านั้น) แต่ประกอบขึ้นจากข้อมูล 3 แท็บข้างต้นแทน
 // ==========================================
 
@@ -20,7 +20,7 @@ const adminDashboardState = {
 };
 
 // ==========================================
-// helper จัดรูปแบบ (ก๊อปจาก webmanager-dashboard.js เฉพาะที่ใช้ใน 3 แท็บนี้)
+// helper จัดรูปแบบ (ก๊อปจาก superadmin-dashboard.js เฉพาะที่ใช้ใน 3 แท็บนี้)
 // ==========================================
 function dashNum(value) {
     return Number(value || 0).toLocaleString('th-TH');
@@ -152,7 +152,7 @@ function renderAdminDashboardOverview(panel, { people, academic, activities }) {
 }
 
 // ==========================================
-// แท็บ 2: บุคลากร (ก๊อปจาก webmanager-dashboard.js - ปรับปุ่ม "ไปหน้าอนุมัติ" ให้ชี้ไปหน้าจัดการผู้ใช้งานของ /admin เอง)
+// แท็บ 2: บุคลากร (ก๊อปจาก superadmin-dashboard.js - ปรับปุ่ม "ไปหน้าอนุมัติ" ให้ชี้ไปหน้าจัดการผู้ใช้งานของ /admin เอง)
 // ==========================================
 function renderDashboardPeople(panel, d) {
     const s = d.staff;
@@ -222,7 +222,7 @@ function renderDashboardPeople(panel, d) {
 }
 
 // ==========================================
-// แท็บ 3: งานวิชาการ (ก๊อปจาก webmanager-dashboard.js ทั้งดุ้น - ไม่มีปุ่มเชื่อมไปหน้าอื่นที่ต้องปรับ)
+// แท็บ 3: งานวิชาการ (ก๊อปจาก superadmin-dashboard.js ทั้งดุ้น - ไม่มีปุ่มเชื่อมไปหน้าอื่นที่ต้องปรับ)
 // ==========================================
 function renderDashboardAcademic(panel, d) {
     const scoringRows = d.subjects.filter((s) => s.requiresScoring);
@@ -296,7 +296,7 @@ function renderDashboardAcademic(panel, d) {
 }
 
 // ==========================================
-// แท็บ 4: งานกิจกรรม (ก๊อปจาก webmanager-dashboard.js ทั้งดุ้น)
+// แท็บ 4: งานกิจกรรม (ก๊อปจาก superadmin-dashboard.js ทั้งดุ้น)
 // ==========================================
 function renderDashboardActivities(panel, d) {
     const matrix = d.activities.length === 0 || d.groups.length === 0

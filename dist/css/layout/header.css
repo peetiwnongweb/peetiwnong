@@ -241,7 +241,7 @@ button.m-header-user-chip .user-avatar {
   color: var(--brand-600);
 }
 
-/* ไอคอนในเมนูบัญชีหน้า Admin มีสีเทาตายตัว (webmanager.css) ต้องให้เป็นสีส้มตามรายการที่เลือกอยู่ด้วย */
+/* ไอคอนในเมนูบัญชีหน้า Admin มีสีเทาตายตัว (superadmin.css) ต้องให้เป็นสีส้มตามรายการที่เลือกอยู่ด้วย */
 .admin-dropdown-item.current-page-btn svg {
   color: var(--brand-600);
 }

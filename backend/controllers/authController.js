@@ -133,7 +133,7 @@ async function login(req, res) {
     return res.status(401).json({ error: 'email หรือรหัสผ่านไม่ถูกต้อง' });
   }
 
-  // WebManager มีหน้า login แยกต่างหาก (/webmanager/login.html) ที่ส่ง role: 'WEBMANAGER' ตรง ๆ จึงตรวจ role แบบตรงตัวทุก role
+  // WebManager มีหน้า login แยกต่างหาก (/superadmin/login.html) ที่ส่ง role: 'WEBMANAGER' ตรง ๆ จึงตรวจ role แบบตรงตัวทุก role
   const roleMatches = user.role === role;
   if (!roleMatches) {
     return res.status(401).json({ error: 'บทบาทที่เลือกไม่ตรงกับบัญชีนี้' });

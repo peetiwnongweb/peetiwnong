@@ -279,6 +279,12 @@ function renderTimetableGrid(wrap, entries, options = {}) {
         </div>
     `;
 
+    // กดการ์ด = ดูชื่อวิชา/รายละเอียดเต็ม ๆ (เหมือนหน้าพี่ค่าย)
+    wrap.querySelectorAll('.timetable-entry').forEach((card) => {
+        const entry = entries.find((e) => e.id === Number(card.dataset.entryId));
+        card.addEventListener('click', () => openScheduleEntryDetail(entry, options));
+    });
+
     // options.editable ไม่เคยเป็น true บนหน้านี้เลย (น้องค่ายดูอย่างเดียว) if นี้จึงไม่เคยทำงานจริง เก็บไว้เผื่ออนาคตแค่ให้โค้ดตรงกับต้นฉบับฝั่งพี่ค่ายทุกตัวอักษร
     if (options.editable && options.onDelete) {
         wrap.querySelectorAll('.timetable-cell-delete-btn').forEach((btn) => {
@@ -290,6 +296,71 @@ function renderTimetableGrid(wrap, entries, options = {}) {
             });
         });
     }
+}
+
+// กันข้อความที่ผู้ใช้กรอก (ชื่อกิจกรรม/หมายเหตุ) ถูกตีความเป็น HTML ในหน้าต่างรายละเอียด
+function escapeScheduleText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// หน้าต่างรายละเอียดรายการตารางเรียน (สร้างครั้งแรกตอนเปิดใช้ ใช้โครง .modal เดียวกับหน้าต่างอื่นในหน้านี้)
+function openScheduleEntryDetail(entry, options = {}) {
+    if (!entry) return;
+    let modal = document.getElementById('schedule-entry-detail-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'schedule-entry-detail-modal';
+        modal.className = 'modal hidden';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.innerHTML = `
+            <div class="modal-wrapper">
+                <div class="modal-backdrop" data-close="1" aria-hidden="true"></div>
+                <span class="modal-trick" aria-hidden="true">&#8203;</span>
+                <div class="modal-box schedule-detail-box">
+                    <div class="modal-content" id="schedule-entry-detail-content"></div>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (event) => {
+            if (event.target.closest('[data-close]')) modal.classList.add('hidden');
+        });
+    }
+
+    const title = entry.subject ? entry.subject.name : (entry.activityName || 'ไม่ระบุกิจกรรม');
+    const dateLabel = formatTimetableDateLabel(String(entry.classDate).slice(0, 10));
+    const instructors = entry.instructors.map((i) => `พี่${i.nickname ? `${escapeScheduleText(i.nickname)} (${escapeScheduleText(i.name)})` : escapeScheduleText(i.name)}`);
+    const rows = [
+        ['วันเวลา', `${dateLabel} · ${entry.startTime}-${entry.endTime}`],
+        ['ประเภท', entry.subject ? 'รายวิชา' : 'กิจกรรม'],
+        ...(instructors.length ? [['ผู้สอน', instructors.join('<br>')]] : []),
+        ...(entry.note ? [['หมายเหตุ', escapeScheduleText(entry.note)]] : []),
+    ];
+    const actions = options.editable ? `
+        <div class="schedule-detail-actions">
+            ${options.onEdit ? '<button type="button" class="btn-outline" data-action="copy">ทำสำเนา</button><button type="button" class="btn-outline" data-action="edit">แก้ไข</button>' : ''}
+            ${options.onDelete ? '<button type="button" class="btn-outline schedule-detail-delete" data-action="delete">ลบ</button>' : ''}
+        </div>` : '';
+
+    const content = document.getElementById('schedule-entry-detail-content');
+    content.innerHTML = `
+        <div class="schedule-fullscreen-header">
+            <h2 class="schedule-detail-title">${escapeScheduleText(title)}</h2>
+            <button type="button" class="schedule-fullscreen-close-btn" data-close="1" title="ปิด">&times;</button>
+        </div>
+        <dl class="schedule-detail-list">
+            ${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}
+        </dl>
+        ${actions}`;
+    content.querySelectorAll('[data-action]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            if (btn.dataset.action === 'edit') options.onEdit(entry);
+            if (btn.dataset.action === 'copy') options.onEdit(entry, { duplicate: true });
+            if (btn.dataset.action === 'delete') options.onDelete(entry);
+        });
+    });
+    modal.classList.remove('hidden');
 }
 
 // ==========================================

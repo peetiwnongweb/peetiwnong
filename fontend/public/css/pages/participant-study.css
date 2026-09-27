@@ -779,3 +779,50 @@
     margin: 1cm;
   }
 }
+
+/* หน้าต่างรายละเอียดรายการตารางเรียน (กดการ์ด) - ชุดเดียวกับ staff-academic.css */
+.timetable-entry {
+  cursor: pointer;
+}
+
+.schedule-detail-box {
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+}
+
+.schedule-detail-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.schedule-detail-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.6rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.schedule-detail-list dt {
+  color: var(--slate-500);
+  font-size: 0.9rem;
+}
+
+.schedule-detail-list dd {
+  margin: 0;
+  color: var(--slate-800);
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.schedule-detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+

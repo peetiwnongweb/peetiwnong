@@ -131,8 +131,14 @@ async function assignLeadershipPositions(tx, positions, { presidentUserId, secre
   for (const userId of vicePresidentUserIds) {
     await tx.staffProfile.update({ where: { userId }, data: { positionId: positions.posVice.id } });
   }
+  // หัวหน้าฝ่าย: ตั้งตำแหน่ง + เพิ่มฝ่ายนั้นเข้าไปในฝ่ายที่สังกัด (ฝ่ายอื่นที่สังกัดอยู่เดิมคงไว้)
   for (const d of departmentHeads) {
-    await tx.staffProfile.update({ where: { userId: d.userId }, data: { positionId: positions.posHead.id, departmentId: d.departmentId } });
+    const profile = await tx.staffProfile.update({ where: { userId: d.userId }, data: { positionId: positions.posHead.id }, select: { id: true } });
+    await tx.staffProfileDepartment.upsert({
+      where: { staffProfileId_departmentId: { staffProfileId: profile.id, departmentId: d.departmentId } },
+      create: { staffProfileId: profile.id, departmentId: d.departmentId },
+      update: {},
+    });
   }
 }
 
@@ -236,7 +242,7 @@ async function updateCampLeadership(req, res) {
     if (removedUserIds.length) {
       await tx.staffProfile.updateMany({
         where: { userId: { in: removedUserIds } },
-        data: { positionId: positions.posTeam.id, departmentId: null },
+        data: { positionId: positions.posTeam.id },
       });
     }
     await tx.campVicePresident.deleteMany({ where: { campId } });
@@ -287,7 +293,8 @@ async function endCamp(req, res) {
   }
 
   const [staffResult] = await prisma.$transaction([
-    prisma.staffProfile.updateMany({ data: { positionId: posTeam.id, departmentId: null } }),
+    prisma.staffProfile.updateMany({ data: { positionId: posTeam.id } }),
+    prisma.staffProfileDepartment.deleteMany({}),
     prisma.user.deleteMany({ where: { role: 'PARTICIPANT' } }),
     prisma.camp.update({ where: { id: latestCamp.id }, data: { isEnded: true } }),
   ], { maxWait: 15000, timeout: 120000 });

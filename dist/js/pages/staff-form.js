@@ -182,7 +182,10 @@ function getDraftableFields() {
 function saveFormDraft() {
     const data = {};
     getDraftableFields().forEach((el) => {
-        if (el.type === 'radio' || el.type === 'checkbox') {
+        if (el.type === 'checkbox' && el.name) {
+            // checkbox ที่ชื่อซ้ำกัน (เช่น ฝ่ายงาน เลือกได้หลายข้อ) เก็บเป็น array
+            if (el.checked) (data[el.name] = [].concat(data[el.name] || [])).push(el.value);
+        } else if (el.type === 'radio' || el.type === 'checkbox') {
             if (el.checked) data[el.name || el.id] = el.value;
         } else if (el.id) {
             data[el.id] = el.value;
@@ -243,7 +246,7 @@ function restoreFormDraft() {
         if (['reg-dob-year', 'reg-dob-month', 'reg-dob-day', 'reg-occupation-status'].includes(el.id)) return; // คืนค่าไปแล้วด้านบน
         if (el.type === 'radio' || el.type === 'checkbox') {
             const key = el.name || el.id;
-            if (data[key] !== undefined && el.value === data[key]) {
+            if (data[key] !== undefined && [].concat(data[key]).includes(el.value)) {
                 el.checked = true;
                 const card = el.closest('.checkbox-card');
                 if (card) toggleCard(card);
@@ -474,7 +477,7 @@ function handleFormSubmit(event) {
         nickname: document.getElementById('reg-nickname').value.trim(),
         birthDate: document.getElementById('reg-dob').value,
         phone: document.getElementById('reg-phone').value.replace(/\D/g, ''),
-        department: (document.querySelector('input[name="interested_department"]:checked') || {}).value || '',
+        departments: Array.from(document.querySelectorAll('input[name="interested_department"]:checked')).map((el) => el.value),
         affiliation: document.getElementById('reg-affiliation').value.trim(),
         // ส่งค่าอาชีพเสมอ ไม่ได้ส่งเฉพาะตอนเลือก "ประกอบอาชีพ" แล้ว เพราะตอนเลือก "กำลังศึกษา" ระบบเติม "นักศึกษา" ให้อัตโนมัติ
         // (ถ้ายังตัดทิ้งเหมือนเดิม ค่าที่เติมให้จะไม่ถูกบันทึก) ส่วนกรณียังไม่เลือกสถานะ ช่องนี้ถูกล้างเป็นค่าว่างอยู่แล้ว

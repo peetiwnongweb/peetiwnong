@@ -44,7 +44,7 @@ async function listMySubjects(req, res) {
 async function listInstructorCandidates(req, res) {
   const prisma = await getPrisma();
   const staffProfiles = await prisma.staffProfile.findMany({
-    where: { department: { name: 'ฝ่ายวิชาการ' } },
+    where: { departments: { some: { department: { name: 'ฝ่ายวิชาการ' } } } },
     select: { userId: true, prefix: true, firstName: true, lastName: true, nickname: true },
     orderBy: [{ firstName: 'asc' }],
   });

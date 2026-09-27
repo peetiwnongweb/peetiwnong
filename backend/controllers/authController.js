@@ -45,11 +45,19 @@ async function buildSessionUser(prisma, user) {
         faculty: true,
         major: true,
         occupation: true,
-        department: { select: { id: true, name: true } },
+        departments: { select: { department: { select: { id: true, name: true } } } },
         position: { select: { id: true, name: true } },
         isAdmin: true,
       },
     });
+    // หัวหน้าฝ่ายเป็นหัวหน้าของฝ่ายไหน ดูจากคณะทำงานของค่ายล่าสุด (สร้างค่าย/แก้ไขคณะทำงาน) เพราะ 1 คนสังกัดได้หลายฝ่าย
+    const headRow = staffProfile?.position?.name === 'หัวหน้าฝ่าย'
+      ? await prisma.campDepartmentHead.findFirst({
+        where: { userId: user.id },
+        orderBy: { camp: { generationNo: 'desc' } },
+        select: { department: { select: { id: true, name: true } } },
+      })
+      : null;
 
     return {
       ...base,
@@ -64,7 +72,8 @@ async function buildSessionUser(prisma, user) {
       faculty: staffProfile?.faculty || null,
       major: staffProfile?.major || null,
       occupation: staffProfile?.occupation || null,
-      department: staffProfile?.department || null,
+      departments: (staffProfile?.departments || []).map((d) => d.department),
+      headDepartment: headRow?.department || null,
       position: staffProfile?.position || null,
       // ประธานค่าย/รองประธานค่าย/เลขานุการ ได้สิทธิ์ผู้ดูแลระบบติดตัวมากับตำแหน่งเสมอ ไม่ต้องรอ SuperAdmin มากดให้ทีละคน
       // (ธงในตาราง StaffProfile.isAdmin ยังใช้ได้ตามปกติ สำหรับมอบสิทธิ์ให้พี่ค่ายตำแหน่งอื่นเพิ่มเป็นราย ๆ)
@@ -342,10 +351,14 @@ async function completeRegistration(req, res) {
   // ฟอร์มสาธารณะเลือกฝ่ายงาน/คอร์สเรียนเป็นชื่อ (ไม่มี id จริงให้เลือกเหมือนหน้า SuperAdmin) จึงต้อง lookup ชื่อ -> id เองที่นี่
   // ก่อนส่งต่อให้ buildStaffProfileData/buildParticipantProfileData ที่รับแค่ departmentId/courseFormatId เป็นตัวเลข
   const resolvedProfile = { ...profile };
-  if (role === 'STAFF' && profile.department) {
-    const department = await prisma.campDepartment.findFirst({ where: { name: profile.department } });
-    if (!department) return res.status(400).json({ error: 'ฝ่ายงานไม่ถูกต้อง' });
-    resolvedProfile.departmentId = department.id;
+  if (role === 'STAFF') {
+    // เลือกได้หลายฝ่าย (array ของชื่อฝ่าย) - ยังรับแบบเดิม (ชื่อเดียวเป็น string) ไว้ด้วย กันฟอร์มที่แคชไว้ในเบราว์เซอร์
+    const names = [...new Set([].concat(profile.departments || profile.department || []).filter(Boolean))];
+    if (names.length) {
+      const departments = await prisma.campDepartment.findMany({ where: { name: { in: names } }, select: { id: true } });
+      if (departments.length !== names.length) return res.status(400).json({ error: 'ฝ่ายงานไม่ถูกต้อง' });
+      resolvedProfile.departmentIds = departments.map((d) => d.id);
+    }
   }
   if (role === 'PARTICIPANT' && profile.courseFormat) {
     const courseFormat = await prisma.courseFormat.findFirst({ where: { name: profile.courseFormat } });

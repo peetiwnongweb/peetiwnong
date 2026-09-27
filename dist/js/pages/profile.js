@@ -66,7 +66,7 @@ function fillProfileForm(user) {
 
     setVal('profile-email', user.email);
     setVal('profile-position', user.position && user.position.name);
-    setVal('profile-department', user.department && user.department.name);
+    setVal('profile-department', (user.departments || []).map((d) => d.name).join(', '));
     setVal('profile-prefix', user.prefix);
     setVal('profile-academic-title', user.academicTitle);
     setVal('profile-first-name', user.firstName);

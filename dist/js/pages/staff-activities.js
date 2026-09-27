@@ -628,7 +628,7 @@ function computeActivitiesTier(user) {
     // Owner ไม่มีตำแหน่ง/ฝ่ายจริงให้อิงสิทธิ์ตามปกติ แต่ได้สิทธิ์ manager เสมอ (ตรงกับ isAcademicManager() ฝั่ง backend)
     if (user && user.role === 'SUPERADMIN') return 'manager';
     const isLeadership = !!(user && user.position && CAMP_LEADERSHIP_POSITIONS.includes(user.position.name));
-    const isActivityHead = !!(user && user.position?.name === 'หัวหน้าฝ่าย' && user.department?.name === 'ฝ่ายกิจกรรมและสันทนาการ');
+    const isActivityHead = !!(user && user.position?.name === 'หัวหน้าฝ่าย' && user.headDepartment?.name === 'ฝ่ายกิจกรรมและสันทนาการ');
     return (isLeadership || isActivityHead) ? 'manager' : 'instructor';
 }
 

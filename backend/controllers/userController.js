@@ -6,6 +6,16 @@ const { getLatestGenerationNo } = require('../lib/camp');
 const { isPasswordValid, PASSWORD_REQUIREMENTS_MESSAGE } = require('../lib/password');
 const { checkPositionLimit } = require('../lib/staffPositionLimits');
 
+// แปลง departmentIds (จาก buildStaffProfileData) เป็นคำสั่ง nested write ของ Prisma สำหรับตาราง staff_profile_departments
+// mode 'create' = สร้างโปรไฟล์ใหม่, 'update' = แทนที่ฝ่ายเดิมทั้งหมดด้วยชุดใหม่
+function staffDepartmentsWrite(data, mode) {
+  if (!data) return data;
+  const { departmentIds, ...rest } = data;
+  if (departmentIds === undefined) return rest;
+  const create = departmentIds.map((departmentId) => ({ departmentId }));
+  return { ...rest, departments: mode === 'update' ? { deleteMany: {}, create } : { create } };
+}
+
 const VALID_ROLES = ['SUPERADMIN', 'STAFF', 'PARTICIPANT'];
 // บัญชี Owner ทุกบัญชีใช้รูปโปรไฟล์คงที่รูปเดียวกัน (ล็อกไว้ เปลี่ยนไม่ได้ - ดู updateAvatar ใน authController.js)
 const SUPERADMIN_AVATAR_URL = '/assets/images/avatars/superadmin/1.png';
@@ -35,7 +45,7 @@ const USER_SAFE_SELECT = {
       occupation: true,
       faculty: true,
       major: true,
-      department: { select: { id: true, name: true } },
+      departments: { select: { department: { select: { id: true, name: true } } } },
       position: { select: { id: true, name: true } },
     },
   },
@@ -80,7 +90,7 @@ function toSafeUser(user) {
     occupation: staffProfile?.occupation || null,
     faculty: staffProfile?.faculty || null,
     major: staffProfile?.major || null,
-    department: staffProfile?.department || null,
+    departments: (staffProfile?.departments || []).map((d) => d.department),
     position: staffProfile?.position || null,
     courseFormat: participantProfile?.courseFormat || null,
     studyPlan: participantProfile?.studyPlan || null,
@@ -123,7 +133,8 @@ function buildStaffProfileData(profile) {
       nickname: profile.nickname || null,
       birthDate,
       phone: phoneDigits || null,
-      departmentId: profile.departmentId ? Number(profile.departmentId) : null,
+      // undefined = ไม่ได้ส่งมา ไม่แตะฝ่ายเดิม, [] = ไม่สังกัดฝ่ายไหน (ดู staffDepartmentsWrite)
+      departmentIds: Array.isArray(profile.departmentIds) ? [...new Set(profile.departmentIds.map(Number).filter(Boolean))] : undefined,
       positionId: profile.positionId ? Number(profile.positionId) : null,
       affiliation: profile.affiliation || null,
       faculty: profile.faculty || null,
@@ -223,7 +234,7 @@ async function createUser(req, res) {
   const existingEmail = await prisma.user.findUnique({ where: { email } });
   if (existingEmail) return res.status(409).json({ error: 'มีอีเมลนี้อยู่แล้ว' });
   if (staffProfileData) {
-    const limitError = await checkPositionLimit(prisma, { userId: null, positionId: staffProfileData.positionId, departmentId: staffProfileData.departmentId });
+    const limitError = await checkPositionLimit(prisma, { userId: null, positionId: staffProfileData.positionId, currentPositionId: null });
     if (limitError) return res.status(400).json({ error: limitError });
   }
 
@@ -237,7 +248,7 @@ async function createUser(req, res) {
       passwordHash,
       role,
       ...(role === 'SUPERADMIN' ? { avatarUrl: SUPERADMIN_AVATAR_URL } : {}),
-      ...(needsStaffProfile ? { staffProfile: { create: { ...staffProfileData, isAdmin: !!isAdmin, campGenerationNo: latestGenerationNo } } } : {}),
+      ...(needsStaffProfile ? { staffProfile: { create: { ...staffDepartmentsWrite(staffProfileData, 'create'), isAdmin: !!isAdmin, campGenerationNo: latestGenerationNo } } } : {}),
       ...(participantProfileData ? { participantProfile: { create: { ...participantProfileData, campGenerationNo: latestGenerationNo } } } : {}),
     },
     select: USER_SAFE_SELECT,
@@ -309,11 +320,11 @@ async function updateUser(req, res) {
 
     // เช็คจำนวนตำแหน่งจากค่าหลังแก้ (ฟิลด์ที่ไม่ได้ส่งมาใช้ค่าเดิม เช่น Admin เปลี่ยนแค่ฝ่ายของหัวหน้าฝ่าย)
     if (staffProfileData) {
-      const current = await prisma.staffProfile.findUnique({ where: { userId: id }, select: { positionId: true, departmentId: true } });
+      const current = await prisma.staffProfile.findUnique({ where: { userId: id }, select: { positionId: true } });
       const limitError = await checkPositionLimit(prisma, {
         userId: id,
         positionId: staffProfileData.positionId !== undefined ? staffProfileData.positionId : current?.positionId,
-        departmentId: staffProfileData.departmentId !== undefined ? staffProfileData.departmentId : current?.departmentId,
+        currentPositionId: current?.positionId || null,
       });
       if (limitError) return res.status(400).json({ error: limitError });
     }
@@ -325,8 +336,8 @@ async function updateUser(req, res) {
       const latestGenerationNo = await getLatestGenerationNo(prisma);
       await prisma.staffProfile.upsert({
         where: { userId: id },
-        update: { ...staffProfileData, ...(isAdmin !== undefined && { isAdmin: !!isAdmin }) },
-        create: { userId: id, ...staffProfileData, isAdmin: !!isAdmin, campGenerationNo: latestGenerationNo },
+        update: { ...staffDepartmentsWrite(staffProfileData, 'update'), ...(isAdmin !== undefined && { isAdmin: !!isAdmin }) },
+        create: { userId: id, ...staffDepartmentsWrite(staffProfileData, 'create'), isAdmin: !!isAdmin, campGenerationNo: latestGenerationNo },
       });
     }
 

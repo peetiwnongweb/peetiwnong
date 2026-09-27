@@ -27,27 +27,27 @@ enum ApprovalStatus {
 }
 
 model User {
-  id                    Int                       @id @default(autoincrement())
-  email                 String                    @unique
-  passwordHash          String                    @map("password_hash")
-  role                  UserRole
-  avatarUrl             String?                   @map("avatar_url")
-  otpCode               String?                   @map("otp_code")
-  otpExpiresAt          DateTime?                 @map("otp_expires_at")
-  approvalStatus        ApprovalStatus            @default(APPROVED) @map("approval_status")
-  createdAt             DateTime                  @default(now()) @map("created_at")
-  updatedAt             DateTime                  @updatedAt @map("updated_at")
-  participantProfile    ParticipantProfile?
-  staffProfile          StaffProfile?
-  taughtSubjects        SubjectInstructor[]
-  taughtScheduleEntries ClassScheduleInstructor[]
-  oralExamSessionsOpened     OralExamSession[]  @relation("OralExamSessionOpenedBy")
-  oralExamAttemptsEvaluated  OralExamAttempt[]  @relation("OralExamAttemptEvaluatedBy")
-  campsAsPresident      Camp[]                    @relation("CampPresident")
-  campsAsSecretary      Camp[]                    @relation("CampSecretary")
-  campVicePresidentOf   CampVicePresident[]       @relation("CampVicePresidentUser")
-  campDepartmentHeadOf  CampDepartmentHead[]      @relation("CampDepartmentHeadUser")
-  newsArticles          News[]                    @relation("NewsAuthor")
+  id                        Int                       @id @default(autoincrement())
+  email                     String                    @unique
+  passwordHash              String                    @map("password_hash")
+  role                      UserRole
+  avatarUrl                 String?                   @map("avatar_url")
+  otpCode                   String?                   @map("otp_code")
+  otpExpiresAt              DateTime?                 @map("otp_expires_at")
+  approvalStatus            ApprovalStatus            @default(APPROVED) @map("approval_status")
+  createdAt                 DateTime                  @default(now()) @map("created_at")
+  updatedAt                 DateTime                  @updatedAt @map("updated_at")
+  participantProfile        ParticipantProfile?
+  staffProfile              StaffProfile?
+  taughtSubjects            SubjectInstructor[]
+  taughtScheduleEntries     ClassScheduleInstructor[]
+  oralExamSessionsOpened    OralExamSession[]         @relation("OralExamSessionOpenedBy")
+  oralExamAttemptsEvaluated OralExamAttempt[]         @relation("OralExamAttemptEvaluatedBy")
+  campsAsPresident          Camp[]                    @relation("CampPresident")
+  campsAsSecretary          Camp[]                    @relation("CampSecretary")
+  campVicePresidentOf       CampVicePresident[]       @relation("CampVicePresidentUser")
+  campDepartmentHeadOf      CampDepartmentHead[]      @relation("CampDepartmentHeadUser")
+  newsArticles              News[]                    @relation("NewsAuthor")
 
   @@map("users")
 }
@@ -72,20 +72,20 @@ model Committee {
 
 // ตั้งค่าเว็บไซต์ภาพรวม (แถวเดียวตายตัว id=1)
 model SiteSetting {
-  id                          Int      @id @default(1)
-  heroCardVisible             Boolean  @default(true) @map("hero_card_visible") // สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดในส่วน Hero หน้าแรก
-  staffRegistrationOpen       Boolean  @default(true) @map("staff_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนพี่ค่าย" ในส่วน Hero หน้าแรก
-  participantRegistrationOpen Boolean  @default(true) @map("participant_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนน้องค่าย" ในส่วน Hero หน้าแรก
-  staffAutoApprove            Boolean  @default(false) @map("staff_auto_approve") // เปิดไว้ = บัญชีพี่ค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
-  participantAutoApprove      Boolean  @default(false) @map("participant_auto_approve") // เปิดไว้ = บัญชีน้องค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
-  newsAutoApprove             Boolean  @default(false) @map("news_auto_approve") // เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายทั่วไปส่งเข้ามา (submitNews) เผยแพร่ขึ้นเว็บทันทีโดยไม่ต้องรอ Admin/Owner อนุมัติ (ข่าวที่ SuperAdmin/แอดมินเขียนเองอนุมัติทันทีอยู่แล้วเสมอไม่เกี่ยวกับสวิตช์นี้)
-  checkRegistrationVisibleStaff       Boolean @default(true) @map("check_registration_visible_staff") // สวิตช์เปิด/ปิดแท็บ "พี่ค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
-  checkRegistrationVisibleParticipant Boolean @default(true) @map("check_registration_visible_participant") // สวิตช์เปิด/ปิดแท็บ "น้องค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
-  committeeSectionVisible              Boolean @default(true) @map("committee_section_visible") // สวิตช์เปิด/ปิดส่วนทำเนียบประธานค่ายในหน้าแรก
-  newsSectionVisible                   Boolean @default(true) @map("news_section_visible") // สวิตช์เปิด/ปิดส่วนข่าวสารล่าสุดในหน้าแรก
-  historyTitle                String?  @map("history_title") // หัวข้อการ์ด "ความเป็นมา" ในหน้า ประวัติความเป็นมา
-  historyBody                 String?  @map("history_body") // เนื้อหาการ์ด "ความเป็นมา" (แบ่งย่อหน้าด้วยบรรทัดว่าง)
-  updatedAt                   DateTime @updatedAt @map("updated_at")
+  id                                  Int      @id @default(1)
+  heroCardVisible                     Boolean  @default(true) @map("hero_card_visible") // สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดในส่วน Hero หน้าแรก
+  staffRegistrationOpen               Boolean  @default(true) @map("staff_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนพี่ค่าย" ในส่วน Hero หน้าแรก
+  participantRegistrationOpen         Boolean  @default(true) @map("participant_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนน้องค่าย" ในส่วน Hero หน้าแรก
+  staffAutoApprove                    Boolean  @default(false) @map("staff_auto_approve") // เปิดไว้ = บัญชีพี่ค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
+  participantAutoApprove              Boolean  @default(false) @map("participant_auto_approve") // เปิดไว้ = บัญชีน้องค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
+  newsAutoApprove                     Boolean  @default(false) @map("news_auto_approve") // เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายทั่วไปส่งเข้ามา (submitNews) เผยแพร่ขึ้นเว็บทันทีโดยไม่ต้องรอ Admin/Owner อนุมัติ (ข่าวที่ SuperAdmin/แอดมินเขียนเองอนุมัติทันทีอยู่แล้วเสมอไม่เกี่ยวกับสวิตช์นี้)
+  checkRegistrationVisibleStaff       Boolean  @default(true) @map("check_registration_visible_staff") // สวิตช์เปิด/ปิดแท็บ "พี่ค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
+  checkRegistrationVisibleParticipant Boolean  @default(true) @map("check_registration_visible_participant") // สวิตช์เปิด/ปิดแท็บ "น้องค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
+  committeeSectionVisible             Boolean  @default(true) @map("committee_section_visible") // สวิตช์เปิด/ปิดส่วนทำเนียบประธานค่ายในหน้าแรก
+  newsSectionVisible                  Boolean  @default(true) @map("news_section_visible") // สวิตช์เปิด/ปิดส่วนข่าวสารล่าสุดในหน้าแรก
+  historyTitle                        String?  @map("history_title") // หัวข้อการ์ด "ความเป็นมา" ในหน้า ประวัติความเป็นมา
+  historyBody                         String?  @map("history_body") // เนื้อหาการ์ด "ความเป็นมา" (แบ่งย่อหน้าด้วยบรรทัดว่าง)
+  updatedAt                           DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
 }
@@ -347,24 +347,24 @@ enum OralExamAttemptStatus {
 // รอบสอบอธิบาย (สแกน QR) ของ 1 วิชา เปิดได้ทีละ 1 รอบต่อวิชาเท่านั้น (เช็คใน oralExamSessionController.js ไม่ใช้ partial unique index)
 // token ฝังใน URL ของ QR ให้น้องค่ายสแกนเข้าคิว ใช้เช็คอินได้เฉพาะตอน status=OPEN เท่านั้น ปิดรอบแล้วสแกนซ้ำใช้ไม่ได้ทันที
 model OralExamSession {
-  id             Int                    @id @default(autoincrement())
-  subjectId      Int                    @map("subject_id")
-  subject        Subject                @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  openedByUserId Int                    @map("opened_by_user_id")
-  openedBy       User                   @relation("OralExamSessionOpenedBy", fields: [openedByUserId], references: [id], onDelete: Cascade)
-  token          String                 @unique
-  status         OralExamSessionStatus  @default(OPEN)
+  id              Int                   @id @default(autoincrement())
+  subjectId       Int                   @map("subject_id")
+  subject         Subject               @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  openedByUserId  Int                   @map("opened_by_user_id")
+  openedBy        User                  @relation("OralExamSessionOpenedBy", fields: [openedByUserId], references: [id], onDelete: Cascade)
+  token           String                @unique
+  status          OralExamSessionStatus @default(OPEN)
   // null = ไม่จำกัดจำนวน (ค่าเริ่มต้น) - ถ้ากำหนดไว้ เช็คอินเข้าคิวได้สูงสุดตามนี้ (นับจากจำนวน attempt ทั้งหมดที่เคยเกิดในรอบนี้ ไม่ว่าผลจะเป็นอะไร ดู checkIn ใน oralExamSessionController.js)
   maxParticipants Int?                  @map("max_participants")
   // คอร์สที่รอบนี้เปิดให้ (เลือกตอนเปิดรอบ) - เช็คอินได้เฉพาะน้องค่ายคอร์สนี้เท่านั้น แม้วิชาจะเป็นวิชา "ทั้งคู่" ก็ตาม
   // null = รอบเก่าก่อนมีช่องนี้ (ใช้เงื่อนไขคอร์สของวิชาแทน ดู checkIn ใน oralExamSessionController.js)
-  courseFormatId Int?                   @map("course_format_id")
-  courseFormat   CourseFormat?          @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
-  openedAt       DateTime               @default(now()) @map("opened_at")
+  courseFormatId  Int?                  @map("course_format_id")
+  courseFormat    CourseFormat?         @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
+  openedAt        DateTime              @default(now()) @map("opened_at")
   // เวลาที่กด "เริ่มการสอบอธิบาย" ครั้งแรก (OPEN -> STARTED) - null แปลว่ายังไม่เคยกดเริ่มเลย (เปิดรอบไว้เฉย ๆ แล้วปิดทิ้งโดยไม่มีใครสอบจริง) ใช้กรองประวัติไม่ให้ปนรอบที่ไม่ได้ใช้งานจริงเข้ามา (ดู getSessionHistory)
-  startedAt      DateTime?              @map("started_at")
-  closedAt       DateTime?              @map("closed_at")
-  attempts       OralExamAttempt[]
+  startedAt       DateTime?             @map("started_at")
+  closedAt        DateTime?             @map("closed_at")
+  attempts        OralExamAttempt[]
 
   @@index([subjectId, status])
   @@map("oral_exam_sessions")
@@ -374,20 +374,20 @@ model OralExamSession {
 // attemptNumber คำนวณครั้งเดียวตอนเช็คอิน (COUNT ของครั้งก่อนหน้าในวิชาเดียวกัน + 1) แล้วบันทึกไว้ตายตัว ไม่คำนวณใหม่ตอนอ่าน
 // เหตุผล: กันคะแนน/ประวัติที่ให้ไปแล้วเปลี่ยนความหมายย้อนหลังถ้ามีการลบ/แก้ไขข้อมูลอื่นภายหลัง
 model OralExamAttempt {
-  id                   Int                    @id @default(autoincrement())
-  sessionId            Int                    @map("session_id")
-  session              OralExamSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  participantProfileId Int                    @map("participant_profile_id")
-  participantProfile   ParticipantProfile     @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
-  subjectId            Int                    @map("subject_id")
-  subject              Subject                @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  attemptNumber        Int                    @map("attempt_number")
-  status               OralExamAttemptStatus  @default(PENDING)
-  checkedInAt          DateTime               @default(now()) @map("checked_in_at")
-  evaluatedAt          DateTime?              @map("evaluated_at")
-  evaluatedByUserId    Int?                   @map("evaluated_by_user_id")
-  evaluatedBy          User?                  @relation("OralExamAttemptEvaluatedBy", fields: [evaluatedByUserId], references: [id], onDelete: SetNull)
-  awardedScore         Int?                   @map("awarded_score")
+  id                   Int                   @id @default(autoincrement())
+  sessionId            Int                   @map("session_id")
+  session              OralExamSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participantProfileId Int                   @map("participant_profile_id")
+  participantProfile   ParticipantProfile    @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  subjectId            Int                   @map("subject_id")
+  subject              Subject               @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  attemptNumber        Int                   @map("attempt_number")
+  status               OralExamAttemptStatus @default(PENDING)
+  checkedInAt          DateTime              @default(now()) @map("checked_in_at")
+  evaluatedAt          DateTime?             @map("evaluated_at")
+  evaluatedByUserId    Int?                  @map("evaluated_by_user_id")
+  evaluatedBy          User?                 @relation("OralExamAttemptEvaluatedBy", fields: [evaluatedByUserId], references: [id], onDelete: SetNull)
+  awardedScore         Int?                  @map("awarded_score")
 
   @@unique([sessionId, participantProfileId])
   @@index([participantProfileId, subjectId])
@@ -551,43 +551,55 @@ model StudyDocument {
 
 // ข้อมูลโปรไฟล์น้องค่าย (แบบฟอร์มสมัครเข้าค่าย)
 model ParticipantProfile {
-  id                   Int                       @id @default(autoincrement())
-  userId               Int                       @unique @map("user_id")
-  user                 User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  prefix               String?
-  firstName            String?                   @map("first_name")
-  lastName             String?                   @map("last_name")
-  nickname             String?
-  birthDate            DateTime?                 @map("birth_date")
-  phone                String?
-  parentPhone          String?                   @map("parent_phone")
-  courseFormatId       Int?                      @map("course_format_id")
-  courseFormat         CourseFormat?             @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
-  studyPlan            StudyPlan?                @map("study_plan")
-  studyPlanOther       String?                   @map("study_plan_other")
-  interestSubjectGroup InterestSubjectGroup[]    @map("interest_subject_group")
-  interestSubjectGroupOther String?              @map("interest_subject_group_other")
-  dreamInstitution     String?                   @map("dream_institution")
-  groupId              Int?                      @map("group_id")
-  group                Group?                    @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  createdAt            DateTime                  @default(now()) @map("created_at")
-  updatedAt            DateTime                  @updatedAt @map("updated_at")
-  subjectScores        ParticipantSubjectScore[]
-  oralExamAttempts     OralExamAttempt[]
+  id                        Int                       @id @default(autoincrement())
+  userId                    Int                       @unique @map("user_id")
+  user                      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prefix                    String?
+  firstName                 String?                   @map("first_name")
+  lastName                  String?                   @map("last_name")
+  nickname                  String?
+  birthDate                 DateTime?                 @map("birth_date")
+  phone                     String?
+  parentPhone               String?                   @map("parent_phone")
+  courseFormatId            Int?                      @map("course_format_id")
+  courseFormat              CourseFormat?             @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
+  studyPlan                 StudyPlan?                @map("study_plan")
+  studyPlanOther            String?                   @map("study_plan_other")
+  interestSubjectGroup      InterestSubjectGroup[]    @map("interest_subject_group")
+  interestSubjectGroupOther String?                   @map("interest_subject_group_other")
+  dreamInstitution          String?                   @map("dream_institution")
+  groupId                   Int?                      @map("group_id")
+  group                     Group?                    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  createdAt                 DateTime                  @default(now()) @map("created_at")
+  updatedAt                 DateTime                  @updatedAt @map("updated_at")
+  subjectScores             ParticipantSubjectScore[]
+  oralExamAttempts          OralExamAttempt[]
   // ครั้งที่จัดค่ายล่าสุด ณ ตอนบัญชีนี้ถูกสร้าง/ลงทะเบียน (audit trail เท่านั้น) เก็บไว้แม้จะถูกลบทิ้งตอนสร้างค่ายรุ่นถัดไป (ดู campController.js)
-  campGenerationNo     Int?                      @map("camp_generation_no")
+  campGenerationNo          Int?                      @map("camp_generation_no")
 
   @@map("participant_profiles")
 }
 
 // ฝ่ายงานในค่าย (แอดมินจัดการได้)
+// พี่ค่าย <-> ฝ่ายงาน (หลายต่อหลาย): พี่ค่าย 1 คนสังกัดได้หลายฝ่าย
+model StaffProfileDepartment {
+  staffProfileId Int            @map("staff_profile_id")
+  staffProfile   StaffProfile   @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  departmentId   Int            @map("department_id")
+  department     CampDepartment @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@id([staffProfileId, departmentId])
+  @@index([departmentId])
+  @@map("staff_profile_departments")
+}
+
 model CampDepartment {
-  id            Int                  @id @default(autoincrement())
-  name          String
-  createdAt     DateTime             @default(now()) @map("created_at")
-  updatedAt     DateTime             @updatedAt @map("updated_at")
-  staffProfiles StaffProfile[]
-  campHeads     CampDepartmentHead[]
+  id           Int                      @id @default(autoincrement())
+  name         String
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+  staffMembers StaffProfileDepartment[]
+  campHeads    CampDepartmentHead[]
 
   @@map("camp_departments")
 }
@@ -605,20 +617,20 @@ model StaffPosition {
 
 // ข้อมูลโปรไฟล์พี่ค่าย
 model StaffProfile {
-  id               Int             @id @default(autoincrement())
-  userId           Int             @unique @map("user_id")
-  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               Int                      @id @default(autoincrement())
+  userId           Int                      @unique @map("user_id")
+  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   prefix           String?
-  academicTitle    String?         @map("academic_title")
-  firstName        String?         @map("first_name")
-  lastName         String?         @map("last_name")
+  academicTitle    String?                  @map("academic_title")
+  firstName        String?                  @map("first_name")
+  lastName         String?                  @map("last_name")
   nickname         String?
-  birthDate        DateTime?       @map("birth_date")
+  birthDate        DateTime?                @map("birth_date")
   phone            String?
-  departmentId     Int?            @map("department_id")
-  department       CampDepartment? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  positionId       Int?            @map("position_id")
-  position         StaffPosition?  @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  // ฝ่ายที่สังกัด (1 คนอยู่ได้หลายฝ่าย) - หัวหน้าฝ่ายเป็นหัวหน้าของฝ่ายไหน ดูจาก CampDepartmentHead ของค่ายล่าสุด ไม่ใช่จากตารางนี้
+  departments      StaffProfileDepartment[]
+  positionId       Int?                     @map("position_id")
+  position         StaffPosition?           @relation(fields: [positionId], references: [id], onDelete: SetNull)
   affiliation      String?
   // 2 ฟิลด์นี้กรอกเฉพาะกรณีเลือกสถานะ "กำลังศึกษา" ในฟอร์ม (ไม่ได้บังคับคู่กับ occupation ในระดับ schema
   // เพราะตัวเลือก "ประกอบอาชีพ"/"กำลังศึกษา" เป็นแค่ UI toggle ไม่ได้เก็บ status แยกเป็นคอลัมน์ ดูว่าฝั่งไหนถูกกรอกก็รู้แล้วว่าเลือกอะไรไว้)
@@ -626,11 +638,11 @@ model StaffProfile {
   major            String?
   occupation       String?
   // สิทธิ์ผู้ดูแลระบบที่มอบให้พี่ค่ายคนนี้ (แทนที่ role ADMIN แบบเดิม) มีเฉพาะ Host เท่านั้นที่ให้/ถอดสิทธิ์นี้ได้
-  isAdmin          Boolean         @default(false) @map("is_admin")
+  isAdmin          Boolean                  @default(false) @map("is_admin")
   // ครั้งที่จัดค่ายล่าสุด ณ ตอนบัญชีนี้ถูกสร้าง/ลงทะเบียน (audit trail เท่านั้น ไม่ผูกกับตำแหน่งจริงซึ่งถูกรีเซ็ตอิสระผ่าน "จบค่าย" - ดู campController.js)
-  campGenerationNo Int?            @map("camp_generation_no")
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
+  campGenerationNo Int?                     @map("camp_generation_no")
+  createdAt        DateTime                 @default(now()) @map("created_at")
+  updatedAt        DateTime                 @updatedAt @map("updated_at")
 
   @@map("staff_profiles")
 }
@@ -656,29 +668,29 @@ model Session {
 
 // ยอดคำขอรายชั่วโมง (bucketStart = ต้นชั่วโมงแบบ UTC แปลงเป็นเวลาไทยตอนแสดงผล) 1 แถว/ชั่วโมง = ~8.8k แถว/ปี
 model UsageHourlyStat {
-  id                  Int      @id @default(autoincrement())
-  bucketStart         DateTime @unique @map("bucket_start")
-  apiRequests         Int      @default(0) @map("api_requests")
-  pageViews           Int      @default(0) @map("page_views")
+  id                   Int      @id @default(autoincrement())
+  bucketStart          DateTime @unique @map("bucket_start")
+  apiRequests          Int      @default(0) @map("api_requests")
+  pageViews            Int      @default(0) @map("page_views")
   // นับเฉพาะคำขอ API (หน้า static ไม่นับ) 5xx = errorCount, 4xx = clientErrorCount
-  errorCount          Int      @default(0) @map("error_count")
-  clientErrorCount    Int      @default(0) @map("client_error_count")
+  errorCount           Int      @default(0) @map("error_count")
+  clientErrorCount     Int      @default(0) @map("client_error_count")
   // เวลาตอบสนองของ API รวมทุกคำขอในชั่วโมงนี้ (เฉลี่ย = totalDurationMs / apiRequests) ใช้ Float กัน overflow ของ Int ตอนยอดสะสมสูง
-  totalDurationMs     Float    @default(0) @map("total_duration_ms")
-  maxDurationMs       Int      @default(0) @map("max_duration_ms")
+  totalDurationMs      Float    @default(0) @map("total_duration_ms")
+  maxDurationMs        Int      @default(0) @map("max_duration_ms")
   // จำนวนผู้ใช้ (ที่ล็อกอิน) ไม่ซ้ำกันในชั่วโมงนี้ - ผู้เยี่ยมชมไม่มี session จึงนับไม่ได้ (ตั้งใจไม่ใช้ IP มานับแทน)
-  activeUsers         Int      @default(0) @map("active_users")
+  activeUsers          Int      @default(0) @map("active_users")
   // แยกตามผู้ใช้/อุปกรณ์/เบราว์เซอร์ (นับรวมทั้ง API และหน้าเว็บ) เดาจาก User-Agent แบบหยาบ ๆ พอให้เห็นสัดส่วน
-  guestRequests       Int      @default(0) @map("guest_requests")
-  participantRequests Int      @default(0) @map("participant_requests")
-  staffRequests       Int      @default(0) @map("staff_requests")
-  superadminRequests  Int      @default(0) @map("superadmin_requests")
-  mobileRequests      Int      @default(0) @map("mobile_requests")
-  desktopRequests     Int      @default(0) @map("desktop_requests")
-  chromeRequests      Int      @default(0) @map("chrome_requests")
-  safariRequests      Int      @default(0) @map("safari_requests")
-  lineRequests        Int      @default(0) @map("line_requests")
-  otherBrowserRequests Int     @default(0) @map("other_browser_requests")
+  guestRequests        Int      @default(0) @map("guest_requests")
+  participantRequests  Int      @default(0) @map("participant_requests")
+  staffRequests        Int      @default(0) @map("staff_requests")
+  superadminRequests   Int      @default(0) @map("superadmin_requests")
+  mobileRequests       Int      @default(0) @map("mobile_requests")
+  desktopRequests      Int      @default(0) @map("desktop_requests")
+  chromeRequests       Int      @default(0) @map("chrome_requests")
+  safariRequests       Int      @default(0) @map("safari_requests")
+  lineRequests         Int      @default(0) @map("line_requests")
+  otherBrowserRequests Int      @default(0) @map("other_browser_requests")
 
   @@map("usage_hourly_stats")
 }

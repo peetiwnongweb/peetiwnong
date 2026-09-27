@@ -132,7 +132,7 @@ async function buildSummary(prisma) {
     prisma.participantProfile.count({ where: { groupId: { not: null }, user: { approvalStatus: 'APPROVED' } } }),
 
     prisma.user.count({ where: { role: 'STAFF', approvalStatus: 'APPROVED' } }),
-    prisma.staffProfile.groupBy({ by: ['departmentId'], where: { user: { approvalStatus: 'APPROVED' } }, _count: { _all: true } }),
+    prisma.staffProfileDepartment.groupBy({ by: ['departmentId'], where: { staffProfile: { user: { approvalStatus: 'APPROVED' } } }, _count: { _all: true } }),
     prisma.campDepartment.findMany({ select: { id: true, name: true }, orderBy: { id: 'asc' } }),
     prisma.staffProfile.count({ where: { isAdmin: true, user: { approvalStatus: 'APPROVED' } } }),
 
@@ -204,8 +204,9 @@ async function buildSummary(prisma) {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
+  // 1 คนสังกัดได้หลายฝ่าย จึงนับซ้ำได้ในแต่ละฝ่าย (ผลรวมทุกฝ่ายอาจมากกว่าจำนวนพี่ค่าย)
   const staffByDept = staffByDepartment
-    .map((row) => ({ name: row.departmentId ? (departmentNameById.get(row.departmentId) || '-') : 'ยังไม่ระบุฝ่าย', count: row._count._all }))
+    .map((row) => ({ name: departmentNameById.get(row.departmentId) || '-', count: row._count._all }))
     .sort((a, b) => b.count - a.count);
 
   return {
@@ -321,7 +322,7 @@ async function getPeople(req, res) {
       where: { role: 'STAFF' },
       select: {
         id: true, approvalStatus: true, createdAt: true,
-        staffProfile: { select: { prefix: true, firstName: true, lastName: true, nickname: true, departmentId: true, positionId: true, isAdmin: true } },
+        staffProfile: { select: { prefix: true, firstName: true, lastName: true, nickname: true, departments: { select: { departmentId: true } }, positionId: true, isAdmin: true } },
       },
     }),
     prisma.user.findMany({
@@ -349,7 +350,7 @@ async function getPeople(req, res) {
   // ยังไม่มีค่ายที่กำลังดำเนินการ (ยังไม่สร้าง หรือจบค่ายไปแล้ว) - พี่ค่ายทุกคนคือ "ทีมงานค่าย" เหมือนกันหมด ไม่แยกตำแหน่ง (ดู backend/lib/campState.js)
   // ไม่กระทบสิทธิ์ผู้ดูแลระบบ (isAdmin) ซึ่งเป็นคนละฟิลด์ ไม่ผูกกับวงจรชีวิตค่าย
   const byDepartment = departments.map((d) => {
-    const members = approvedStaff.filter((u) => u.staffProfile?.departmentId === d.id);
+    const members = approvedStaff.filter((u) => u.staffProfile?.departments.some((m) => m.departmentId === d.id));
     const positionCounts = new Map();
     members.forEach((u) => {
       const name = campState.isActive ? (posName.get(u.staffProfile?.positionId) || 'ยังไม่ระบุตำแหน่ง') : 'ทีมงานค่าย';
@@ -357,7 +358,7 @@ async function getPeople(req, res) {
     });
     return { id: d.id, name: d.name, count: members.length, positions: [...positionCounts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count) };
   });
-  const noDepartment = approvedStaff.filter((u) => !u.staffProfile?.departmentId).length;
+  const noDepartment = approvedStaff.filter((u) => !u.staffProfile?.departments.length).length;
 
   const byPosition = campState.isActive
     ? positions.map((p) => ({ name: p.name, count: approvedStaff.filter((u) => u.staffProfile?.positionId === p.id).length }))

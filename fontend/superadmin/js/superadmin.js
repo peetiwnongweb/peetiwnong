@@ -2147,13 +2147,15 @@ function initSingleCardSelect(selectId, descriptions = {}) {
     select.classList.add('hidden');
 
     const radioName = `${selectId}-card`;
+    // <select multiple> = เลือกได้หลายข้อ (checkbox) เช่น ฝ่ายงานของพี่ค่าย ไม่งั้นเลือกได้ข้อเดียว (radio)
+    const inputType = select.multiple ? 'checkbox' : 'radio';
     const group = document.createElement('div');
     group.className = 'multi-checkbox-group';
     group.innerHTML = Array.from(select.options)
         .filter((option) => option.value)
         .map((option) => `
             <label class="multi-checkbox-option${option.selected ? ' selected' : ''}">
-                <input type="radio" name="${radioName}" value="${escapeHtml(option.value)}" ${option.selected ? 'checked' : ''}>
+                <input type="${inputType}" name="${radioName}" value="${escapeHtml(option.value)}" ${option.selected ? 'checked' : ''}>
                 <div class="multi-checkbox-option-content">
                     <span class="multi-checkbox-option-title">${escapeHtml(option.textContent)}</span>
                     ${descriptions[option.textContent] ? `<span class="multi-checkbox-option-desc">${escapeHtml(descriptions[option.textContent])}</span>` : ''}
@@ -2163,11 +2165,17 @@ function initSingleCardSelect(selectId, descriptions = {}) {
 
     select.insertAdjacentElement('afterend', group);
 
-    group.querySelectorAll('input[type="radio"]').forEach((radio) => {
+    group.querySelectorAll('input').forEach((radio) => {
         radio.addEventListener('change', () => {
-            select.value = radio.value;
+            if (select.multiple) {
+                Array.from(select.options).forEach((option) => {
+                    if (option.value === radio.value) option.selected = radio.checked;
+                });
+            } else {
+                select.value = radio.value;
+            }
             group.querySelectorAll('.multi-checkbox-option').forEach((card) => {
-                card.classList.toggle('selected', card.querySelector('input[type="radio"]').checked);
+                card.classList.toggle('selected', card.querySelector('input').checked);
             });
             select.dispatchEvent(new Event('change'));
         });
@@ -2175,8 +2183,9 @@ function initSingleCardSelect(selectId, descriptions = {}) {
 
     // เรียกอันนี้จากภายนอกทุกครั้งที่มีโค้ดอื่นตั้งค่า select.value ตรง ๆ (เช่นตอนเปิดฟอร์มแก้ไขแล้วเติมค่าเดิม) ให้การ์ดตามทัน
     singleCardSelectRefreshers[selectId] = () => {
-        group.querySelectorAll('input[type="radio"]').forEach((radio) => {
-            radio.checked = radio.value === select.value;
+        const selectedValues = Array.from(select.selectedOptions).map((option) => option.value);
+        group.querySelectorAll('input').forEach((radio) => {
+            radio.checked = selectedValues.includes(radio.value);
             radio.closest('.multi-checkbox-option').classList.toggle('selected', radio.checked);
         });
     };
@@ -4009,7 +4018,7 @@ function openApprovalDetail(item, role) {
     const roleFields = role === 'STAFF'
         ? [
             ['คำนำหน้าทางวิชาการ', item.academicTitle || '-'],
-            ['ฝ่ายงานที่สนใจ', item.department?.name || '-'],
+            ['ฝ่ายงานที่สนใจ', (item.departments || []).map((d) => d.name).join(', ') || '-'],
             ['สถาบัน/สังกัด', item.affiliation || '-'],
             ['อาชีพ', item.occupation || '-'],
         ]
@@ -4430,7 +4439,7 @@ function renderUserTable(role) {
         const fullName = [item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ') || '-';
         const nameInfoCells = `<td>${fullName}</td><td>${item.nickname || '-'}</td>`;
         const roleWorkCells = role === 'STAFF'
-            ? `<td>${item.position?.name || '-'}</td><td>${item.department?.name || '-'}</td>`
+            ? `<td>${item.position?.name || '-'}</td><td>${(item.departments || []).map((d) => d.name).join(', ') || '-'}</td>`
             : `<td>${item.courseFormat?.name || '-'}</td><td>${item.group?.name || '-'}</td>`;
         row.innerHTML = `
             <td>
@@ -4698,9 +4707,19 @@ function openUserForm(item, role, onSaved) {
     document.getElementById('user-staff-nickname').value = item?.nickname || '';
     userStaffBirthDateSelects?.setValue(item?.birthDate ? toDateInputValue(item.birthDate) : '');
     document.getElementById('user-staff-phone').value = formatPhoneNumber(item?.phone || '');
-    document.getElementById('user-staff-department').value = item?.department?.id || '';
+    const departmentIds = (item?.departments || []).map((d) => String(d.id));
+    Array.from(document.getElementById('user-staff-department').options).forEach((option) => {
+        option.selected = departmentIds.includes(option.value);
+    });
     refreshSingleCardSelect('user-staff-department');
     document.getElementById('user-staff-position').value = item?.position?.id || '';
+    // หัวหน้าฝ่ายตั้งได้ที่ "แก้ไขคณะทำงาน" เท่านั้น (1 คนสังกัดได้หลายฝ่าย ระบุฝ่ายที่เป็นหัวหน้าจากหน้านี้ไม่ได้) - เลือกไม่ได้ ยกเว้นคนที่เป็นอยู่แล้ว
+    Array.from(document.getElementById('user-staff-position').options).forEach((option) => {
+        if (option.textContent.startsWith('หัวหน้าฝ่าย')) {
+            option.disabled = item?.position?.name !== 'หัวหน้าฝ่าย';
+            option.textContent = option.disabled ? 'หัวหน้าฝ่าย (ตั้งที่แก้ไขคณะทำงาน)' : 'หัวหน้าฝ่าย';
+        }
+    });
     // สถานะ (ประกอบอาชีพ/กำลังศึกษา) ไม่มีคอลัมน์เก็บจริง เป็นแค่ตัวสลับ UI เหมือนหน้าลงทะเบียน (ดู schema.prisma: StaffProfile.faculty) เดาจากข้อมูลที่มีอยู่: มีคณะ/สาขา = กำลังศึกษา, ไม่มีแต่มีอาชีพ = ประกอบอาชีพ
     const inferredStatus = item?.faculty || item?.major ? 'studying' : (item?.occupation ? 'working' : '');
     document.getElementById('user-staff-occupationStatus').value = inferredStatus;
@@ -4785,7 +4804,7 @@ function submitUserForm(event) {
             nickname: document.getElementById('user-staff-nickname').value.trim(),
             birthDate: document.getElementById('user-staff-birthDate').value,
             phone: document.getElementById('user-staff-phone').value.trim(),
-            departmentId: document.getElementById('user-staff-department').value,
+            departmentIds: Array.from(document.getElementById('user-staff-department').selectedOptions).map((o) => o.value),
             positionId: document.getElementById('user-staff-position').value,
             affiliation: document.getElementById('user-staff-affiliation').value.trim(),
             occupation: document.getElementById('user-staff-occupation').value.trim(),

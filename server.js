@@ -145,7 +145,22 @@ app.listen(port, '0.0.0.0', () => {
     initLogCleanupScheduler()
     startUsageFlushScheduler()
     initUsageSnapshotScheduler()
+    initKeepAlive()
 })
+
+// ==========================================
+// กันหลับ: Render แผนฟรีหลับเมื่อไม่มีคำขอเข้ามา 15 นาที (ตื่นใหม่ใช้ ~30-60 วิ) และ Supabase แผนฟรีพักโปรเจกต์ถ้าฐานข้อมูลไม่ถูกใช้ 7 วัน
+// ยิงลิงก์สาธารณะของตัวเองทุก 10 นาที - ต้องวิ่งผ่านโดเมนภายนอก Render ถึงจะนับเป็นการใช้งาน และ /api/site-settings อ่านฐานข้อมูลจริง
+// (cache แค่ 30 วิ) จึงกันทั้งสองฝั่งได้ในคราวเดียว RENDER_EXTERNAL_URL Render ใส่ให้เองอัตโนมัติ - รันบนเครื่อง dev ไม่มีค่านี้จึงข้ามไป
+// ==========================================
+function initKeepAlive() {
+    const baseUrl = process.env.RENDER_EXTERNAL_URL
+    if (!baseUrl) return
+    setInterval(() => {
+        fetch(`${baseUrl}/api/site-settings`, { signal: AbortSignal.timeout(30000) })
+            .catch((error) => console.error(`[keep-alive] ping ไม่สำเร็จ: ${error.message}`))
+    }, 10 * 60 * 1000)
+}
 
 // ==========================================
 // ตัวตั้งเวลาสำรองข้อมูลอัตโนมัติขึ้น Google Drive (ดู backend/lib/campBackup.js)

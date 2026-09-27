@@ -176,7 +176,7 @@ async function main() {
         affiliation: mock.affiliation,
         occupation: mock.occupation,
         positionId: positionRecords[mock.position].id,
-        departmentId: mock.department ? departmentRecords[mock.department].id : null,
+        departments: { deleteMany: {}, ...(mock.department ? { create: [{ departmentId: departmentRecords[mock.department].id }] } : {}) },
         isAdmin: mock.isAdmin || false,
       },
       create: {
@@ -191,7 +191,7 @@ async function main() {
         affiliation: mock.affiliation,
         occupation: mock.occupation,
         positionId: positionRecords[mock.position].id,
-        departmentId: mock.department ? departmentRecords[mock.department].id : null,
+        ...(mock.department ? { departments: { create: [{ departmentId: departmentRecords[mock.department].id }] } } : {}),
         isAdmin: mock.isAdmin || false,
       },
     });

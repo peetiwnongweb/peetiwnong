@@ -6,8 +6,9 @@
 const POSITION_LIMITS = { 'ประธานค่าย': 1, 'รองประธานค่าย': 2, 'เลขานุการ': 1 };
 const HEAD_DEPARTMENTS = ['ฝ่ายวิชาการ', 'ฝ่ายกิจกรรมและสันทนาการ', 'ฝ่ายปกครองบริการและอาคารสถานที่', 'ฝ่ายงานพยาบาล', 'ฝ่ายเทคโนโลยีและประชาสัมพันธ์'];
 
-// ตรวจว่าตั้ง userId (null = บัญชีใหม่) เป็นตำแหน่ง positionId ในฝ่าย departmentId ได้ไหม คืนข้อความ error หรือ null
-async function checkPositionLimit(prisma, { userId, positionId, departmentId }) {
+// ตรวจว่าตั้ง userId (null = บัญชีใหม่) เป็นตำแหน่ง positionId ได้ไหม คืนข้อความ error หรือ null
+// currentPositionId = ตำแหน่งเดิมของคนนี้ (บันทึกซ้ำตำแหน่งเดิมได้เสมอ)
+async function checkPositionLimit(prisma, { userId, positionId, currentPositionId }) {
   if (!positionId) return null;
   const position = await prisma.staffPosition.findUnique({ where: { id: Number(positionId) } });
   if (!position) return null;
@@ -18,13 +19,10 @@ async function checkPositionLimit(prisma, { userId, positionId, departmentId }) 
     const count = await prisma.staffProfile.count({ where: { positionId: position.id, ...others } });
     if (count >= limit) return `ตำแหน่ง${position.name}มีได้ ${limit} คน ตอนนี้มีครบแล้ว`;
   }
-  if (position.name === 'หัวหน้าฝ่าย') {
-    const department = departmentId ? await prisma.campDepartment.findUnique({ where: { id: Number(departmentId) } }) : null;
-    if (!department || !HEAD_DEPARTMENTS.includes(department.name)) {
-      return `หัวหน้าฝ่ายต้องอยู่ในฝ่ายใดฝ่ายหนึ่งต่อไปนี้: ${HEAD_DEPARTMENTS.join(', ')}`;
-    }
-    const count = await prisma.staffProfile.count({ where: { positionId: position.id, departmentId: department.id, ...others } });
-    if (count >= 1) return `${department.name}มีหัวหน้าฝ่ายแล้ว (ฝ่ายละ 1 คน)`;
+  // พี่ค่าย 1 คนสังกัดได้หลายฝ่าย จึงระบุไม่ได้ว่าเป็นหัวหน้าฝ่ายไหนจากหน้าแก้ไขผู้ใช้ - ตั้งหัวหน้าฝ่ายได้ที่ "สร้างค่าย/แก้ไขคณะทำงาน" เท่านั้น
+  // (คณะทำงานบังคับฝ่ายละ 1 คนอยู่แล้ว ดู validateCampLeadership ใน campController.js)
+  if (position.name === 'หัวหน้าฝ่าย' && Number(currentPositionId) !== position.id) {
+    return 'ตั้งตำแหน่งหัวหน้าฝ่ายได้ที่ "แก้ไขคณะทำงาน" ในหน้าจัดการค่ายเท่านั้น';
   }
   return null;
 }

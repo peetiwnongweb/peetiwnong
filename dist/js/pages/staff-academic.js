@@ -113,7 +113,7 @@ function computeAcademicTier(user, myAssignedSubjects) {
     // Owner ไม่มีตำแหน่ง/ฝ่ายจริงให้อิงสิทธิ์ตามปกติ แต่ได้สิทธิ์ manager เสมอ (ตรงกับ isAcademicManager() ฝั่ง backend)
     if (user && user.role === 'SUPERADMIN') return 'manager';
     const isLeadership = !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
-    const isAcademicHead = !!(user && user.position?.name === 'หัวหน้าฝ่าย' && user.department?.name === 'ฝ่ายวิชาการ');
+    const isAcademicHead = !!(user && user.position?.name === 'หัวหน้าฝ่าย' && user.headDepartment?.name === 'ฝ่ายวิชาการ');
     if (isLeadership || isAcademicHead) return 'manager';
     return myAssignedSubjects.length > 0 ? 'instructor' : 'viewer';
 }

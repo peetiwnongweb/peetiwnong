@@ -57,7 +57,7 @@ function requireGroupManagementAccess(req, res, next) {
   if (user.role === 'SUPERADMIN') return next();
 
   const isLeadership = user.role === 'STAFF' && user.position && CAMP_LEADERSHIP_POSITIONS.includes(user.position.name);
-  const isActivityHead = user.role === 'STAFF' && user.position?.name === 'หัวหน้าฝ่าย' && user.department?.name === 'ฝ่ายกิจกรรมและสันทนาการ';
+  const isActivityHead = user.role === 'STAFF' && user.position?.name === 'หัวหน้าฝ่าย' && user.headDepartment?.name === 'ฝ่ายกิจกรรมและสันทนาการ';
   if (!isLeadership && !isActivityHead) {
     return res.status(403).json({ error: 'ไม่มีสิทธิ์เข้าถึง (เฉพาะหัวหน้าฝ่ายกิจกรรมฯ หรือผู้บริหารค่ายเท่านั้น)' });
   }
@@ -70,7 +70,7 @@ function isAcademicManager(user) {
   if (!user) return false;
   if (user.role === 'SUPERADMIN') return true;
   const isLeadership = user.role === 'STAFF' && user.position && CAMP_LEADERSHIP_POSITIONS.includes(user.position.name);
-  const isAcademicHead = user.role === 'STAFF' && user.position?.name === 'หัวหน้าฝ่าย' && user.department?.name === 'ฝ่ายวิชาการ';
+  const isAcademicHead = user.role === 'STAFF' && user.position?.name === 'หัวหน้าฝ่าย' && user.headDepartment?.name === 'ฝ่ายวิชาการ';
   return isLeadership || isAcademicHead;
 }
 

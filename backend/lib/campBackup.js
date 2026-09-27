@@ -52,7 +52,7 @@ async function buildSnapshot(prisma, generationNo) {
     prisma.scoreWeightSetting.findUnique({ where: { id: 1 } }),
     prisma.campDepartment.findMany(),
     prisma.staffPosition.findMany(),
-    prisma.staffProfile.findMany({ include: { user: { select: { id: true, email: true } }, position: true, department: true } }),
+    prisma.staffProfile.findMany({ include: { user: { select: { id: true, email: true } }, position: true, departments: { include: { department: true } } } }),
   ]);
 
   const sanitizedParticipants = participants.map(sanitizeUser);

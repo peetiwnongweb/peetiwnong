@@ -145,7 +145,7 @@ function applyStaffTaskMenuVisibility(user) {
 
     const isSuperAdminInStaffArea = !!(user && user.role === 'SUPERADMIN') && window.location.pathname.startsWith('/staff/');
     const isLeadership = isSuperAdminInStaffArea || !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
-    const departmentName = user && user.department ? user.department.name : null;
+    const departmentNames = ((user && user.departments) || []).map((d) => d.name);
     // ไม่มีค่ายที่กำลังดำเนินการ = ระบบวิชาการ/กิจกรรมล็อกทั้งหมด ซ่อนเมนูไปเลยไม่ว่าจะตำแหน่งอะไร (ตำแหน่งที่ค้างจากการตั้งมือก็ใช้อะไรไม่ได้อยู่ดี)
     const campActive = isCampActive();
 
@@ -153,7 +153,7 @@ function applyStaffTaskMenuVisibility(user) {
         const items = wrap.querySelectorAll('[data-department-name]');
         let visibleCount = 0;
         items.forEach((item) => {
-            const show = campActive && (isLeadership || (departmentName && item.dataset.departmentName === departmentName));
+            const show = campActive && (isLeadership || departmentNames.includes(item.dataset.departmentName));
             item.classList.toggle('hidden', !show);
             if (show) visibleCount += 1;
         });

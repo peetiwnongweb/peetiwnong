@@ -1675,7 +1675,7 @@ function handleScheduleCreateSubmit(event) {
         method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            ...(isEditing ? {} : { courseFormatId: selectedScheduleCourseId }),
+            courseFormatId: selectedScheduleCourseId,
             classDate: dateInput.value,
             subjectId: subjectSelect.value || null,
             instructorUserIds: scheduleFormInstructorIds,

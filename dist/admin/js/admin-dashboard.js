@@ -1,8 +1,8 @@
 // ==========================================
 // แดชบอร์ด Admin (4 แท็บ: ภาพรวม/บุคลากร/งานวิชาการ/งานกิจกรรม) - โหลดต่อจาก admin.js จึงใช้ helper ของไฟล์นั้นได้ (escapeHtml, showToast, switchAdminSection, switchAdminTab, Loader)
-// ต่างจากแดชบอร์ด WebManager (6 แท็บ) ตรงที่ไม่มี "เว็บไซต์ & ระบบ" กับ "การใช้งานเว็บไซต์" ซึ่งเป็นข้อมูลระดับ Owner เท่านั้น (ดู backend/routes/dashboardRoutes.js)
+// ต่างจากแดชบอร์ด SuperAdmin (6 แท็บ) ตรงที่ไม่มี "เว็บไซต์ & ระบบ" กับ "การใช้งานเว็บไซต์" ซึ่งเป็นข้อมูลระดับ Owner เท่านั้น (ดู backend/routes/dashboardRoutes.js)
 // แท็บบุคลากร/งานวิชาการ/งานกิจกรรม ก๊อปมาจาก fontend/superadmin/js/superadmin-dashboard.js (ใช้ endpoint เดียวกัน) ปรับปุ่ม "ไปหน้าอนุมัติ" ให้ชี้มาที่หน้า /admin เอง
-// แท็บภาพรวมไม่มี endpoint แยก (/api/dashboard/summary เป็นของ WebManager เท่านั้น) แต่ประกอบขึ้นจากข้อมูล 3 แท็บข้างต้นแทน
+// แท็บภาพรวมไม่มี endpoint แยก (/api/dashboard/summary เป็นของ SuperAdmin เท่านั้น) แต่ประกอบขึ้นจากข้อมูล 3 แท็บข้างต้นแทน
 // ==========================================
 
 const ADMIN_DASHBOARD_TAB_STORAGE_KEY = 'adminDashboardTab';

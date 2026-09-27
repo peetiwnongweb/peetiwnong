@@ -27,7 +27,7 @@
 }
 
 /* ช่อง "เนื้อหาประชาสัมพันธ์" เป็น rich text editor (พิมพ์ตัวหนา/เอียง/หัวข้อย่อย + Enter ขึ้นบรรทัดใหม่จริงได้) แทน textarea ธรรมดา
-   คัดลอกมาจาก .admin-richtext-* ในแผง WebManager (fontend/superadmin/css/superadmin.css) ทุกประการ - หน้านี้ไม่ได้โหลด CSS ชุดนั้นจึงต้องมีสำเนาของตัวเอง */
+   คัดลอกมาจาก .admin-richtext-* ในแผง SuperAdmin (fontend/superadmin/css/superadmin.css) ทุกประการ - หน้านี้ไม่ได้โหลด CSS ชุดนั้นจึงต้องมีสำเนาของตัวเอง */
 .admin-textarea {
   resize: vertical;
   min-height: 8rem;

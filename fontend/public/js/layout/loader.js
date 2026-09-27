@@ -1,5 +1,5 @@
 // ==========================================
-// Loader กลาง: ใช้ร่วมทุกหน้า ไม่มี dependency กับ auth.js/nav.js (webmanager/admin ไม่ได้โหลด 2 ไฟล์นั้น)
+// Loader กลาง: ใช้ร่วมทุกหน้า ไม่มี dependency กับ auth.js/nav.js (superadmin/admin ไม่ได้โหลด 2 ไฟล์นั้น)
 // สไตล์คู่กับ fontend/public/css/base/loader.css
 // ==========================================
 

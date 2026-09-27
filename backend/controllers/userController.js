@@ -6,9 +6,9 @@ const { getLatestGenerationNo } = require('../lib/camp');
 const { isPasswordValid, PASSWORD_REQUIREMENTS_MESSAGE } = require('../lib/password');
 const { checkPositionLimit } = require('../lib/staffPositionLimits');
 
-const VALID_ROLES = ['WEBMANAGER', 'STAFF', 'PARTICIPANT'];
+const VALID_ROLES = ['SUPERADMIN', 'STAFF', 'PARTICIPANT'];
 // บัญชี Owner ทุกบัญชีใช้รูปโปรไฟล์คงที่รูปเดียวกัน (ล็อกไว้ เปลี่ยนไม่ได้ - ดู updateAvatar ใน authController.js)
-const WEBMANAGER_AVATAR_URL = '/assets/images/avatars/webmanager/1.png';
+const SUPERADMIN_AVATAR_URL = '/assets/images/avatars/superadmin/1.png';
 const VALID_APPROVAL_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'];
 const PHONE_PATTERN = /^0\d{8,9}$/;
 const STUDY_PLANS = ['SCIENCE_MATH', 'ARTS_MATH', 'ARTS_LANGUAGE', 'ARTS_SOCIAL', 'OTHER'];
@@ -195,10 +195,10 @@ async function createUser(req, res) {
   if (!isPasswordValid(password)) {
     return res.status(400).json({ error: PASSWORD_REQUIREMENTS_MESSAGE });
   }
-  if (role === 'WEBMANAGER' && req.session.user.role !== 'WEBMANAGER') {
+  if (role === 'SUPERADMIN' && req.session.user.role !== 'SUPERADMIN') {
     return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่จัดการบัญชี SuperAdmin ได้' });
   }
-  if (isAdmin && req.session.user.role !== 'WEBMANAGER') {
+  if (isAdmin && req.session.user.role !== 'SUPERADMIN') {
     return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่มอบสิทธิ์ผู้ดูแลระบบให้พี่ค่ายได้' });
   }
 
@@ -210,8 +210,8 @@ async function createUser(req, res) {
     const result = buildStaffProfileData(profile);
     if (result.error) return res.status(400).json({ error: result.error });
     staffProfileData = result.data;
-    // ตำแหน่งกำหนดได้เฉพาะ WebManager (ผ่านคณะทำงานค่าย/แผง WebManager) - Admin ส่งมาก็ไม่มีผล
-    if (req.session.user.role !== 'WEBMANAGER') delete staffProfileData.positionId;
+    // ตำแหน่งกำหนดได้เฉพาะ SuperAdmin (ผ่านคณะทำงานค่าย/แผง SuperAdmin) - Admin ส่งมาก็ไม่มีผล
+    if (req.session.user.role !== 'SUPERADMIN') delete staffProfileData.positionId;
   } else if (profile && role === 'PARTICIPANT') {
     const result = buildParticipantProfileData(profile);
     if (result.error) return res.status(400).json({ error: result.error });
@@ -236,7 +236,7 @@ async function createUser(req, res) {
       email,
       passwordHash,
       role,
-      ...(role === 'WEBMANAGER' ? { avatarUrl: WEBMANAGER_AVATAR_URL } : {}),
+      ...(role === 'SUPERADMIN' ? { avatarUrl: SUPERADMIN_AVATAR_URL } : {}),
       ...(needsStaffProfile ? { staffProfile: { create: { ...staffProfileData, isAdmin: !!isAdmin, campGenerationNo: latestGenerationNo } } } : {}),
       ...(participantProfileData ? { participantProfile: { create: { ...participantProfileData, campGenerationNo: latestGenerationNo } } } : {}),
     },
@@ -275,10 +275,10 @@ async function updateUser(req, res) {
     if (!existing) return res.status(404).json({ error: 'ไม่พบผู้ใช้งานที่ต้องการแก้ไข' });
 
     const targetRole = role !== undefined ? role : existing.role;
-    if ((existing.role === 'WEBMANAGER' || targetRole === 'WEBMANAGER') && req.session.user.role !== 'WEBMANAGER') {
+    if ((existing.role === 'SUPERADMIN' || targetRole === 'SUPERADMIN') && req.session.user.role !== 'SUPERADMIN') {
       return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่จัดการบัญชี SuperAdmin ได้' });
     }
-    if (isAdmin !== undefined && req.session.user.role !== 'WEBMANAGER') {
+    if (isAdmin !== undefined && req.session.user.role !== 'SUPERADMIN') {
       return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่มอบสิทธิ์ผู้ดูแลระบบให้พี่ค่ายได้' });
     }
 
@@ -290,8 +290,8 @@ async function updateUser(req, res) {
       const result = buildStaffProfileData(profile);
       if (result.error) return res.status(400).json({ error: result.error });
       staffProfileData = result.data;
-      // ตำแหน่งกำหนดได้เฉพาะ WebManager (ผ่านคณะทำงานค่าย/แผง WebManager) - Admin ส่งมาก็ไม่มีผล
-      if (req.session.user.role !== 'WEBMANAGER') delete staffProfileData.positionId;
+      // ตำแหน่งกำหนดได้เฉพาะ SuperAdmin (ผ่านคณะทำงานค่าย/แผง SuperAdmin) - Admin ส่งมาก็ไม่มีผล
+      if (req.session.user.role !== 'SUPERADMIN') delete staffProfileData.positionId;
     } else if (profile && targetRole === 'PARTICIPANT') {
       const result = buildParticipantProfileData(profile);
       if (result.error) return res.status(400).json({ error: result.error });
@@ -392,12 +392,12 @@ async function deleteUser(req, res) {
   try {
     const existing = await prisma.user.findUnique({ where: { id }, select: { role: true } });
     if (!existing) return res.status(404).json({ error: 'ไม่พบผู้ใช้งานที่ต้องการลบ' });
-    if (existing.role === 'WEBMANAGER' && req.session.user.role !== 'WEBMANAGER') {
+    if (existing.role === 'SUPERADMIN' && req.session.user.role !== 'SUPERADMIN') {
       return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่จัดการบัญชี SuperAdmin ได้' });
     }
-    // บัญชี WebManager ที่สร้างไว้ก่อนใคร (createdAt เก่าสุด) คือบัญชีพื้นฐานของระบบ ลบไม่ได้เด็ดขาดไม่ว่าใครจะล็อกอินอยู่ก็ตาม กันระบบไม่มี Owner เหลือเลย
-    if (existing.role === 'WEBMANAGER') {
-      const baseOwner = await prisma.user.findFirst({ where: { role: 'WEBMANAGER' }, orderBy: { createdAt: 'asc' }, select: { id: true } });
+    // บัญชี SuperAdmin ที่สร้างไว้ก่อนใคร (createdAt เก่าสุด) คือบัญชีพื้นฐานของระบบ ลบไม่ได้เด็ดขาดไม่ว่าใครจะล็อกอินอยู่ก็ตาม กันระบบไม่มี Owner เหลือเลย
+    if (existing.role === 'SUPERADMIN') {
+      const baseOwner = await prisma.user.findFirst({ where: { role: 'SUPERADMIN' }, orderBy: { createdAt: 'asc' }, select: { id: true } });
       if (baseOwner && baseOwner.id === id) {
         return res.status(400).json({ error: 'ไม่สามารถลบบัญชีนี้ได้ เพราะเป็นบัญชีพื้นฐานของระบบ' });
       }

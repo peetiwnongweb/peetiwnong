@@ -9,9 +9,9 @@ const {
 const { requireRole, requireAcademicManageAccess } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
-// WebManager ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere ใน backend/lib/participantSimulation.js)
-const requireParticipantOrSimulateAccess = requireRole('PARTICIPANT', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
+// SuperAdmin ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere ใน backend/lib/participantSimulation.js)
+const requireParticipantOrSimulateAccess = requireRole('PARTICIPANT', 'SUPERADMIN');
 
 router.get('/me', requireParticipantOrSimulateAccess, getMySchedule);
 router.get('/', requireStaffAccess, listClassSchedules);

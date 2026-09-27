@@ -3,7 +3,7 @@ const { getGradeBands, updateGradeBands } = require('../controllers/gradeBandCon
 const { requireRole, requireAcademicManageAccess } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
 
 router.get('/', requireStaffAccess, getGradeBands);
 router.put('/', requireAcademicManageAccess, updateGradeBands);

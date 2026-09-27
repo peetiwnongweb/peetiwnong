@@ -375,7 +375,7 @@ function closeTimetableFullscreen() {
 
 // ==========================================
 // แท็บ: ระบบสอบอธิบาย (เปิดกล้องสแกน QR เข้าคิวสอบ) - เช็คอินเป็นธุรกรรมจริงเฉพาะน้องค่ายเท่านั้น
-// backend บล็อก WebManager ไว้แล้วที่ requireParticipantAccess บน /api/oral-exam-sessions/check-in (ดู routes/oralExamSessionRoutes.js) กันสวมรอยเช็คอินแทนคนอื่นจริง ๆ - ฝั่งนี้ซ่อนแท็บทิ้งไปเลยกันสับสน (ดู DOMContentLoaded ท้ายไฟล์)
+// backend บล็อก SuperAdmin ไว้แล้วที่ requireParticipantAccess บน /api/oral-exam-sessions/check-in (ดู routes/oralExamSessionRoutes.js) กันสวมรอยเช็คอินแทนคนอื่นจริง ๆ - ฝั่งนี้ซ่อนแท็บทิ้งไปเลยกันสับสน (ดู DOMContentLoaded ท้ายไฟล์)
 // ==========================================
 let examScanStream = null;
 let examScanRAF = null;
@@ -657,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderCampLockedPage(document.querySelector('main.main-content'), { systemName: 'ระบบการเรียน', audience: 'participant', camp });
                 return false;
             }
-            if (user.role === 'WEBMANAGER') {
+            if (user.role === 'SUPERADMIN') {
                 document.getElementById('nav-examscan')?.classList.add('hidden');
                 document.getElementById('m-nav-examscan')?.classList.add('hidden');
                 document.getElementById('footer-nav-examscan')?.classList.add('hidden');

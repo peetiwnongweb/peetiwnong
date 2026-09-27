@@ -7,12 +7,12 @@ const { getCampState } = require('../lib/campState');
 const { getSiteSettingsRow } = require('../lib/siteSettings');
 
 // ==========================================
-// แดชบอร์ด WebManager - รวมตัวเลขจากทุกส่วนของระบบ (ดู fontend/webmanager/js/webmanager-dashboard.js)
+// แดชบอร์ด SuperAdmin - รวมตัวเลขจากทุกส่วนของระบบ (ดู fontend/superadmin/js/superadmin-dashboard.js)
 // ทุก endpoint เป็นการ "นับ/รวมยอด" ไม่ดึงรายการเต็ม ใช้ Promise.all ยิงขนานในคำขอเดียว ให้หน้าเว็บเรียกครั้งเดียวต่อแท็บ
 // ตัวเลขภาพรวม (summary) cache ไว้สั้น ๆ ใน memory กันกดรีเฟรชรัว ๆ แล้วยิง 40 query ซ้ำทุกครั้ง
 // ==========================================
 
-// เดิม 15 วิ - แท็บภาพรวมโหลดทุกครั้งที่เปิดหน้า WebManager (ไม่ใช่ lazy เหมือนแท็บอื่น) จึงเจอ cache miss บ่อยมาก
+// เดิม 15 วิ - แท็บภาพรวมโหลดทุกครั้งที่เปิดหน้า SuperAdmin (ไม่ใช่ lazy เหมือนแท็บอื่น) จึงเจอ cache miss บ่อยมาก
 // ตัวสรุปนี้ยิง query พร้อมกันเกือบ 40 ตัวต่อครั้ง ชน connection pool ที่จำกัดไว้แค่ 8 (ดู backend/lib/prisma.js) ทำให้ query ต้องต่อคิวกันเองจนช้า
 // ยืดเป็น 60 วิ ลดจำนวนครั้งที่ต้องยิงจริงลงมาก ข้อมูลเป็นตัวเลขสรุป ไม่จำเป็นต้องสดระดับวินาที มีปุ่ม "รีเฟรช" (?refresh=1) ให้ข้ามแคชได้เองอยู่แล้วถ้าอยากได้เลขล่าสุดจริง ๆ
 const SUMMARY_CACHE_MS = 60 * 1000;
@@ -675,7 +675,7 @@ async function buildUsage(prisma, rangeKey) {
 
   // ---------- สัดส่วน ----------
   const breakdown = {
-    roles: { guest: sum(hourlyRows, 'guestRequests'), participant: sum(hourlyRows, 'participantRequests'), staff: sum(hourlyRows, 'staffRequests'), webmanager: sum(hourlyRows, 'webmanagerRequests') },
+    roles: { guest: sum(hourlyRows, 'guestRequests'), participant: sum(hourlyRows, 'participantRequests'), staff: sum(hourlyRows, 'staffRequests'), superadmin: sum(hourlyRows, 'superadminRequests') },
     devices: { mobile: sum(hourlyRows, 'mobileRequests'), desktop: sum(hourlyRows, 'desktopRequests') },
     browsers: { chrome: sum(hourlyRows, 'chromeRequests'), safari: sum(hourlyRows, 'safariRequests'), line: sum(hourlyRows, 'lineRequests'), other: sum(hourlyRows, 'otherBrowserRequests') },
   };
@@ -827,9 +827,9 @@ async function exportUsageCsv(req, res) {
   if (type === 'hourly') {
     const rows = await prisma.usageHourlyStat.findMany({ where: { bucketStart: { gte: range.start, lt: range.end } }, orderBy: { bucketStart: 'asc' } });
     return sendCsv(res, `usage-hourly_${suffix}.csv`,
-      ['hour_bangkok', 'api_requests', 'page_views', 'errors_5xx', 'errors_4xx', 'avg_response_ms', 'max_response_ms', 'active_users', 'guest', 'participant', 'staff', 'webmanager', 'mobile', 'desktop', 'chrome', 'safari', 'line', 'other_browser'],
+      ['hour_bangkok', 'api_requests', 'page_views', 'errors_5xx', 'errors_4xx', 'avg_response_ms', 'max_response_ms', 'active_users', 'guest', 'participant', 'staff', 'superadmin', 'mobile', 'desktop', 'chrome', 'safari', 'line', 'other_browser'],
       rows.map((r) => [localDateTime.format(r.bucketStart), r.apiRequests, r.pageViews, r.errorCount, r.clientErrorCount, avg(r.totalDurationMs, r.apiRequests), r.maxDurationMs, r.activeUsers,
-        r.guestRequests, r.participantRequests, r.staffRequests, r.webmanagerRequests, r.mobileRequests, r.desktopRequests, r.chromeRequests, r.safariRequests, r.lineRequests, r.otherBrowserRequests]));
+        r.guestRequests, r.participantRequests, r.staffRequests, r.superadminRequests, r.mobileRequests, r.desktopRequests, r.chromeRequests, r.safariRequests, r.lineRequests, r.otherBrowserRequests]));
   }
   if (type === 'endpoints') {
     const rows = await prisma.usageEndpointDailyStat.findMany({ where: { day: { gte: toDateColumn(range.startDay), lte: toDateColumn(range.endDay) } }, orderBy: [{ day: 'asc' }, { requestCount: 'desc' }] });

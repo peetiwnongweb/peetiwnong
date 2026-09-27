@@ -11,7 +11,7 @@ const {
 const { requireRole, requireGroupManagementAccess } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
 
 // รายชื่อกลุ่ม (แค่ดู) ใช้ร่วมกับแท็บ "บันทึกคะแนน" ด้วย พี่ค่ายฝ่ายกิจกรรมทั่วไปเข้าถึงได้
 router.get('/', requireStaffAccess, listGroups);

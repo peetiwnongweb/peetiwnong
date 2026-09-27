@@ -1,10 +1,10 @@
-// หน้า login แยกต่างหากของ WebManager (สิทธิ์สูงสุด) ไม่ใช้โมดัลร่วมกับพี่ค่าย/น้องค่าย และไม่มีแท็บเลือกบทบาท เพราะ role ถูกกำหนดตายตัวเป็น WEBMANAGER
-let webManagerForgotEmail = '';
-let webManagerVerifiedOtpCode = '';
-let webManagerOtpController = null;
-let webManagerResendCooldown = null;
+// หน้า login แยกต่างหากของ SuperAdmin (สิทธิ์สูงสุด) ไม่ใช้โมดัลร่วมกับพี่ค่าย/น้องค่าย และไม่มีแท็บเลือกบทบาท เพราะ role ถูกกำหนดตายตัวเป็น SUPERADMIN
+let superAdminForgotEmail = '';
+let superAdminVerifiedOtpCode = '';
+let superAdminOtpController = null;
+let superAdminResendCooldown = null;
 
-function goToWebManagerStep(step) {
+function goToSuperAdminStep(step) {
     ['login', 'forgot-email', 'forgot-otp', 'forgot-newpass'].forEach((s) => {
         const el = document.getElementById(`wm-step-${s}`);
         if (el) el.classList.toggle('hidden', s !== step);
@@ -15,14 +15,14 @@ function goToWebManagerStep(step) {
     const forgotNewpassForm = document.getElementById('wm-forgot-newpass-form');
     if (step === 'login' && loginForm) loginForm.reset();
     if (step === 'forgot-email' && forgotEmailForm) forgotEmailForm.reset();
-    if (step === 'forgot-otp' && webManagerOtpController) webManagerOtpController.reset();
+    if (step === 'forgot-otp' && superAdminOtpController) superAdminOtpController.reset();
     if (step === 'forgot-newpass' && forgotNewpassForm) {
         forgotNewpassForm.reset();
-        updateWebManagerPasswordHint('');
+        updateSuperAdminPasswordHint('');
     }
 }
 
-function showWebManagerToast(message, isSuccess) {
+function showSuperAdminToast(message, isSuccess) {
     const toast = document.getElementById('wm-login-toast');
     if (!toast) return;
 
@@ -35,7 +35,7 @@ function showWebManagerToast(message, isSuccess) {
     }
 }
 
-function handleWebManagerLoginSubmit(event) {
+function handleSuperAdminLoginSubmit(event) {
     event.preventDefault();
     const email = document.getElementById('wm-login-email').value.trim();
     const password = document.getElementById('wm-login-password').value;
@@ -46,7 +46,7 @@ function handleWebManagerLoginSubmit(event) {
     fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role: 'WEBMANAGER' }),
+        body: JSON.stringify({ email, password, role: 'SUPERADMIN' }),
     })
         .then(async (res) => {
             const body = await res.json().catch(() => ({}));
@@ -57,22 +57,22 @@ function handleWebManagerLoginSubmit(event) {
             window.location.href = '/superadmin/';
         })
         .catch((error) => {
-            showWebManagerToast(error.message, false);
+            showSuperAdminToast(error.message, false);
             Loader.clearButtonLoading(btn);
         });
 }
 
-function handleWebManagerForgotEmailSubmit(event) {
+function handleSuperAdminForgotEmailSubmit(event) {
     event.preventDefault();
-    webManagerForgotEmail = document.getElementById('wm-forgot-email').value.trim();
-    requestWebManagerOtp(true);
+    superAdminForgotEmail = document.getElementById('wm-forgot-email').value.trim();
+    requestSuperAdminOtp(true);
 }
 
-function requestWebManagerOtp(goToOtpStep) {
+function requestSuperAdminOtp(goToOtpStep) {
     return fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: webManagerForgotEmail }),
+        body: JSON.stringify({ email: superAdminForgotEmail }),
     })
         .then(async (res) => {
             const body = await res.json().catch(() => ({}));
@@ -80,36 +80,36 @@ function requestWebManagerOtp(goToOtpStep) {
             return body;
         })
         .then(() => {
-            if (!webManagerOtpController) {
-                webManagerOtpController = setupOtpInputs('wm-otp-boxes');
+            if (!superAdminOtpController) {
+                superAdminOtpController = setupOtpInputs('wm-otp-boxes');
             }
             if (goToOtpStep) {
-                goToWebManagerStep('forgot-otp');
+                goToSuperAdminStep('forgot-otp');
             }
-            startWebManagerResendCooldown();
+            startSuperAdminResendCooldown();
         })
         .catch((error) => {
-            showWebManagerToast(error.message, false);
+            showSuperAdminToast(error.message, false);
         });
 }
 
-function handleWebManagerResendOtp() {
-    requestWebManagerOtp(false);
+function handleSuperAdminResendOtp() {
+    requestSuperAdminOtp(false);
 }
 
-function startWebManagerResendCooldown() {
+function startSuperAdminResendCooldown() {
     const btn = document.getElementById('wm-resend-otp');
     if (!btn) return;
-    if (webManagerResendCooldown) clearInterval(webManagerResendCooldown);
+    if (superAdminResendCooldown) clearInterval(superAdminResendCooldown);
 
     let seconds = 30;
     btn.disabled = true;
     btn.innerText = `ส่งรหัสอีกครั้ง (${seconds}s)`;
 
-    webManagerResendCooldown = setInterval(() => {
+    superAdminResendCooldown = setInterval(() => {
         seconds -= 1;
         if (seconds <= 0) {
-            clearInterval(webManagerResendCooldown);
+            clearInterval(superAdminResendCooldown);
             btn.disabled = false;
             btn.innerText = 'ส่งรหัสอีกครั้ง';
         } else {
@@ -118,14 +118,14 @@ function startWebManagerResendCooldown() {
     }, 1000);
 }
 
-function handleWebManagerVerifyOtpSubmit(event) {
+function handleSuperAdminVerifyOtpSubmit(event) {
     event.preventDefault();
-    const otpCode = webManagerOtpController ? webManagerOtpController.getValue() : '';
+    const otpCode = superAdminOtpController ? superAdminOtpController.getValue() : '';
 
     fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: webManagerForgotEmail, otpCode }),
+        body: JSON.stringify({ email: superAdminForgotEmail, otpCode }),
     })
         .then(async (res) => {
             const body = await res.json().catch(() => ({}));
@@ -133,16 +133,16 @@ function handleWebManagerVerifyOtpSubmit(event) {
             return body;
         })
         .then(() => {
-            webManagerVerifiedOtpCode = otpCode;
-            goToWebManagerStep('forgot-newpass');
+            superAdminVerifiedOtpCode = otpCode;
+            goToSuperAdminStep('forgot-newpass');
         })
         .catch((error) => {
-            showWebManagerToast(error.message, false);
-            if (webManagerOtpController) webManagerOtpController.reset();
+            showSuperAdminToast(error.message, false);
+            if (superAdminOtpController) superAdminOtpController.reset();
         });
 }
 
-function updateWebManagerPasswordHint(password) {
+function updateSuperAdminPasswordHint(password) {
     const hint = document.getElementById('wm-reset-password-hint');
     if (!hint) return;
     if (!password) {
@@ -157,29 +157,29 @@ function updateWebManagerPasswordHint(password) {
         : 'ต้องมีอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลขอย่างละ 1 ตัวขึ้นไป';
 }
 
-function handleWebManagerNewPasswordInput() {
-    updateWebManagerPasswordHint(document.getElementById('wm-reset-new-password').value);
+function handleSuperAdminNewPasswordInput() {
+    updateSuperAdminPasswordHint(document.getElementById('wm-reset-new-password').value);
 }
 
-function handleWebManagerForgotResetSubmit(event) {
+function handleSuperAdminForgotResetSubmit(event) {
     event.preventDefault();
     const newPassword = document.getElementById('wm-reset-new-password').value;
     const confirmPassword = document.getElementById('wm-reset-confirm-password').value;
 
     if (!checkPasswordStrength(newPassword)) {
-        updateWebManagerPasswordHint(newPassword);
-        showWebManagerToast('รหัสผ่านยังไม่ผ่านมาตรฐานความปลอดภัย', false);
+        updateSuperAdminPasswordHint(newPassword);
+        showSuperAdminToast('รหัสผ่านยังไม่ผ่านมาตรฐานความปลอดภัย', false);
         return;
     }
     if (newPassword !== confirmPassword) {
-        showWebManagerToast('รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน', false);
+        showSuperAdminToast('รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน', false);
         return;
     }
 
     fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: webManagerForgotEmail, otpCode: webManagerVerifiedOtpCode, newPassword }),
+        body: JSON.stringify({ email: superAdminForgotEmail, otpCode: superAdminVerifiedOtpCode, newPassword }),
     })
         .then(async (res) => {
             const body = await res.json().catch(() => ({}));
@@ -187,20 +187,20 @@ function handleWebManagerForgotResetSubmit(event) {
             return body;
         })
         .then((body) => {
-            showWebManagerToast(body.message, true);
-            setTimeout(() => goToWebManagerStep('login'), 1200);
+            showSuperAdminToast(body.message, true);
+            setTimeout(() => goToSuperAdminStep('login'), 1200);
         })
         .catch((error) => {
-            showWebManagerToast(error.message, false);
+            showSuperAdminToast(error.message, false);
         });
 }
 
-// เข้าหน้านี้ทั้งที่ล็อกอินเป็น WebManager อยู่แล้ว (เช่นกด back) ให้พาเข้าแผงควบคุมเลย ไม่ต้องกรอกซ้ำ
+// เข้าหน้านี้ทั้งที่ล็อกอินเป็น SuperAdmin อยู่แล้ว (เช่นกด back) ให้พาเข้าแผงควบคุมเลย ไม่ต้องกรอกซ้ำ
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/auth/me')
         .then((res) => (res.ok ? res.json() : null))
         .then((body) => {
-            if (body && body.user && body.user.role === 'WEBMANAGER') {
+            if (body && body.user && body.user.role === 'SUPERADMIN') {
                 window.location.href = '/superadmin/';
             }
         })

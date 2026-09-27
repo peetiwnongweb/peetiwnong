@@ -36,8 +36,8 @@ const ACTIVITY_ENTITY_LABELS = {
 };
 
 const ACTIVITY_ROLE_LABELS = {
-    HOST: 'Host', // ค่าเก่าก่อนเปลี่ยนชื่อ role เป็น WEBMANAGER ยังต้องเก็บไว้แสดงผลประวัติการดำเนินการเก่า
-    WEBMANAGER: 'SuperAdmin',
+    HOST: 'Host', // ค่าเก่าก่อนเปลี่ยนชื่อ role เป็น SUPERADMIN ยังต้องเก็บไว้แสดงผลประวัติการดำเนินการเก่า
+    SUPERADMIN: 'SuperAdmin',
     ADMIN: 'แอดมิน',
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',
@@ -63,7 +63,7 @@ function renderAvatar(el, avatarUrl, initial) {
 // id ของบัญชีที่ login อยู่ตอนนี้ - ใช้กันลบตัวเองในตาราง "จัดการบัญชี Owner" (backend ก็เช็คซ้ำอีกชั้นอยู่แล้วใน deleteUser)
 let currentAdminUserId = null;
 // เก็บข้อมูลผู้ใช้ปัจจุบันไว้ใช้ตอนเปิดหน้าต่าง "โปรไฟล์" (พรีฟิลอีเมล)
-let currentWebManagerUser = null;
+let currentSuperAdminUser = null;
 
 function loadAdminUser() {
     return fetch('/api/auth/me')
@@ -72,9 +72,9 @@ function loadAdminUser() {
             return res.json();
         })
         .then(({ user }) => {
-            // หน้านี้เข้าได้เฉพาะ WEBMANAGER (Owner) เท่านั้น
+            // หน้านี้เข้าได้เฉพาะ SUPERADMIN (Owner) เท่านั้น
             // ถ้า role อื่น (ประธานค่าย / ผู้ดูแลระบบ / พี่ค่าย / น้องค่าย) copy URL มาเปิด → redirect กลับหน้าของตัวเอง
-            if (user.role !== 'WEBMANAGER') {
+            if (user.role !== 'SUPERADMIN') {
                 window.location.href = '/';
                 return;
             }
@@ -84,11 +84,11 @@ function loadAdminUser() {
             const roleLabel = ACTIVITY_ROLE_LABELS[user.role] || user.role;
 
             // เหมือนหน้าพี่ค่าย/หน้าแรก: ถ้ามีชื่อ-นามสกุลและตำแหน่งในโปรไฟล์ ให้ขึ้นชื่อและตำแหน่งแทน email/role ตรง ๆ
-            // WebManager ไม่มีโปรไฟล์ชื่อ-นามสกุล และมีอยู่คนเดียวในระบบ จึงขึ้น "Owner" แทน email ตรง ๆ
+            // SuperAdmin ไม่มีโปรไฟล์ชื่อ-นามสกุล และมีอยู่คนเดียวในระบบ จึงขึ้น "Owner" แทน email ตรง ๆ
             const fullName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null;
             const positionLabel = (user.position && user.position.name) || roleLabel;
             const subLabel = isPrivilegedStaff ? `${positionLabel} · ผู้ดูแลระบบ` : positionLabel;
-            const nameLine = fullName || (user.role === 'WEBMANAGER' ? 'Owner' : user.email);
+            const nameLine = fullName || (user.role === 'SUPERADMIN' ? 'Owner' : user.email);
             const initial = nameLine.charAt(0).toUpperCase();
 
             const display = document.getElementById('admin-username-display');
@@ -104,39 +104,39 @@ function loadAdminUser() {
             if (menuRole) menuRole.textContent = subLabel;
 
             // เก็บไว้ใช้ตอนเปิดหน้าต่าง "โปรไฟล์" (พรีฟิลอีเมล)
-            currentWebManagerUser = user;
+            currentSuperAdminUser = user;
 
         })
         .catch(() => {
-            // ไม่ได้ล็อกอิน (เช่นก๊อปลิงก์มาเปิด/session หมดอายุ) = เด้งไปหน้า login ของ WebManager เพื่อให้เข้าสู่ระบบต่อได้เลย
+            // ไม่ได้ล็อกอิน (เช่นก๊อปลิงก์มาเปิด/session หมดอายุ) = เด้งไปหน้า login ของ SuperAdmin เพื่อให้เข้าสู่ระบบต่อได้เลย
             window.location.replace('/superadmin/login.html');
         });
 }
 
 // ==========================================
-// โปรไฟล์บัญชี (WebManager): แก้ไขอีเมลและรหัสผ่านของตัวเอง - ใช้ได้กับทุกบัญชี Owner ที่ล็อกอินอยู่ ไม่ผูกกับบัญชีใดบัญชีหนึ่ง
+// โปรไฟล์บัญชี (SuperAdmin): แก้ไขอีเมลและรหัสผ่านของตัวเอง - ใช้ได้กับทุกบัญชี Owner ที่ล็อกอินอยู่ ไม่ผูกกับบัญชีใดบัญชีหนึ่ง
 // ==========================================
-function openWebManagerSettings() {
+function openSuperAdminSettings() {
     document.getElementById('admin-user-menu').classList.add('hidden');
 
-    document.getElementById('webmanager-email-form').reset();
-    document.getElementById('webmanager-email-form-error').classList.add('hidden');
-    document.getElementById('webmanager-settings-email').value = currentWebManagerUser ? currentWebManagerUser.email : '';
+    document.getElementById('superadmin-email-form').reset();
+    document.getElementById('superadmin-email-form-error').classList.add('hidden');
+    document.getElementById('superadmin-settings-email').value = currentSuperAdminUser ? currentSuperAdminUser.email : '';
 
-    document.getElementById('webmanager-password-form').reset();
-    document.getElementById('webmanager-password-form-error').classList.add('hidden');
-    handleWebManagerSettingsPasswordInput();
+    document.getElementById('superadmin-password-form').reset();
+    document.getElementById('superadmin-password-form-error').classList.add('hidden');
+    handleSuperAdminSettingsPasswordInput();
 
-    document.getElementById('webmanager-settings-modal').classList.remove('hidden');
+    document.getElementById('superadmin-settings-modal').classList.remove('hidden');
 }
 
-function closeWebManagerSettings() {
-    document.getElementById('webmanager-settings-modal').classList.add('hidden');
+function closeSuperAdminSettings() {
+    document.getElementById('superadmin-settings-modal').classList.add('hidden');
 }
 
-function handleWebManagerSettingsPasswordInput() {
-    const hint = document.getElementById('webmanager-settings-password-hint');
-    const password = document.getElementById('webmanager-new-password').value;
+function handleSuperAdminSettingsPasswordInput() {
+    const hint = document.getElementById('superadmin-settings-password-hint');
+    const password = document.getElementById('superadmin-new-password').value;
     if (!hint) return;
     if (!password) {
         hint.className = 'password-hint';
@@ -150,15 +150,15 @@ function handleWebManagerSettingsPasswordInput() {
         : 'ต้องมีอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลขอย่างละ 1 ตัวขึ้นไป';
 }
 
-function submitWebManagerEmailForm(event) {
+function submitSuperAdminEmailForm(event) {
     event.preventDefault();
-    if (!currentWebManagerUser) return;
+    if (!currentSuperAdminUser) return;
 
-    const email = document.getElementById('webmanager-settings-email').value.trim();
-    const errorBox = document.getElementById('webmanager-email-form-error');
+    const email = document.getElementById('superadmin-settings-email').value.trim();
+    const errorBox = document.getElementById('superadmin-email-form-error');
     errorBox.classList.add('hidden');
 
-    fetch(`/api/users/${currentWebManagerUser.id}`, {
+    fetch(`/api/users/${currentSuperAdminUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -181,13 +181,13 @@ function submitWebManagerEmailForm(event) {
         });
 }
 
-function submitWebManagerPasswordForm(event) {
+function submitSuperAdminPasswordForm(event) {
     event.preventDefault();
 
-    const currentPassword = document.getElementById('webmanager-current-password').value;
-    const newPassword = document.getElementById('webmanager-new-password').value;
-    const confirmPassword = document.getElementById('webmanager-confirm-password').value;
-    const errorBox = document.getElementById('webmanager-password-form-error');
+    const currentPassword = document.getElementById('superadmin-current-password').value;
+    const newPassword = document.getElementById('superadmin-new-password').value;
+    const confirmPassword = document.getElementById('superadmin-confirm-password').value;
+    const errorBox = document.getElementById('superadmin-password-form-error');
     errorBox.classList.add('hidden');
 
     if (!checkPasswordStrength(newPassword)) {
@@ -212,8 +212,8 @@ function submitWebManagerPasswordForm(event) {
             return body;
         })
         .then(() => {
-            document.getElementById('webmanager-password-form').reset();
-            handleWebManagerSettingsPasswordInput();
+            document.getElementById('superadmin-password-form').reset();
+            handleSuperAdminSettingsPasswordInput();
             showToast('เปลี่ยนรหัสผ่านสำเร็จ');
         })
         .catch((error) => {
@@ -229,7 +229,7 @@ async function adminLogout() {
     // ยิง API logout แบบ fire-and-forget (ไม่รอ response) แล้ว redirect ทันที
     // ป้องกันกรณี CORS error หรือ network issue ทำให้ finally() ไม่ทำงาน
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-    try { sessionStorage.removeItem(WEBMANAGER_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
+    try { sessionStorage.removeItem(SUPERADMIN_NAV_STORAGE_KEY); } catch (error) { /* private mode */ }
     window.location.href = '/superadmin/login.html';
 }
 
@@ -273,7 +273,7 @@ function loadAdminNotifications() {
             return res.json();
         })
         .then((items) => {
-            const lastSeen = Number(localStorage.getItem('webmanagerNotifLastSeen') || 0);
+            const lastSeen = Number(localStorage.getItem('superadminNotifLastSeen') || 0);
             renderAdminNotifications(items.slice(0, 8), lastSeen);
             markAdminNotificationsSeen(items);
         })
@@ -316,14 +316,14 @@ function checkAdminNotificationBadge() {
     const timestamps = [latestAdmin, latestUser].filter(Boolean).map((d) => new Date(d).getTime());
     if (timestamps.length === 0) return;
     const latest = Math.max(...timestamps);
-    const lastSeen = Number(localStorage.getItem('webmanagerNotifLastSeen') || 0);
+    const lastSeen = Number(localStorage.getItem('superadminNotifLastSeen') || 0);
     const dot = document.getElementById('admin-notif-dot');
     if (dot) dot.classList.toggle('hidden', lastSeen >= latest);
 }
 
 function markAdminNotificationsSeen(items) {
     if (items.length === 0) return;
-    localStorage.setItem('webmanagerNotifLastSeen', String(new Date(items[0].createdAt).getTime()));
+    localStorage.setItem('superadminNotifLastSeen', String(new Date(items[0].createdAt).getTime()));
     const dot = document.getElementById('admin-notif-dot');
     if (dot) dot.classList.add('hidden');
 }
@@ -343,7 +343,7 @@ function toggleAdminSidebar() {
     const sidebar = document.querySelector('.admin-shell-sidebar');
     if (!sidebar) return;
     const collapsed = sidebar.classList.toggle('collapsed');
-    localStorage.setItem('webmanagerSidebarCollapsed', collapsed ? '1' : '0');
+    localStorage.setItem('superadminSidebarCollapsed', collapsed ? '1' : '0');
 }
 
 function toggleAdminTheme() {
@@ -354,7 +354,7 @@ function toggleAdminTheme() {
     } else {
         root.removeAttribute('data-theme');
     }
-    localStorage.setItem('webmanagerTheme', next);
+    localStorage.setItem('superadminTheme', next);
 }
 
 const ADMIN_NAV_GROUPS = {
@@ -366,7 +366,7 @@ const ADMIN_NAV_GROUPS = {
     camps: 'camps-subnav',
 };
 
-// โหลดข้อมูลของแท็บ/หน้าแบบ lazy (ครั้งแรกที่สลับไปเปิดดูเท่านั้น) แทนที่จะยิงทุก endpoint พร้อมกันตอนเปิดหน้า WebManager
+// โหลดข้อมูลของแท็บ/หน้าแบบ lazy (ครั้งแรกที่สลับไปเปิดดูเท่านั้น) แทนที่จะยิงทุก endpoint พร้อมกันตอนเปิดหน้า SuperAdmin
 // (เดิมยิงพร้อมกัน ~18 เส้นตอน DOMContentLoaded ล้น connection pool ของ Supabase แผนฟรี (จำกัด 15 client) ได้ง่าย ๆ)
 // key เดียวกันแปลว่าข้อมูลชุดเดียวกัน ใช้ร่วมกันได้หลายแท็บโดยยิงแค่ครั้งเดียว (เช่น approve-staff/staff-users คือ /api/users?role=STAFF ตัวเดียวกัน หลัง merge ไปแล้ว)
 // สิ่งที่ยังคง eager ไว้ (ไม่อยู่ในระบบนี้): loadAdminUser/loadHeroCardSetting (ใช้ร่วมหลายแท็บพร้อมกัน เบาพอไม่คุ้มแยก lazy) initDashboard (lazy ในตัวอยู่แล้วต่อแท็บย่อย)
@@ -417,10 +417,10 @@ function loadAdminLazyKeys(keys) {
 
 // จำตำแหน่งที่เปิดอยู่ล่าสุด (section เฉย ๆ สำหรับหน้าที่ไม่มีแท็บย่อย เช่น dashboard/participant, หรือ tab เจาะจงสำหรับหน้าที่มีแท็บย่อย)
 // ไว้ใน sessionStorage กันรีเฟรชแล้วเด้งกลับไป dashboard ทุกครั้ง ค่าล่าสุดชนะเสมอไม่ว่าจะเป็น section หรือ tab
-const WEBMANAGER_NAV_STORAGE_KEY = 'ptn-webmanager-nav';
+const SUPERADMIN_NAV_STORAGE_KEY = 'ptn-superadmin-nav';
 
-function saveWebManagerNav(type, value) {
-    try { sessionStorage.setItem(WEBMANAGER_NAV_STORAGE_KEY, JSON.stringify({ type, value })); } catch (error) { /* private mode */ }
+function saveSuperAdminNav(type, value) {
+    try { sessionStorage.setItem(SUPERADMIN_NAV_STORAGE_KEY, JSON.stringify({ type, value })); } catch (error) { /* private mode */ }
 }
 
 // หา section ที่ tab หนึ่ง ๆ สังกัดอยู่ จากการไล่ขึ้นไปหา ancestor ที่ id ตรงกับค่าใน ADMIN_NAV_GROUPS
@@ -440,10 +440,10 @@ function getSectionForAdminTab(tab) {
 }
 
 // เรียกตอนโหลดหน้าเพื่อกลับไปตำแหน่งเดิมที่จำไว้ (ไม่ทำอะไรถ้าไม่เคยจำไว้ - ปล่อยให้ dashboard ที่ active ไว้ใน HTML อยู่แบบเดิม)
-function restoreWebManagerNav() {
+function restoreSuperAdminNav() {
     let saved = null;
     try {
-        const raw = sessionStorage.getItem(WEBMANAGER_NAV_STORAGE_KEY);
+        const raw = sessionStorage.getItem(SUPERADMIN_NAV_STORAGE_KEY);
         saved = raw ? JSON.parse(raw) : null;
     } catch (error) { /* private mode หรือค่าที่เก็บไว้เสีย */ }
     if (!saved) return;
@@ -465,7 +465,7 @@ function switchAdminSection(section) {
     if (wasCollapsedRail) {
         // กดไอคอนขณะเมนูย่อ (icon rail) ให้เด้งเมนูออกมาเต็มก่อน
         sidebar.classList.remove('collapsed');
-        localStorage.setItem('webmanagerSidebarCollapsed', '0');
+        localStorage.setItem('superadminSidebarCollapsed', '0');
     }
 
     const ownSubnavId = ADMIN_NAV_GROUPS[section];
@@ -498,7 +498,7 @@ function switchAdminSection(section) {
         }
     } else {
         // หน้าที่ไม่มีแท็บย่อย (dashboard, participant, create-owner) - บันทึกตัว section เองเลย
-        saveWebManagerNav('section', section);
+        saveSuperAdminNav('section', section);
         const loadKeys = ADMIN_SECTION_LOAD_KEYS[section];
         if (loadKeys) loadAdminLazyKeys(loadKeys);
         // ทั้งหน้าเลื่อนตามเอกสาร (ไม่มี scroll container แยก) สลับ section แล้วไม่เลื่อนกลับขึ้นบน เนื้อหาสั้น ๆ จะโผล่พ้นจอถ้าเลื่อนค้างไว้จากหน้าก่อน
@@ -507,7 +507,7 @@ function switchAdminSection(section) {
 }
 
 // เมนูย่อยชั้นที่ 2 (เช่น "ข่าวประกาศ" ที่แตกเป็น "การอนุมัติข่าว"/"จัดการข่าว") พับ/กางแยกจากเมนูหลักด้วย toggleNewsSubnav()/toggleHistorySubnav()
-// ตอนกลับมาที่แท็บลูกหลานพวกนี้ (เช่นตอนรีเฟรชแล้ว restoreWebManagerNav() เรียก switchAdminTab() ตรง ๆ) ต้องกางให้เห็นด้วย ไม่งั้นแท็บ active อยู่แต่มองไม่เห็นเพราะโดนพับซ่อน
+// ตอนกลับมาที่แท็บลูกหลานพวกนี้ (เช่นตอนรีเฟรชแล้ว restoreSuperAdminNav() เรียก switchAdminTab() ตรง ๆ) ต้องกางให้เห็นด้วย ไม่งั้นแท็บ active อยู่แต่มองไม่เห็นเพราะโดนพับซ่อน
 function expandNestedSubnavForTab(tab) {
     const btn = document.getElementById(`admin-tab-${tab}`);
     if (!btn) return;
@@ -519,7 +519,7 @@ function expandNestedSubnavForTab(tab) {
 }
 
 function switchAdminTab(tab) {
-    saveWebManagerNav('tab', tab);
+    saveSuperAdminNav('tab', tab);
     document.querySelectorAll('.admin-panel').forEach((panel) => panel.classList.remove('active'));
     document.querySelectorAll('.admin-shell-nav-child, .admin-shell-nav-grandchild').forEach((btn) => btn.classList.remove('active'));
 
@@ -690,7 +690,7 @@ function newsRowActionButtonsHtml() {
 // ==========================================
 // หน้าแรก (Home): สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดใน Hero ของหน้าเว็บหลัก
 // ==========================================
-// ข้อความเริ่มต้นที่ฝังอยู่ในหน้าเว็บสาธารณะ (fontend/*/) ใช้เติมในฟอร์มตอนที่ยังไม่เคยบันทึกค่าจาก WebManager
+// ข้อความเริ่มต้นที่ฝังอยู่ในหน้าเว็บสาธารณะ (fontend/*/) ใช้เติมในฟอร์มตอนที่ยังไม่เคยบันทึกค่าจาก SuperAdmin
 // เพื่อให้เห็นข้อความปัจจุบันจริง ๆ พร้อมแก้ไขได้เลย แทนที่จะเห็นช่องว่างเปล่า
 const DEFAULT_HISTORY_TITLE = 'จุดเริ่มต้นของค่ายวิชาการ "พี่ติวน้อง"';
 const DEFAULT_HISTORY_BODY = 'ค่ายวิชาการพี่ติวน้องก่อตั้งขึ้นเมื่อปีพุทธศักราช 2540 โดยกลุ่มศิษย์เก่าโรงเรียนพิมายดำรงวิทยาคม นำโดย รศ.ดร.อาคม แก้วระวัง ศิษย์เก่ารุ่นที่ 3 ด้วยความตั้งใจที่จะส่งต่อความรู้และประสบการณ์ให้แก่รุ่นน้องที่กำลังจะก้าวเข้าสู่รั้วมหาวิทยาลัย\n\nตลอดระยะเวลากว่า 28 รุ่น ค่ายแห่งนี้เติบโตขึ้นเรื่อย ๆ ทั้งในด้านจำนวนผู้เข้าร่วมและคุณภาพของกิจกรรม โดยยังคงยึดมั่นในเจตนารมณ์เดิมคือ "พี่สอนน้อง น้องส่งต่อรุ่นต่อไป" เพื่อสร้างเครือข่ายศิษย์เก่าที่เข้มแข็งและพร้อมช่วยเหลือกันตลอดไป';
@@ -3768,8 +3768,8 @@ function updateCreateOwnerPasswordChecklist() {
     });
 }
 
-// เพิ่มบัญชี WebManager (Owner) อีกบัญชี - เฉพาะอีเมล/รหัสผ่าน ไม่มีโปรไฟล์ (WebManager ไม่มี StaffProfile/ParticipantProfile)
-// backend (userController.js: createUser) เช็คซ้ำอีกชั้นว่าต้องเป็น WebManager เท่านั้นถึงจะสร้างบัญชี role WEBMANAGER ได้
+// เพิ่มบัญชี SuperAdmin (Owner) อีกบัญชี - เฉพาะอีเมล/รหัสผ่าน ไม่มีโปรไฟล์ (SuperAdmin ไม่มี StaffProfile/ParticipantProfile)
+// backend (userController.js: createUser) เช็คซ้ำอีกชั้นว่าต้องเป็น SuperAdmin เท่านั้นถึงจะสร้างบัญชี role SUPERADMIN ได้
 function submitCreateOwnerForm(event) {
     event.preventDefault();
 
@@ -3793,7 +3793,7 @@ function submitCreateOwnerForm(event) {
         return;
     }
 
-    const payload = { email, password, role: 'WEBMANAGER' };
+    const payload = { email, password, role: 'SUPERADMIN' };
 
     fetch('/api/users', {
         method: 'POST',
@@ -3818,10 +3818,10 @@ function submitCreateOwnerForm(event) {
         });
 }
 
-// รายชื่อบัญชี Owner (WEBMANAGER) ทั้งหมด - reuse endpoint เดียวกับหน้า "จัดการข้อมูลผู้ใช้" (GET /api/users?role=X)
+// รายชื่อบัญชี Owner (SUPERADMIN) ทั้งหมด - reuse endpoint เดียวกับหน้า "จัดการข้อมูลผู้ใช้" (GET /api/users?role=X)
 function loadOwners() {
     Loader.renderSkeletonTableRows(document.getElementById('owner-table-body'), 4, 3);
-    fetch('/api/users?role=WEBMANAGER')
+    fetch('/api/users?role=SUPERADMIN')
         .then((res) => {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             return res.json();
@@ -4090,7 +4090,7 @@ async function deleteApprovalItem(item, role) {
 }
 
 // ==========================================
-// การอนุมัติข่าว (พี่ค่ายทุกฝ่ายส่งข่าวเข้ามาได้ ต้องรอ WebManager อนุมัติก่อนเผยแพร่จริง) - มิเรอร์ pattern การอนุมัติการลงทะเบียนด้านบน
+// การอนุมัติข่าว (พี่ค่ายทุกฝ่ายส่งข่าวเข้ามาได้ ต้องรอ SuperAdmin อนุมัติก่อนเผยแพร่จริง) - มิเรอร์ pattern การอนุมัติการลงทะเบียนด้านบน
 // ==========================================
 const NEWS_APPROVAL_STATUS_BADGE = {
     PENDING: '<span class="admin-badge admin-badge-pending">กำลังพิจารณา</span>',
@@ -4771,7 +4771,7 @@ function submitUserForm(event) {
         role,
     };
     if (password) payload.password = password;
-    // แผงนี้เข้าได้เฉพาะ WebManager เท่านั้น จึงมอบ/ถอดสิทธิ์ผู้ดูแลระบบ (isAdmin) ให้พี่ค่ายได้เสมอ
+    // แผงนี้เข้าได้เฉพาะ SuperAdmin เท่านั้น จึงมอบ/ถอดสิทธิ์ผู้ดูแลระบบ (isAdmin) ให้พี่ค่ายได้เสมอ
     if (role === 'STAFF') {
         payload.isAdmin = document.getElementById('user-isAdmin').checked;
         payload.profile = {
@@ -4863,9 +4863,9 @@ async function deleteUserItem(item, role) {
 
 // ==========================================
 // งานกิจกรรมและสันทนาการ (แผง "พี่ค่าย" > ฝ่ายกิจกรรมและสันทนาการ)
-// พอร์ตมาจาก fontend/public/js/pages/staff-activities.js (หน้า /staff/activities) มาใช้ภายใน WebManager
+// พอร์ตมาจาก fontend/public/js/pages/staff-activities.js (หน้า /staff/activities) มาใช้ภายใน SuperAdmin
 // ตั้งชื่อ id/ฟังก์ชันขึ้นต้นด้วย "da" (Department Activity) กันชนกับของเดิมในไฟล์นี้ทั้งหมด
-// WebManager มีสิทธิ์จัดการกลุ่มเต็มอยู่แล้วเสมอ (ดู requireGroupManagementAccess) จึงไม่ต้องเช็คสิทธิ์แยกเหมือนหน้า /staff/
+// SuperAdmin มีสิทธิ์จัดการกลุ่มเต็มอยู่แล้วเสมอ (ดู requireGroupManagementAccess) จึงไม่ต้องเช็คสิทธิ์แยกเหมือนหน้า /staff/
 // ==========================================
 const DA_ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -5394,7 +5394,7 @@ function daInit() {
 
 // ==========================================
 // ประวัติการดำเนินการ (Activity Log)
-// แยกเป็น 2 กลุ่มตามผู้กระทำ: "ของ Admin" (WEBMANAGER/STAFF ซึ่งเป็นคนเดียวที่เข้าแผงจัดการเนื้อหาได้) และ "ของผู้ใช้" (PARTICIPANT)
+// แยกเป็น 2 กลุ่มตามผู้กระทำ: "ของ Admin" (SUPERADMIN/STAFF ซึ่งเป็นคนเดียวที่เข้าแผงจัดการเนื้อหาได้) และ "ของผู้ใช้" (PARTICIPANT)
 // ==========================================
 const ACTIVITY_LOG_PAGE_SIZE = 30;
 const activityLogItemsCache = {};
@@ -5571,7 +5571,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userStaffBirthDateSelects = setupDateSelects({ containerId: 'user-staff-birthDate-selects', hiddenId: 'user-staff-birthDate', yearsBack: 100, yearsAhead: 0 });
     userParticipantBirthDateSelects = setupDateSelects({ containerId: 'user-participant-birthDate-selects', hiddenId: 'user-participant-birthDate', yearsBack: 100, yearsAhead: 0 });
 
-    if (localStorage.getItem('webmanagerSidebarCollapsed') === '1') {
+    if (localStorage.getItem('superadminSidebarCollapsed') === '1') {
         const sidebar = document.querySelector('.admin-shell-sidebar');
         if (sidebar) sidebar.classList.add('collapsed');
     }
@@ -5582,11 +5582,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const adminUserLoaded = loadAdminUser();
-    restoreWebManagerNav();
+    restoreSuperAdminNav();
     loadHeroCardSetting();
     initImageCropHandlers();
     // ข้อมูลของแท็บอื่น ๆ (ข่าว/กำหนดการ/ผู้ใช้/เจ้าของระบบ/ค่าย/สำรองข้อมูล/lookup) โหลดแบบ lazy ตอนเปิดแท็บนั้นจริง ๆ แทน (ดู ADMIN_TAB_LOAD_KEYS/ADMIN_SECTION_LOAD_KEYS ด้านบน)
-    // restoreWebManagerNav() ด้านบนได้ trigger การโหลดของแท็บที่จำไว้ล่าสุดไปแล้วถ้ามี ผ่าน switchAdminTab/switchAdminSection
+    // restoreSuperAdminNav() ด้านบนได้ trigger การโหลดของแท็บที่จำไว้ล่าสุดไปแล้วถ้ามี ผ่าน switchAdminTab/switchAdminSection
     const dashboardLoaded = initDashboard();
     Promise.all([loadActivityLogs('admin'), loadActivityLogs('user')]).then(checkAdminNotificationBadge);
 

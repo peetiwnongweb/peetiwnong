@@ -1302,7 +1302,7 @@
   box-shadow: none;
 }
 
-/* แถบขั้นตอน 1.เลือกวิชา 2.เปิดรับเช็คอิน 3.ประเมินผล เหนือการ์ด - แค่โชว์สถานะ (ไม่คลิกได้) อัปเดตโดย applyOralExamPhaseUI, ทรง/สีเลียนแบบ .lifecycle-stepper ของ webmanager */
+/* แถบขั้นตอน 1.เลือกวิชา 2.เปิดรับเช็คอิน 3.ประเมินผล เหนือการ์ด - แค่โชว์สถานะ (ไม่คลิกได้) อัปเดตโดย applyOralExamPhaseUI, ทรง/สีเลียนแบบ .lifecycle-stepper ของ superadmin */
 .oral-exam-stepper {
   display: flex;
   align-items: flex-start;

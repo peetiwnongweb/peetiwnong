@@ -701,7 +701,7 @@ body.form-wizard-page {
 }
 
 /* select.form-input โหลดใช้ร่วมกันทุกหน้าที่มี dropdown ผ่าน form.css (staff/profile, staff/academic, staff/news,
-   staff/activities, participant/profile, webmanager, admin) ปรับตรงนี้ที่เดียวมีผลทุกหน้า */
+   staff/activities, participant/profile, superadmin, admin) ปรับตรงนี้ที่เดียวมีผลทุกหน้า */
 select.form-input {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
@@ -1070,7 +1070,7 @@ select.form-input:hover {
 }
 
 /* โมดัล Help กว้างกว่า .modal-box-lg ปกติ (58rem) เพราะต้องวาง 3 คอลัมน์ให้อ่านสบาย ไม่บีบตัวหนังสือจนแน่นเกินไป
-   ทำเป็นคลาสแยกแทนแก้ .modal-box-lg ตรง ๆ เพราะคลาสนั้นใช้ร่วมกับโมดัลอื่นในหน้าแอดมิน/webmanager ด้วย */
+   ทำเป็นคลาสแยกแทนแก้ .modal-box-lg ตรง ๆ เพราะคลาสนั้นใช้ร่วมกับโมดัลอื่นในหน้าแอดมิน/superadmin ด้วย */
 .help-modal-box {
     max-width: 72rem;
 }

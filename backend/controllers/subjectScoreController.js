@@ -185,7 +185,7 @@ async function saveParticipantScores(req, res) {
   res.status(204).end();
 }
 
-// คะแนนของตัวเอง (ฝั่งน้องค่าย) - WebManager ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere)
+// คะแนนของตัวเอง (ฝั่งน้องค่าย) - SuperAdmin ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere)
 async function getMyScores(req, res) {
   const prisma = await getPrisma();
   const profile = await prisma.participantProfile.findUnique({

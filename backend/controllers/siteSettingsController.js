@@ -11,7 +11,7 @@ async function getSiteSettings(req, res) {
     getCampState(prisma),
   ]);
   // campActive แนบไปด้วยให้หน้าเว็บ (ผู้เยี่ยมชมที่ยังไม่ล็อกอินก็เรียก endpoint นี้ได้) รู้ว่าน้องค่ายสมัครได้จริงไหม
-  // participantRegistrationOpen ดิบยังคงคืนตามที่ตั้งค่าไว้ (ให้ WebManager เห็นค่าที่ตัวเองตั้ง) แต่ "เปิดใช้งานจริง" ต้องมีค่ายที่กำลังดำเนินการด้วยเสมอ (ดู isRegistrationOpen ใน authController.js)
+  // participantRegistrationOpen ดิบยังคงคืนตามที่ตั้งค่าไว้ (ให้ SuperAdmin เห็นค่าที่ตัวเองตั้ง) แต่ "เปิดใช้งานจริง" ต้องมีค่ายที่กำลังดำเนินการด้วยเสมอ (ดู isRegistrationOpen ใน authController.js)
   res.json({ ...settings, campActive: campState.isActive });
 }
 

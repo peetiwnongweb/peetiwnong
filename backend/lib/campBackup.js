@@ -162,7 +162,7 @@ async function runBackupInternal({ trigger, actorEmail }) {
 
     await logActivity({
       actorEmail: actorEmail || 'system',
-      actorRole: actorEmail ? 'WEBMANAGER' : 'SYSTEM',
+      actorRole: actorEmail ? 'SUPERADMIN' : 'SYSTEM',
       action: 'CREATE',
       entityType: 'CAMP_BACKUP',
       entityId: run.id,
@@ -180,7 +180,7 @@ async function runBackupInternal({ trigger, actorEmail }) {
     });
     await logActivity({
       actorEmail: actorEmail || 'system',
-      actorRole: actorEmail ? 'WEBMANAGER' : 'SYSTEM',
+      actorRole: actorEmail ? 'SUPERADMIN' : 'SYSTEM',
       action: 'CREATE',
       entityType: 'CAMP_BACKUP',
       entityId: run.id,

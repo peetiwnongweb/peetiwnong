@@ -14,7 +14,7 @@ let lastSiteSettings = null;
 // ยิง fetch('/api/auth/me') ของตัวเองซ้ำตอนโหลดหน้าเดียวกัน (บางหน้าก่อนหน้านี้ยิงซ้ำ 2-4 รอบพร้อมกัน) auth.js โหลดก่อนสคริปต์เฉพาะหน้าเสมอ
 // จึงประกาศ promise นี้ทันทีตอนสคริปต์ทำงาน (ไม่ต้องรอ DOMContentLoaded) ให้สคริปต์อื่นมาแนบ .then() ใช้ผลเดียวกันได้ทัน
 // resolve เป็น {user:null, camp:null} เสมอ ไม่มี reject กันทุกจุดที่เรียกใช้ต้องเขียน .catch() ซ้ำอีก
-// ข้าม fetch จริงถ้าอยู่ในกรอบพรีวิวของ WebManager (ดูคอมเมนต์ preview=1 ใน checkAuthSession เดิม) ให้ถือเป็น "ยังไม่ได้ล็อกอิน" ไปเลย
+// ข้าม fetch จริงถ้าอยู่ในกรอบพรีวิวของ SuperAdmin (ดูคอมเมนต์ preview=1 ใน checkAuthSession เดิม) ให้ถือเป็น "ยังไม่ได้ล็อกอิน" ไปเลย
 window.PTN_AUTH_ME = (new URLSearchParams(window.location.search).get('preview') === '1')
     ? Promise.resolve({ user: null, camp: null })
     : fetch('/api/auth/me')
@@ -23,9 +23,9 @@ window.PTN_AUTH_ME = (new URLSearchParams(window.location.search).get('preview')
 
 // หน้าเฉพาะสมาชิก (/staff/*, /participant/*) เปิดจากลิงก์ที่ก๊อปมาโดยไม่ได้ล็อกอิน หรือบทบาทไม่ตรง = เด้งกลับหน้าแรก
 // ไม่ปล่อยให้เห็นแผง "ระบบยังไม่เปิดใช้งาน" แทน (camp เป็น null ตอนไม่ได้ล็อกอิน เลยดูเหมือนระบบปิดอยู่)
-// WebManager เข้าได้ทั้งสองฝั่ง (ใช้จำลองดูหน้าพี่ค่าย/น้องค่าย) ตรงกับสิทธิ์ฝั่ง backend
+// SuperAdmin เข้าได้ทั้งสองฝั่ง (ใช้จำลองดูหน้าพี่ค่าย/น้องค่าย) ตรงกับสิทธิ์ฝั่ง backend
 // แนบ .then() ตัวนี้ตั้งแต่ตอนสคริปต์โหลด จึงทำงานก่อนสคริปต์เฉพาะหน้าที่มาแนบทีหลังเสมอ
-const PROTECTED_PAGE_ROLES = { staff: ['STAFF', 'WEBMANAGER'], participant: ['PARTICIPANT', 'WEBMANAGER'] };
+const PROTECTED_PAGE_ROLES = { staff: ['STAFF', 'SUPERADMIN'], participant: ['PARTICIPANT', 'SUPERADMIN'] };
 const protectedPageArea = (window.location.pathname.match(/^\/(staff|participant)\//) || [])[1];
 if (protectedPageArea) {
     window.PTN_AUTH_ME.then(({ user }) => {
@@ -44,7 +44,7 @@ window.PTN_SITE_SETTINGS = fetch('/api/site-settings')
 const ROLE_LABELS = {
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',
-    WEBMANAGER: 'SuperAdmin',
+    SUPERADMIN: 'SuperAdmin',
 };
 
 // ตำแหน่งผู้บริหารค่าย: มองเห็นเมนู "งาน" ได้ทั้ง 4 ฝ่าย ส่วนตำแหน่งอื่นเห็นเฉพาะฝ่ายที่ตัวเองสังกัด
@@ -138,13 +138,13 @@ function toggleMobileRegisterMenu() {
     }
 }
 
-// WebManager เห็นเมนู "งาน" เฉพาะตอนอยู่ในโซนพี่ค่าย (/staff/...) เท่านั้น - "จำลองพี่ค่าย" ตอนกดเข้าไปดู ไม่ใช่โชว์ปนอยู่ตลอดเวลาที่หน้าแรกสาธารณะ
+// SuperAdmin เห็นเมนู "งาน" เฉพาะตอนอยู่ในโซนพี่ค่าย (/staff/...) เท่านั้น - "จำลองพี่ค่าย" ตอนกดเข้าไปดู ไม่ใช่โชว์ปนอยู่ตลอดเวลาที่หน้าแรกสาธารณะ
 function applyStaffTaskMenuVisibility(user) {
     const wraps = document.querySelectorAll('.nav-tasks-wrap');
     if (!wraps.length) return;
 
-    const isWebManagerInStaffArea = !!(user && user.role === 'WEBMANAGER') && window.location.pathname.startsWith('/staff/');
-    const isLeadership = isWebManagerInStaffArea || !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
+    const isSuperAdminInStaffArea = !!(user && user.role === 'SUPERADMIN') && window.location.pathname.startsWith('/staff/');
+    const isLeadership = isSuperAdminInStaffArea || !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
     const departmentName = user && user.department ? user.department.name : null;
     // ไม่มีค่ายที่กำลังดำเนินการ = ระบบวิชาการ/กิจกรรมล็อกทั้งหมด ซ่อนเมนูไปเลยไม่ว่าจะตำแหน่งอะไร (ตำแหน่งที่ค้างจากการตั้งมือก็ใช้อะไรไม่ได้อยู่ดี)
     const campActive = isCampActive();
@@ -157,28 +157,28 @@ function applyStaffTaskMenuVisibility(user) {
             item.classList.toggle('hidden', !show);
             if (show) visibleCount += 1;
         });
-        wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isWebManagerInStaffArea)) || visibleCount === 0);
+        wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isSuperAdminInStaffArea)) || visibleCount === 0);
     });
 }
 
 // ปุ่ม "เขียนข่าว" เห็นได้ทุกคนที่เป็นพี่ค่าย ไม่ว่าจะสังกัดฝ่ายไหน (การเขียนข่าวเป็นสิทธิ์พื้นฐานของพี่ค่ายทุกคน ไม่กรองตามฝ่ายเหมือนเมนู "งาน" ด้านบน)
-// WebManager เห็นเฉพาะตอนอยู่ในโซนพี่ค่ายเหมือนกัน (จำลองพี่ค่าย) ไม่มี data-department-name จึงไม่ถูก applyStaffTaskMenuVisibility() กรองไปด้วยโดยบังเอิญ
+// SuperAdmin เห็นเฉพาะตอนอยู่ในโซนพี่ค่ายเหมือนกัน (จำลองพี่ค่าย) ไม่มี data-department-name จึงไม่ถูก applyStaffTaskMenuVisibility() กรองไปด้วยโดยบังเอิญ
 function applyNewsWriteLinkVisibility(user) {
-    const isWebManagerInStaffArea = !!(user && user.role === 'WEBMANAGER') && window.location.pathname.startsWith('/staff/');
-    const show = !!(user && (user.role === 'STAFF' || isWebManagerInStaffArea));
+    const isSuperAdminInStaffArea = !!(user && user.role === 'SUPERADMIN') && window.location.pathname.startsWith('/staff/');
+    const show = !!(user && (user.role === 'STAFF' || isSuperAdminInStaffArea));
     document.querySelectorAll('#hero-news-write-link, #user-menu-news-write-link, #m-menu-news-write-link').forEach((el) => {
         el.classList.toggle('hidden', !show);
     });
 }
 
-// ปุ่มลัด "การเรียน"/"กิจกรรม" ของน้องค่าย เหมือนกัน: WebManager เห็นเฉพาะตอนอยู่ในโซนน้องค่าย (/participant/...) - "จำลองน้องค่าย"
+// ปุ่มลัด "การเรียน"/"กิจกรรม" ของน้องค่าย เหมือนกัน: SuperAdmin เห็นเฉพาะตอนอยู่ในโซนน้องค่าย (/participant/...) - "จำลองน้องค่าย"
 // ไม่มี data-department-name ให้กรองทีละปุ่มเหมือนพี่ค่าย โชว์คู่กันเสมอเมื่อเงื่อนไขผ่าน
 function applyParticipantTaskMenuVisibility(user) {
     const wraps = document.querySelectorAll('.participant-tasks-wrap');
     if (!wraps.length) return;
 
-    const isWebManagerInParticipantArea = !!(user && user.role === 'WEBMANAGER') && window.location.pathname.startsWith('/participant/');
-    const show = !!(user && user.role === 'PARTICIPANT') || isWebManagerInParticipantArea;
+    const isSuperAdminInParticipantArea = !!(user && user.role === 'SUPERADMIN') && window.location.pathname.startsWith('/participant/');
+    const show = !!(user && user.role === 'PARTICIPANT') || isSuperAdminInParticipantArea;
     wraps.forEach((wrap) => wrap.classList.toggle('hidden', !show));
 }
 
@@ -499,12 +499,12 @@ function renderAvatar(el, avatarUrl, initial) {
     }
 }
 
-// WebManager ใช้ปุ่มเดียวกับลิงก์ Admin ของพี่ค่ายผู้ดูแลระบบ แต่ขึ้นเป็น "Superadmin" และพาไปหน้า /superadmin/ แทน
+// SuperAdmin ใช้ปุ่มเดียวกับลิงก์ Admin ของพี่ค่ายผู้ดูแลระบบ แต่ขึ้นเป็น "Superadmin" และพาไปหน้า /superadmin/ แทน
 // เปลี่ยนแค่ข้อความท้ายปุ่ม (text node หลังไอคอน svg) ไม่แตะไอคอน
-function pointAdminLinkForRole(link, isWebManager) {
+function pointAdminLinkForRole(link, isSuperAdmin) {
     if (!link) return;
-    const label = isWebManager ? 'SuperAdmin' : 'Admin';
-    const target = isWebManager ? '/superadmin/' : '/admin/';
+    const label = isSuperAdmin ? 'SuperAdmin' : 'Admin';
+    const target = isSuperAdmin ? '/superadmin/' : '/admin/';
     link.onclick = () => { window.location.href = target; };
     const textNode = [...link.childNodes].reverse().find((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
     if (textNode) textNode.textContent = ` ${label} `;
@@ -512,10 +512,10 @@ function pointAdminLinkForRole(link, isWebManager) {
 
 function loginUser(userData) {
     isUserLoggedIn = true;
-    const isWebManager = userData.role === 'WEBMANAGER';
-    // WebManager (สิทธิ์สูงสุด) เข้าได้ทุกหน้าเสมออยู่แล้ว (ดู server.js: requireAdminPage/requireStaffPage/requireParticipantPage)
+    const isSuperAdmin = userData.role === 'SUPERADMIN';
+    // SuperAdmin (สิทธิ์สูงสุด) เข้าได้ทุกหน้าเสมออยู่แล้ว (ดู server.js: requireAdminPage/requireStaffPage/requireParticipantPage)
     // จึงนับเป็น hasAdminAccess ด้วย เพื่อให้เห็นลิงก์ Admin ในเมนูนี้เหมือนพี่ค่ายที่เป็นผู้ดูแลระบบ
-    const hasAdminAccess = (userData.role === 'STAFF' && userData.isAdmin) || isWebManager;
+    const hasAdminAccess = (userData.role === 'STAFF' && userData.isAdmin) || isSuperAdmin;
     const isPrivilegedStaff = userData.role === 'STAFF' && userData.isAdmin;
     const roleLabel = ROLE_LABELS[userData.role] || userData.role;
 
@@ -524,7 +524,7 @@ function loginUser(userData) {
     const fullName = userData.firstName && userData.lastName ? `${userData.firstName} ${userData.lastName}` : null;
     const positionLabel = (userData.position && userData.position.name) || roleLabel;
     const subLabel = isPrivilegedStaff ? `${positionLabel} · ผู้ดูแลระบบ` : positionLabel;
-    const nameLine = fullName || (userData.role === 'WEBMANAGER' ? 'Owner' : userData.email);
+    const nameLine = fullName || (userData.role === 'SUPERADMIN' ? 'Owner' : userData.email);
     const initial = nameLine.charAt(0).toUpperCase();
     // ปุ่มตัวเรียกที่ header เอาไว้แค่ชื่อ-นามสกุลเฉย ๆ (ตำแหน่ง/ผู้ดูแลระบบไปโชว์ในเมนูที่กดเปิดแทน กันยาวจนล้นบรรทัด)
     const displayName = nameLine;
@@ -548,17 +548,17 @@ function loginUser(userData) {
     if (menuUsername) menuUsername.textContent = nameLine;
     if (menuRole) menuRole.textContent = subLabel;
 
-    // WebManager (สิทธิ์สูงสุด) เข้า /staff/... หรือ /participant/... ได้เหมือน "จำลอง" บทบาทนั้นชั่วคราว
-    // ตอนจำลองอยู่: ซ่อนทางลัดพี่ค่าย/น้องค่าย/Admin/WebManager ออก ให้เห็นเหมือนบทบาทนั้นจริง ๆ (มีโปรไฟล์ + เมนูงาน) แล้วโชว์ปุ่ม "ออกจากการจำลอง" แทน
-    const isSimulating = isWebManager && (window.location.pathname.startsWith('/staff/') || window.location.pathname.startsWith('/participant/'));
+    // SuperAdmin (สิทธิ์สูงสุด) เข้า /staff/... หรือ /participant/... ได้เหมือน "จำลอง" บทบาทนั้นชั่วคราว
+    // ตอนจำลองอยู่: ซ่อนทางลัดพี่ค่าย/น้องค่าย/Admin/SuperAdmin ออก ให้เห็นเหมือนบทบาทนั้นจริง ๆ (มีโปรไฟล์ + เมนูงาน) แล้วโชว์ปุ่ม "ออกจากการจำลอง" แทน
+    const isSimulating = isSuperAdmin && (window.location.pathname.startsWith('/staff/') || window.location.pathname.startsWith('/participant/'));
 
     const adminLink = document.getElementById('user-menu-admin-link');
     if (adminLink) adminLink.classList.toggle('hidden', !hasAdminAccess || isSimulating);
-    pointAdminLinkForRole(adminLink, isWebManager);
+    pointAdminLinkForRole(adminLink, isSuperAdmin);
 
-    // WebManager ไม่มีโปรไฟล์พี่ค่าย/น้องค่ายจริง ซ่อน "โปรไฟล์" ไว้ตอนไม่ได้จำลอง แต่โชว์ตอนจำลองให้เหมือนบทบาทจริง (แม้หน้าจะว่างเพราะไม่มีข้อมูลจริงก็ตาม)
+    // SuperAdmin ไม่มีโปรไฟล์พี่ค่าย/น้องค่ายจริง ซ่อน "โปรไฟล์" ไว้ตอนไม่ได้จำลอง แต่โชว์ตอนจำลองให้เหมือนบทบาทจริง (แม้หน้าจะว่างเพราะไม่มีข้อมูลจริงก็ตาม)
     const profileLinkDesktop = document.getElementById('user-menu-profile-link');
-    if (profileLinkDesktop) profileLinkDesktop.classList.toggle('hidden', isWebManager && !isSimulating);
+    if (profileLinkDesktop) profileLinkDesktop.classList.toggle('hidden', isSuperAdmin && !isSimulating);
 
     if (mAuthLoggedOut) mAuthLoggedOut.classList.add('hidden');
     if (mAuthLoggedIn) mAuthLoggedIn.classList.remove('hidden');
@@ -579,12 +579,12 @@ function loginUser(userData) {
     const mMenuAccountRole = document.getElementById('m-menu-account-role');
     if (mMenuAccountName) mMenuAccountName.textContent = nameLine;
     if (mMenuAccountRole) mMenuAccountRole.textContent = subLabel;
-    if (mMenuProfileLink) mMenuProfileLink.classList.toggle('hidden', isWebManager && !isSimulating);
+    if (mMenuProfileLink) mMenuProfileLink.classList.toggle('hidden', isSuperAdmin && !isSimulating);
     if (mMenuAdminLink) mMenuAdminLink.classList.toggle('hidden', !hasAdminAccess || isSimulating);
-    pointAdminLinkForRole(mMenuAdminLink, isWebManager);
+    pointAdminLinkForRole(mMenuAdminLink, isSuperAdmin);
 
     // ลิงก์ "โปรไฟล์" พาไปหน้าที่ถูกต้องตาม role (STAFF/PARTICIPANT มีหน้าโปรไฟล์จริง)
-    // ตอน WebManager จำลองอยู่ก็ให้เข้าหน้าโปรไฟล์ของโซนที่กำลังจำลองได้เหมือนกัน (ข้อมูลจะว่างเพราะไม่มีโปรไฟล์จริง แต่โครงหน้าต้องขึ้นได้ ไม่ใช่ stub เฉย ๆ)
+    // ตอน SuperAdmin จำลองอยู่ก็ให้เข้าหน้าโปรไฟล์ของโซนที่กำลังจำลองได้เหมือนกัน (ข้อมูลจะว่างเพราะไม่มีโปรไฟล์จริง แต่โครงหน้าต้องขึ้นได้ ไม่ใช่ stub เฉย ๆ)
     const profileUrl = userData.role === 'STAFF' ? '/staff/profile'
         : userData.role === 'PARTICIPANT' ? '/participant/profile'
         : isSimulating && window.location.pathname.startsWith('/staff/') ? '/staff/profile'
@@ -626,7 +626,7 @@ async function logout() {
 
 function checkAuthSession() {
     // ใช้ผลจาก window.PTN_AUTH_ME (ยิงไปแล้วตั้งแต่สคริปต์นี้โหลด ดูคอมเมนต์ตรงประกาศด้านบน) ไม่ fetch เอง
-    // โหมดพรีวิว (iframe "ตัวอย่างหน้าเว็บหลัก" ในแผง WebManager, src="/?preview=1") ผลจะเป็น user:null เสมออยู่แล้ว
+    // โหมดพรีวิว (iframe "ตัวอย่างหน้าเว็บหลัก" ในแผง SuperAdmin, src="/?preview=1") ผลจะเป็น user:null เสมออยู่แล้ว
     // ปล่อยให้ header อยู่ในสถานะเริ่มต้น (เหมือนผู้เยี่ยมชมทั่วไปที่ยังไม่ได้ล็อกอิน) กันปุ่ม "ออกจากระบบ"/"Admin" หลุดเข้ามาให้กดพลาดในกรอบพรีวิวเล็ก ๆ
     window.PTN_AUTH_ME.then(({ user, camp }) => {
         if (!user) return;
@@ -637,7 +637,7 @@ function checkAuthSession() {
 
 document.addEventListener('DOMContentLoaded', checkAuthSession);
 
-// ปุ่ม "ลงทะเบียนพี่ค่าย"/"ลงทะเบียนน้องค่าย" เปิด/ปิดแยกกันได้จากแผง WebManager (หน้า "หน้าแรก")
+// ปุ่ม "ลงทะเบียนพี่ค่าย"/"ลงทะเบียนน้องค่าย" เปิด/ปิดแยกกันได้จากแผง SuperAdmin (หน้า "หน้าแรก")
 // ปิดแล้วจุดเปลี่ยนเป็นสีเทา เปลี่ยนข้อความ และกดไม่ได้
 const heroRegistrationOpenState = { staff: true, participant: true };
 
@@ -655,7 +655,7 @@ function applyHeroRegisterButtonState(role, isOpen) {
     }
 }
 
-// น้องค่ายสมัครได้เฉพาะตอนมีค่ายที่กำลังดำเนินการเท่านั้น (ก่อนสร้างค่ายยังไม่มีน้องค่ายในระบบเลย) ต่อให้สวิตช์ในแผง WebManager ตั้งเป็น "เปิด" ไว้ก็ตาม
+// น้องค่ายสมัครได้เฉพาะตอนมีค่ายที่กำลังดำเนินการเท่านั้น (ก่อนสร้างค่ายยังไม่มีน้องค่ายในระบบเลย) ต่อให้สวิตช์ในแผง SuperAdmin ตั้งเป็น "เปิด" ไว้ก็ตาม
 // พี่ค่ายไม่ผูกกับค่าย สมัครเป็น "ทีมงานค่าย" ได้ตลอด เช็คตรงกับ isRegistrationOpen() ฝั่ง backend (authController.js)
 function isParticipantRegistrationOpen(settings) {
     return settings.participantRegistrationOpen !== false && !!settings.campActive;
@@ -709,7 +709,7 @@ function loadRegistrationOpenSetting() {
 // ==========================================
 let selectedCheckStatusRole = 'STAFF';
 
-// แต่ละแท็บ (พี่ค่าย/น้องค่าย) เปิด/ปิดแยกกันได้จากแผง WebManager - ซ่อนทั้งเมนูถ้าปิดทั้งคู่, ซ่อนเฉพาะแท็บที่ปิดถ้าเปิดอย่างน้อย 1 ฝั่ง
+// แต่ละแท็บ (พี่ค่าย/น้องค่าย) เปิด/ปิดแยกกันได้จากแผง SuperAdmin - ซ่อนทั้งเมนูถ้าปิดทั้งคู่, ซ่อนเฉพาะแท็บที่ปิดถ้าเปิดอย่างน้อย 1 ฝั่ง
 function applyCheckStatusTabState(settings) {
     const staffVisible = settings.checkRegistrationVisibleStaff !== false;
     const participantVisible = settings.checkRegistrationVisibleParticipant !== false;

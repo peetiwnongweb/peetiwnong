@@ -2,7 +2,7 @@ const express = require('express');
 const {
   getSummary, getPeople, getAcademic, getActivities, getSystem, getUsage, exportUsageCsv,
 } = require('../controllers/dashboardController');
-const { requireWebManagerAccess, requireAdminAccess } = require('../middleware/requireAuth');
+const { requireSuperAdminAccess, requireAdminAccess } = require('../middleware/requireAuth');
 
 const router = express.Router();
 
@@ -11,10 +11,10 @@ router.get('/people', requireAdminAccess, getPeople);
 router.get('/academic', requireAdminAccess, getAcademic);
 router.get('/activities', requireAdminAccess, getActivities);
 
-// ภาพรวมรวมข้อมูลทุกฝ่าย + สถิติระบบ/การใช้งานเว็บไซต์ เป็นของ WebManager เท่านั้น ไม่ใช่สิ่งที่แอดมินระดับพี่ค่ายควรเห็น
-router.get('/summary', requireWebManagerAccess, getSummary);
-router.get('/system', requireWebManagerAccess, getSystem);
-router.get('/usage', requireWebManagerAccess, getUsage);
-router.get('/usage/export', requireWebManagerAccess, exportUsageCsv);
+// ภาพรวมรวมข้อมูลทุกฝ่าย + สถิติระบบ/การใช้งานเว็บไซต์ เป็นของ SuperAdmin เท่านั้น ไม่ใช่สิ่งที่แอดมินระดับพี่ค่ายควรเห็น
+router.get('/summary', requireSuperAdminAccess, getSummary);
+router.get('/system', requireSuperAdminAccess, getSystem);
+router.get('/usage', requireSuperAdminAccess, getUsage);
+router.get('/usage/export', requireSuperAdminAccess, exportUsageCsv);
 
 module.exports = router;

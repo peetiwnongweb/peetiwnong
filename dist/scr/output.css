@@ -559,6 +559,9 @@
     }
   }
   @media (width >= 40rem) {
+    .sm\:inline {
+      display: inline;
+    }
     .sm\:h-64 {
       height: calc(var(--spacing) * 64);
     }

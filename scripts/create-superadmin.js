@@ -1,7 +1,7 @@
-// สคริปต์สร้างบัญชี WEBMANAGER จริง (รันเองด้วยมือ ไม่ใช่ส่วนหนึ่งของแอปที่รันตลอด)
-// ใช้ตอนต้องการมีบัญชีเจ้าของระบบจริง แยกจากบัญชีทดสอบ webmanager.demo@peetiwnong.camp
+// สคริปต์สร้างบัญชี SUPERADMIN จริง (รันเองด้วยมือ ไม่ใช่ส่วนหนึ่งของแอปที่รันตลอด)
+// ใช้ตอนต้องการมีบัญชีเจ้าของระบบจริง แยกจากบัญชีทดสอบ superadmin.demo@peetiwnong.camp
 //
-// วิธีรัน: node scripts/create-webmanager.js
+// วิธีรัน: node scripts/create-superadmin.js
 // รหัสผ่านจะพิมพ์เห็นในหน้าจอ terminal ของคุณเอง (ไม่ได้ส่งออกไปไหน) - เลือกที่ที่ไม่มีคนมองข้ามไหล่
 
 require('dotenv').config();
@@ -19,7 +19,7 @@ async function main() {
   const { getPrisma } = require('../backend/lib/prisma');
   const prisma = await getPrisma();
 
-  const email = await ask('อีเมลสำหรับบัญชี WebManager จริง: ');
+  const email = await ask('อีเมลสำหรับบัญชี SuperAdmin จริง: ');
   if (!email || !email.includes('@')) {
     console.error('อีเมลไม่ถูกต้อง');
     process.exit(1);
@@ -39,10 +39,10 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const created = await prisma.user.create({
-    data: { email, passwordHash, role: 'WEBMANAGER', approvalStatus: 'APPROVED' },
+    data: { email, passwordHash, role: 'SUPERADMIN', approvalStatus: 'APPROVED' },
   });
 
-  console.log(`\nสร้างบัญชี WebManager สำเร็จ: ${created.email} (id ${created.id})`);
+  console.log(`\nสร้างบัญชี SuperAdmin สำเร็จ: ${created.email} (id ${created.id})`);
   console.log('ลองล็อกอินที่ /superadmin/login.html ด้วยอีเมล/รหัสผ่านนี้เพื่อยืนยันก่อนลบบัญชีทดสอบเดิม\n');
   process.exit(0);
 }

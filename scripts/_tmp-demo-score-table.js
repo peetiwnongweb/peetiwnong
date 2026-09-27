@@ -14,7 +14,7 @@ const { getPrisma } = require('../backend/lib/prisma');
   await prisma.camp.create({ data: { generationNo: 28 } });
 
   const wm = await prisma.user.create({
-    data: { email: 'zz-demo-wm@test.invalid', passwordHash, role: 'WEBMANAGER', approvalStatus: 'APPROVED' },
+    data: { email: 'zz-demo-wm@test.invalid', passwordHash, role: 'SUPERADMIN', approvalStatus: 'APPROVED' },
   });
 
   const examPrep = await prisma.courseFormat.findFirst({ where: { name: 'เตรียมสอบ' } });

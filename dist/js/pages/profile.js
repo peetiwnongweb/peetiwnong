@@ -79,7 +79,7 @@ function fillProfileForm(user) {
     setVal('profile-faculty', user.faculty);
     setVal('profile-major', user.major);
 
-    // ฐานข้อมูลไม่ได้เก็บ "สถานะ" (ประกอบอาชีพ/กำลังศึกษา) เป็นคอลัมน์แยก - เดาย้อนกลับจากข้อมูลที่มีเหมือนที่แผงแอดมิน/WebManager ใช้แสดงในตาราง (มีคณะ/สาขา = กำลังศึกษา, มีแต่อาชีพ = ประกอบอาชีพ)
+    // ฐานข้อมูลไม่ได้เก็บ "สถานะ" (ประกอบอาชีพ/กำลังศึกษา) เป็นคอลัมน์แยก - เดาย้อนกลับจากข้อมูลที่มีเหมือนที่แผงแอดมิน/SuperAdmin ใช้แสดงในตาราง (มีคณะ/สาขา = กำลังศึกษา, มีแต่อาชีพ = ประกอบอาชีพ)
     const statusText = user.faculty || user.major ? 'กำลังศึกษา (ระดับอุดมศึกษา)' : (user.occupation ? 'ประกอบอาชีพ' : null);
     setVal('profile-occupation-status', statusText);
 

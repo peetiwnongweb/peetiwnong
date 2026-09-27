@@ -74,8 +74,8 @@ const ACTIVITY_ENTITY_LABELS = {
 };
 
 const ACTIVITY_ROLE_LABELS = {
-    HOST: 'Host', // ค่าเก่าก่อนเปลี่ยนชื่อ role เป็น WEBMANAGER ยังต้องเก็บไว้แสดงผลประวัติการดำเนินการเก่า
-    WEBMANAGER: 'SuperAdmin',
+    HOST: 'Host', // ค่าเก่าก่อนเปลี่ยนชื่อ role เป็น SUPERADMIN ยังต้องเก็บไว้แสดงผลประวัติการดำเนินการเก่า
+    SUPERADMIN: 'SuperAdmin',
     ADMIN: 'แอดมิน',
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',
@@ -110,7 +110,7 @@ function loadAdminUser() {
         .then(({ user }) => {
             const isPrivilegedStaff = user.role === 'STAFF' && user.isAdmin;
             // ก๊อปลิงก์ /admin มาเปิดโดยไม่มีสิทธิ์ (น้องค่าย/พี่ค่ายที่ไม่ใช่ผู้ดูแลระบบ) = เด้งกลับหน้าแรก ตรงกับ requireAdminAccess ฝั่ง backend
-            if (!isPrivilegedStaff && user.role !== 'WEBMANAGER') {
+            if (!isPrivilegedStaff && user.role !== 'SUPERADMIN') {
                 window.location.replace('/');
                 return;
             }
@@ -120,7 +120,7 @@ function loadAdminUser() {
             const fullName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null;
             const positionLabel = (user.position && user.position.name) || roleLabel;
             const subLabel = isPrivilegedStaff ? `${positionLabel} · ผู้ดูแลระบบ` : positionLabel;
-            const nameLine = fullName || (user.role === 'WEBMANAGER' ? 'Owner' : user.email);
+            const nameLine = fullName || (user.role === 'SUPERADMIN' ? 'PTN@main' : user.email);
             const initial = nameLine.charAt(0).toUpperCase();
 
             const display = document.getElementById('admin-username-display');
@@ -148,13 +148,13 @@ function loadAdminUser() {
 }
 
 // เหมือน applyStaffTaskMenuVisibility ใน auth.js: กรองรายการ "งาน" ตามฝ่ายที่พี่ค่ายสังกัด (Host ไม่มีฝ่ายจึงไม่เห็นเมนูนี้เลย)
-// WebManager (สิทธิ์สูงสุด) นับเป็น "ผู้บริหาร" เห็นได้ทุกฝ่ายเสมอ เหมือน isAcademicManager/requireGroupManagementAccess ฝั่ง backend
+// SuperAdmin (สิทธิ์สูงสุด) นับเป็น "ผู้บริหาร" เห็นได้ทุกฝ่ายเสมอ เหมือน isAcademicManager/requireGroupManagementAccess ฝั่ง backend
 function applyAdminTaskMenuVisibility(user) {
     const wraps = document.querySelectorAll('.admin-tasks-wrap');
     if (!wraps.length) return;
 
-    const isWebManager = !!(user && user.role === 'WEBMANAGER');
-    const isLeadership = isWebManager || !!(user && user.position && ADMIN_LEADERSHIP_POSITIONS.includes(user.position.name));
+    const isSuperAdmin = !!(user && user.role === 'SUPERADMIN');
+    const isLeadership = isSuperAdmin || !!(user && user.position && ADMIN_LEADERSHIP_POSITIONS.includes(user.position.name));
     const departmentName = user && user.department ? user.department.name : null;
 
     wraps.forEach((wrap) => {
@@ -165,7 +165,7 @@ function applyAdminTaskMenuVisibility(user) {
             item.classList.toggle('hidden', !show);
             if (show) visibleCount += 1;
         });
-        wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isWebManager)) || visibleCount === 0);
+        wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isSuperAdmin)) || visibleCount === 0);
     });
 }
 
@@ -2027,7 +2027,7 @@ function renderApprovalTable(role, items) {
     });
 }
 
-// สวิตช์นี้โผล่จุดเดียว (ต่างจากของ WebManager ที่โผล่ 2 จุด) แต่ยังใช้ data-attribute เหมือนเดิมเพื่อให้ตรงกับ markup ที่ก๊อปมา
+// สวิตช์นี้โผล่จุดเดียว (ต่างจากของ SuperAdmin ที่โผล่ 2 จุด) แต่ยังใช้ data-attribute เหมือนเดิมเพื่อให้ตรงกับ markup ที่ก๊อปมา
 function applyRegistrationToggleState(role, isOpen) {
     document.querySelectorAll(`[data-registration-toggle="${role}"]`).forEach((toggle) => { toggle.checked = isOpen; });
     document.querySelectorAll(`[data-registration-status-dot="${role}"]`).forEach((dot) => { dot.classList.toggle('closed', !isOpen); });
@@ -2125,7 +2125,7 @@ function submitCheckRegistrationVisible(role, checked) {
         });
 }
 
-// โหลดสถานะสวิตช์ทั้งหมดของหน้า "การลงทะเบียน" จาก /api/site-settings จุดเดียว (เทียบเท่า loadHeroCardSetting ฝั่ง WebManager แต่ตัดส่วนที่ไม่มีในหน้านี้ออก)
+// โหลดสถานะสวิตช์ทั้งหมดของหน้า "การลงทะเบียน" จาก /api/site-settings จุดเดียว (เทียบเท่า loadHeroCardSetting ฝั่ง SuperAdmin แต่ตัดส่วนที่ไม่มีในหน้านี้ออก)
 function loadRegistrationSettings() {
     fetch('/api/site-settings')
         .then((res) => (res.ok ? res.json() : { staffRegistrationOpen: true, participantRegistrationOpen: true }))
@@ -2724,7 +2724,7 @@ function submitUserForm(event) {
         role,
     };
     if (password) payload.password = password;
-    // ไม่ส่ง isAdmin: Admin มอบ/ถอดสิทธิ์ผู้ดูแลระบบไม่ได้ (backend ปฏิเสธ) สิทธิ์นี้จัดการได้จากแผง WebManager เท่านั้น
+    // ไม่ส่ง isAdmin: Admin มอบ/ถอดสิทธิ์ผู้ดูแลระบบไม่ได้ (backend ปฏิเสธ) สิทธิ์นี้จัดการได้จากแผง SuperAdmin เท่านั้น
     if (role === 'STAFF') {
         payload.profile = {
             prefix: document.getElementById('user-staff-prefix').value,
@@ -2814,7 +2814,7 @@ async function deleteUserItem(item, role = 'ALL') {
 
 // ==========================================
 // ประวัติการดำเนินการ (Activity Log)
-// แยกเป็น 2 กลุ่มตามผู้กระทำ: "ของ Admin" (WEBMANAGER/STAFF ซึ่งเป็นคนเดียวที่เข้าแผงจัดการเนื้อหาได้) และ "ของผู้ใช้" (PARTICIPANT)
+// แยกเป็น 2 กลุ่มตามผู้กระทำ: "ของ Admin" (SUPERADMIN/STAFF ซึ่งเป็นคนเดียวที่เข้าแผงจัดการเนื้อหาได้) และ "ของผู้ใช้" (PARTICIPANT)
 // ==========================================
 const ACTIVITY_LOG_PAGE_SIZE = 30;
 const activityLogItemsCache = {};

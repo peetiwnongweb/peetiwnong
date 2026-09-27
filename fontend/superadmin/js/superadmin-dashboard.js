@@ -1,12 +1,12 @@
 // ==========================================
-// แดชบอร์ด WebManager (6 แท็บ) - โหลดต่อจาก superadmin.js จึงใช้ helper ของไฟล์นั้นได้ (escapeHtml, showToast, switchAdminSection, switchAdminTab,
+// แดชบอร์ด SuperAdmin (6 แท็บ) - โหลดต่อจาก superadmin.js จึงใช้ helper ของไฟล์นั้นได้ (escapeHtml, showToast, switchAdminSection, switchAdminTab,
 // ACTIVITY_ACTION_LABELS, STUDY_PLAN_LABELS, INTEREST_SUBJECT_GROUP_LABELS, submitRegistrationOpen, Loader)
 // ข้อมูลทุกแท็บมาจาก /api/dashboard/* (ดู backend/controllers/dashboardController.js) โหลดเฉพาะแท็บที่เปิดดู แท็บภาพรวมโหลดตอนเข้าหน้า
 // กราฟทั้งหมดวาดเป็น SVG เองในไฟล์นี้ ไม่ใช้ไลบรารีภายนอก (ข้อมูลไม่กี่สิบจุด ไม่คุ้มโหลดไลบรารีเพิ่ม)
 // ==========================================
 
-const DASHBOARD_TAB_STORAGE_KEY = 'webmanagerDashboardTab';
-const DASHBOARD_RANGE_STORAGE_KEY = 'webmanagerDashboardUsageRange';
+const DASHBOARD_TAB_STORAGE_KEY = 'superadminDashboardTab';
+const DASHBOARD_RANGE_STORAGE_KEY = 'superadminDashboardUsageRange';
 const DASHBOARD_TABS = ['overview', 'people', 'academic', 'activities', 'system', 'usage'];
 const DASHBOARD_TAB_ENDPOINTS = {
     overview: '/api/dashboard/summary',
@@ -767,9 +767,9 @@ function renderDashboardActivities(panel, d) {
 // แท็บ 5: เว็บไซต์ & ระบบ
 // ==========================================
 function renderDashboardSystem(panel, d) {
-    const roleLabel = { WEBMANAGER: 'SuperAdmin', STAFF: 'พี่ค่าย', PARTICIPANT: 'น้องค่าย' };
+    const roleLabel = { SUPERADMIN: 'SuperAdmin', STAFF: 'พี่ค่าย', PARTICIPANT: 'น้องค่าย' };
     const statusLabel = { APPROVED: 'อนุมัติแล้ว', PENDING: 'รออนุมัติ', REJECTED: 'ไม่อนุมัติ' };
-    const usersByRole = ['WEBMANAGER', 'STAFF', 'PARTICIPANT'].map((role) => {
+    const usersByRole = ['SUPERADMIN', 'STAFF', 'PARTICIPANT'].map((role) => {
         const rows = d.users.filter((u) => u.role === role);
         return { role, total: rows.reduce((s, r) => s + r.count, 0), detail: rows.map((r) => `${statusLabel[r.status] || r.status} ${r.count}`).join(' · ') };
     });
@@ -894,7 +894,7 @@ function renderDashboardUsage(panel, d) {
         { name: 'น้องค่าย', count: d.breakdown.roles.participant, cls: 'blue' },
         { name: 'พี่ค่าย', count: d.breakdown.roles.staff, cls: '' },
         { name: 'ผู้เยี่ยมชม (ไม่ล็อกอิน)', count: d.breakdown.roles.guest, cls: 'green' },
-        { name: 'SuperAdmin', count: d.breakdown.roles.webmanager, cls: 'violet' },
+        { name: 'SuperAdmin', count: d.breakdown.roles.superadmin, cls: 'violet' },
     ];
     const totalBreakdown = breakdownRoles.reduce((s, x) => s + x.count, 0);
     const browsers = [

@@ -2,10 +2,10 @@
 <html lang="th">
 
 <head>
-    <script src="/js/config.js?v=20260927-1"></script>
+    <script src="/js/config.js?v=20260927-9"></script>
     <script>
         (function () {
-            if (localStorage.getItem('webmanagerTheme') === 'dark') {
+            if (localStorage.getItem('superadminTheme') === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
         })();
@@ -19,13 +19,13 @@
     <link rel="stylesheet" href="../scr/output.css">
     <link rel="stylesheet" href="../css/base/variables.css">
     <link rel="stylesheet" href="../css/base/utilities.css">
-    <link rel="stylesheet" href="../css/layout/header.css?v=20260919-1">
-    <link rel="stylesheet" href="../css/layout/landscape-only.css?v=20260923-1">
-    <link rel="stylesheet" href="../css/layout/modal.css?v=20260920-2">
-    <link rel="stylesheet" href="../css/pages/form.css?v=20260914-42">
+    <link rel="stylesheet" href="../css/layout/header.css?v=20260927-9">
+    <link rel="stylesheet" href="../css/layout/landscape-only.css?v=20260927-9">
+    <link rel="stylesheet" href="../css/layout/modal.css?v=20260927-9">
+    <link rel="stylesheet" href="../css/pages/form.css?v=20260927-9">
     <link rel="stylesheet" href="../css/pages/staff-activities.css">
-    <link rel="stylesheet" href="css/superadmin.css?v=20260923-1">
-    <link rel="stylesheet" href="css/superadmin-dashboard.css?v=20260917-3">
+    <link rel="stylesheet" href="css/superadmin.css?v=20260927-9">
+    <link rel="stylesheet" href="css/superadmin-dashboard.css?v=20260927-9">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -356,7 +356,7 @@
                             </svg>
                             หน้าแรก
                         </button>
-                        <button type="button" class="admin-dropdown-item" id="admin-menu-profile-link" onclick="openWebManagerSettings()">
+                        <button type="button" class="admin-dropdown-item" id="admin-menu-profile-link" onclick="openSuperAdminSettings()">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                     d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -2151,43 +2151,43 @@
     </div>
 
     <!-- ================= MODAL: โปรไฟล์บัญชี (SuperAdmin) ================= -->
-    <div id="webmanager-settings-modal" class="modal hidden" aria-labelledby="webmanager-settings-title" role="dialog" aria-modal="true">
+    <div id="superadmin-settings-modal" class="modal hidden" aria-labelledby="superadmin-settings-title" role="dialog" aria-modal="true">
         <div class="modal-wrapper">
-            <div onclick="closeWebManagerSettings()" class="modal-backdrop" aria-hidden="true"></div>
+            <div onclick="closeSuperAdminSettings()" class="modal-backdrop" aria-hidden="true"></div>
             <span class="modal-trick" aria-hidden="true">&#8203;</span>
             <div class="modal-box auth-box">
                 <div class="modal-close-btn">
-                    <button type="button" onclick="closeWebManagerSettings()">
+                    <button type="button" onclick="closeSuperAdminSettings()">
                         <svg class="icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
                 <div class="modal-content">
-                    <h2 id="webmanager-settings-title" class="admin-modal-title">โปรไฟล์บัญชี</h2>
+                    <h2 id="superadmin-settings-title" class="admin-modal-title">โปรไฟล์บัญชี</h2>
 
-                    <form id="webmanager-email-form" class="auth-form" onsubmit="submitWebManagerEmailForm(event)">
+                    <form id="superadmin-email-form" class="auth-form" onsubmit="submitSuperAdminEmailForm(event)">
                         <h3 class="admin-panel-title" style="font-size: 0.95rem;">อีเมล</h3>
                         <div class="form-group">
-                            <label class="form-label" for="webmanager-settings-email">อีเมลเข้าสู่ระบบ</label>
-                            <input class="form-input" type="email" id="webmanager-settings-email" required>
+                            <label class="form-label" for="superadmin-settings-email">อีเมลเข้าสู่ระบบ</label>
+                            <input class="form-input" type="email" id="superadmin-settings-email" required>
                         </div>
                         <div class="admin-form-actions">
-                            <button type="button" class="admin-cancel-btn" onclick="closeWebManagerSettings()">ยกเลิก</button>
+                            <button type="button" class="admin-cancel-btn" onclick="closeSuperAdminSettings()">ยกเลิก</button>
                             <button type="submit" class="submit-btn admin-submit-btn">บันทึกอีเมล</button>
                         </div>
-                        <div id="webmanager-email-form-error" class="admin-form-error hidden"></div>
+                        <div id="superadmin-email-form-error" class="admin-form-error hidden"></div>
                     </form>
 
                     <div class="admin-shell-nav-divider" style="margin: 1.5rem 0;"></div>
 
-                    <form id="webmanager-password-form" class="auth-form" onsubmit="submitWebManagerPasswordForm(event)">
+                    <form id="superadmin-password-form" class="auth-form" onsubmit="submitSuperAdminPasswordForm(event)">
                         <h3 class="admin-panel-title" style="font-size: 0.95rem;">เปลี่ยนรหัสผ่าน</h3>
                         <div class="form-group">
-                            <label class="form-label" for="webmanager-current-password">รหัสผ่านปัจจุบัน</label>
+                            <label class="form-label" for="superadmin-current-password">รหัสผ่านปัจจุบัน</label>
                             <div class="password-field-wrap">
-                                <input class="form-input" type="password" id="webmanager-current-password" required placeholder="••••••••">
-                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('webmanager-current-password', this)">
+                                <input class="form-input" type="password" id="superadmin-current-password" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('superadmin-current-password', this)">
                                     <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -2196,23 +2196,23 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="webmanager-new-password">รหัสผ่านใหม่</label>
+                            <label class="form-label" for="superadmin-new-password">รหัสผ่านใหม่</label>
                             <div class="password-field-wrap">
-                                <input class="form-input" type="password" id="webmanager-new-password" required placeholder="••••••••" oninput="handleWebManagerSettingsPasswordInput()">
-                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('webmanager-new-password', this)">
+                                <input class="form-input" type="password" id="superadmin-new-password" required placeholder="••••••••" oninput="handleSuperAdminSettingsPasswordInput()">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('superadmin-new-password', this)">
                                     <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
                                 </button>
                             </div>
-                            <p id="webmanager-settings-password-hint" class="password-hint">อย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลข</p>
+                            <p id="superadmin-settings-password-hint" class="password-hint">อย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวอักษรและตัวเลข</p>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="webmanager-confirm-password">ยืนยันรหัสผ่านใหม่</label>
+                            <label class="form-label" for="superadmin-confirm-password">ยืนยันรหัสผ่านใหม่</label>
                             <div class="password-field-wrap">
-                                <input class="form-input" type="password" id="webmanager-confirm-password" required placeholder="••••••••">
-                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('webmanager-confirm-password', this)">
+                                <input class="form-input" type="password" id="superadmin-confirm-password" required placeholder="••••••••">
+                                <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('superadmin-confirm-password', this)">
                                     <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -2221,21 +2221,21 @@
                             </div>
                         </div>
                         <div class="admin-form-actions">
-                            <button type="button" class="admin-cancel-btn" onclick="closeWebManagerSettings()">ยกเลิก</button>
+                            <button type="button" class="admin-cancel-btn" onclick="closeSuperAdminSettings()">ยกเลิก</button>
                             <button type="submit" class="submit-btn admin-submit-btn">เปลี่ยนรหัสผ่าน</button>
                         </div>
-                        <div id="webmanager-password-form-error" class="admin-form-error hidden"></div>
+                        <div id="superadmin-password-form-error" class="admin-form-error hidden"></div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
-    <script src="../js/layout/loader.js?v=20260920-1"></script>
-    <script src="../js/layout/date-select.js?v=20260916-1"></script>
-    <script src="js/superadmin.js?v=20260927-3"></script>
-    <script src="js/superadmin-dashboard.js?v=20260927-1"></script>
+    <script src="../js/layout/otp-input.js?v=20260927-9"></script>
+    <script src="../js/layout/loader.js?v=20260927-9"></script>
+    <script src="../js/layout/date-select.js?v=20260927-9"></script>
+    <script src="js/superadmin.js?v=20260927-9"></script>
+    <script src="js/superadmin-dashboard.js?v=20260927-9"></script>
 </body>
 
 </html>

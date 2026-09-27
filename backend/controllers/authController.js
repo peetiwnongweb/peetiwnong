@@ -66,7 +66,7 @@ async function buildSessionUser(prisma, user) {
       occupation: staffProfile?.occupation || null,
       department: staffProfile?.department || null,
       position: staffProfile?.position || null,
-      // ประธานค่าย/รองประธานค่าย/เลขานุการ ได้สิทธิ์ผู้ดูแลระบบติดตัวมากับตำแหน่งเสมอ ไม่ต้องรอ WebManager มากดให้ทีละคน
+      // ประธานค่าย/รองประธานค่าย/เลขานุการ ได้สิทธิ์ผู้ดูแลระบบติดตัวมากับตำแหน่งเสมอ ไม่ต้องรอ SuperAdmin มากดให้ทีละคน
       // (ธงในตาราง StaffProfile.isAdmin ยังใช้ได้ตามปกติ สำหรับมอบสิทธิ์ให้พี่ค่ายตำแหน่งอื่นเพิ่มเป็นราย ๆ)
       // คิดตรงนี้จุดเดียวแล้วมีผลทุกที่ที่อ่าน session: requireAdminAccess, requireAdminPage ใน server.js และเมนูฝั่งหน้าเว็บ
       isAdmin: staffProfile?.isAdmin || CAMP_LEADERSHIP_POSITIONS.includes(staffProfile?.position?.name),
@@ -133,13 +133,13 @@ async function login(req, res) {
     return res.status(401).json({ error: 'email หรือรหัสผ่านไม่ถูกต้อง' });
   }
 
-  // WebManager มีหน้า login แยกต่างหาก (/superadmin/login.html) ที่ส่ง role: 'WEBMANAGER' ตรง ๆ จึงตรวจ role แบบตรงตัวทุก role
+  // SuperAdmin มีหน้า login แยกต่างหาก (/superadmin/login.html) ที่ส่ง role: 'SUPERADMIN' ตรง ๆ จึงตรวจ role แบบตรงตัวทุก role
   const roleMatches = user.role === role;
   if (!roleMatches) {
     return res.status(401).json({ error: 'บทบาทที่เลือกไม่ตรงกับบัญชีนี้' });
   }
 
-  // บัญชีที่สมัครเองผ่านฟอร์มสาธารณะต้องรอ WebManager ตรวจสอบและอนุมัติก่อนถึงจะเข้าสู่ระบบได้
+  // บัญชีที่สมัครเองผ่านฟอร์มสาธารณะต้องรอ SuperAdmin ตรวจสอบและอนุมัติก่อนถึงจะเข้าสู่ระบบได้
   if (user.approvalStatus === 'PENDING') {
     return res.status(403).json({ error: 'บัญชีของคุณอยู่ระหว่างการตรวจสอบและรออนุมัติจากผู้ดูแลระบบ กรุณารอการติดต่อกลับ' });
   }
@@ -171,7 +171,7 @@ async function me(req, res) {
 // พี่ค่ายเปลี่ยนรูปโปรไฟล์ของตัวเองได้ ไม่ต้องรอแอดมิน: เลือกจากคลังภาพ (/assets/images/avatars/...) หรือใส่ URL เองก็ได้
 async function updateAvatar(req, res) {
   if (!req.session.user) return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบ' });
-  if (req.session.user.role === 'WEBMANAGER') {
+  if (req.session.user.role === 'SUPERADMIN') {
     return res.status(403).json({ error: 'บัญชี Owner ใช้รูปโปรไฟล์คงที่ ไม่สามารถเปลี่ยนได้' });
   }
 
@@ -303,7 +303,7 @@ async function requestRegistrationOtp(req, res) {
   res.json({ message: 'ส่งรหัส OTP ไปยังอีเมลของคุณแล้ว กรุณาตรวจสอบกล่องจดหมาย' });
 }
 
-// ยืนยัน OTP + สร้างบัญชีจริงพร้อมโปรไฟล์ครบถ้วน สถานะเริ่มต้นเป็น PENDING รอ WebManager อนุมัติ ไม่ล็อกอินให้ทันที
+// ยืนยัน OTP + สร้างบัญชีจริงพร้อมโปรไฟล์ครบถ้วน สถานะเริ่มต้นเป็น PENDING รอ SuperAdmin อนุมัติ ไม่ล็อกอินให้ทันที
 async function completeRegistration(req, res) {
   const { email, otpCode, password, role, profile } = req.body;
   if (!email || !otpCode || !password || !role || !profile) {
@@ -339,7 +339,7 @@ async function completeRegistration(req, res) {
     return res.status(403).json({ error: message });
   }
 
-  // ฟอร์มสาธารณะเลือกฝ่ายงาน/คอร์สเรียนเป็นชื่อ (ไม่มี id จริงให้เลือกเหมือนหน้า WebManager) จึงต้อง lookup ชื่อ -> id เองที่นี่
+  // ฟอร์มสาธารณะเลือกฝ่ายงาน/คอร์สเรียนเป็นชื่อ (ไม่มี id จริงให้เลือกเหมือนหน้า SuperAdmin) จึงต้อง lookup ชื่อ -> id เองที่นี่
   // ก่อนส่งต่อให้ buildStaffProfileData/buildParticipantProfileData ที่รับแค่ departmentId/courseFormatId เป็นตัวเลข
   const resolvedProfile = { ...profile };
   if (role === 'STAFF' && profile.department) {
@@ -374,7 +374,7 @@ async function completeRegistration(req, res) {
     return res.status(409).json({ error: 'มีอีเมลนี้อยู่แล้วในระบบ' });
   }
 
-  // แอดมินเปิดสวิตช์ "อนุมัติอัตโนมัติ" ไว้ในหน้าแรก WebManager ได้ ถ้าเปิดไว้บัญชีที่สมัครเข้ามาจะอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
+  // แอดมินเปิดสวิตช์ "อนุมัติอัตโนมัติ" ไว้ในหน้าแรก SuperAdmin ได้ ถ้าเปิดไว้บัญชีที่สมัครเข้ามาจะอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
   // (ใช้ settings ตัวเดียวกับที่ query ไปแล้วตอนเช็ค isRegistrationOpen ด้านบน ไม่ query ซ้ำ)
   const autoApprove = role === 'STAFF' ? settings?.staffAutoApprove : settings?.participantAutoApprove;
   const approvalStatus = autoApprove ? 'APPROVED' : 'PENDING';

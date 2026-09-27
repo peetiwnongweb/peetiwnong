@@ -10,10 +10,10 @@ const { requireRole, requireAcademicManageAccess } = require('../middleware/requ
 const { uploadStudyDocument, describeUploadError } = require('../middleware/upload');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
 
-// WebManager ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere ใน backend/lib/participantSimulation.js)
-router.get('/me', requireRole('PARTICIPANT', 'WEBMANAGER'), getMyStudyDocuments);
+// SuperAdmin ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere ใน backend/lib/participantSimulation.js)
+router.get('/me', requireRole('PARTICIPANT', 'SUPERADMIN'), getMyStudyDocuments);
 router.get('/', requireStaffAccess, listStudyDocuments);
 
 // ต้องอยู่ก่อน '/:id' เสมอ ไม่งั้น express จะจับคำว่า "upload" เป็นค่า :id แทน

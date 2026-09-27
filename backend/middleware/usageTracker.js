@@ -49,14 +49,14 @@ function classifyUserAgent(ua) {
 function roleKey(role) {
   if (role === 'PARTICIPANT') return 'participant';
   if (role === 'STAFF') return 'staff';
-  if (role === 'WEBMANAGER') return 'webmanager';
+  if (role === 'SUPERADMIN') return 'superadmin';
   return 'guest';
 }
 
 function emptyHourly() {
   return {
     apiRequests: 0, pageViews: 0, errorCount: 0, clientErrorCount: 0, totalDurationMs: 0, maxDurationMs: 0,
-    guest: 0, participant: 0, staff: 0, webmanager: 0, mobile: 0, desktop: 0,
+    guest: 0, participant: 0, staff: 0, superadmin: 0, mobile: 0, desktop: 0,
     chrome: 0, safari: 0, line: 0, other: 0,
   };
 }
@@ -166,7 +166,7 @@ async function flushHourly(prisma) {
     const activeUsers = hourlyActiveUsers.get(bucketIso)?.size || 0;
     const row = [
       new Date(bucketIso), h.apiRequests, h.pageViews, h.errorCount, h.clientErrorCount, h.totalDurationMs, h.maxDurationMs, activeUsers,
-      h.guest, h.participant, h.staff, h.webmanager, h.mobile, h.desktop, h.chrome, h.safari, h.line, h.other,
+      h.guest, h.participant, h.staff, h.superadmin, h.mobile, h.desktop, h.chrome, h.safari, h.line, h.other,
     ];
     const placeholders = row.map((value) => {
       params.push(value);
@@ -178,7 +178,7 @@ async function flushHourly(prisma) {
   await prisma.$executeRawUnsafe(`
     INSERT INTO usage_hourly_stats (
       bucket_start, api_requests, page_views, error_count, client_error_count, total_duration_ms, max_duration_ms, active_users,
-      guest_requests, participant_requests, staff_requests, webmanager_requests, mobile_requests, desktop_requests,
+      guest_requests, participant_requests, staff_requests, superadmin_requests, mobile_requests, desktop_requests,
       chrome_requests, safari_requests, line_requests, other_browser_requests
     ) VALUES ${values.join(', ')}
     ON CONFLICT (bucket_start) DO UPDATE SET
@@ -192,7 +192,7 @@ async function flushHourly(prisma) {
       guest_requests = usage_hourly_stats.guest_requests + EXCLUDED.guest_requests,
       participant_requests = usage_hourly_stats.participant_requests + EXCLUDED.participant_requests,
       staff_requests = usage_hourly_stats.staff_requests + EXCLUDED.staff_requests,
-      webmanager_requests = usage_hourly_stats.webmanager_requests + EXCLUDED.webmanager_requests,
+      superadmin_requests = usage_hourly_stats.superadmin_requests + EXCLUDED.superadmin_requests,
       mobile_requests = usage_hourly_stats.mobile_requests + EXCLUDED.mobile_requests,
       desktop_requests = usage_hourly_stats.desktop_requests + EXCLUDED.desktop_requests,
       chrome_requests = usage_hourly_stats.chrome_requests + EXCLUDED.chrome_requests,

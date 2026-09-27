@@ -11,7 +11,7 @@ const {
 const { requireRole, requireAcademicManageAccess } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
 
 router.get('/mine', requireStaffAccess, listMySubjects);
 router.get('/instructor-candidates', requireAcademicManageAccess, listInstructorCandidates);

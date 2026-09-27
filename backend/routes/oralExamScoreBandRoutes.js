@@ -3,7 +3,7 @@ const { getOralExamScoreBands, updateOralExamScoreBands } = require('../controll
 const { requireRole, requireAcademicManageAccess } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
 
 router.get('/', requireStaffAccess, getOralExamScoreBands);
 router.put('/', requireAcademicManageAccess, updateOralExamScoreBands);

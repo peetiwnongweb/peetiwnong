@@ -2,7 +2,7 @@
 <html lang="th">
 
 <head>
-    <script src="/js/config.js?v=20260927-1"></script>
+    <script src="/js/config.js?v=20260927-9"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
@@ -13,9 +13,9 @@
     <link rel="stylesheet" href="../css/base/variables.css">
     <link rel="stylesheet" href="../css/base/utilities.css">
     <link rel="stylesheet" href="../css/base/loader.css">
-    <link rel="stylesheet" href="../css/layout/modal.css?v=20260920-2">
+    <link rel="stylesheet" href="../css/layout/modal.css?v=20260927-9">
     <link rel="stylesheet" href="css/superadmin-login.css">
-    <link rel="stylesheet" href="../css/layout/landscape-only.css?v=20260923-1">
+    <link rel="stylesheet" href="../css/layout/landscape-only.css?v=20260927-9">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,7 +47,7 @@
                         <p class="text-sm text-slate-500 mt-1">เข้าสู่ระบบผู้ดูแลเว็บไซต์ สิทธิ์สูงสุด แยกจากผู้ใช้งานอื่นทั้งหมด</p>
                     </div>
 
-                    <form id="wm-login-form" onsubmit="handleWebManagerLoginSubmit(event)" class="auth-form">
+                    <form id="wm-login-form" onsubmit="handleSuperAdminLoginSubmit(event)" class="auth-form">
                         <div class="form-group">
                             <label for="wm-login-email" class="form-label">อีเมล</label>
                             <input type="email" id="wm-login-email" required placeholder="you@example.com"
@@ -68,7 +68,7 @@
                             </div>
                         </div>
                         <button type="submit" class="submit-btn mt-2">เข้าสู่ระบบ</button>
-                        <span class="forgot-pwd" style="display: block; text-align: center;" onclick="goToWebManagerStep('forgot-email')">ลืมรหัสผ่าน?</span>
+                        <span class="forgot-pwd" style="display: block; text-align: center;" onclick="goToSuperAdminStep('forgot-email')">ลืมรหัสผ่าน?</span>
                     </form>
                 </div>
 
@@ -78,7 +78,7 @@
                         <h2 class="text-2xl font-bold text-slate-900">ลืมรหัสผ่าน</h2>
                         <p class="text-sm text-slate-500 mt-1">กรอกอีเมลที่ผูกกับบัญชี SuperAdmin ของคุณ เราจะส่งรหัส OTP ไปให้</p>
                     </div>
-                    <form id="wm-forgot-email-form" onsubmit="handleWebManagerForgotEmailSubmit(event)" class="auth-form">
+                    <form id="wm-forgot-email-form" onsubmit="handleSuperAdminForgotEmailSubmit(event)" class="auth-form">
                         <div class="form-group">
                             <label for="wm-forgot-email" class="form-label">อีเมลผู้ใช้งาน</label>
                             <input type="email" id="wm-forgot-email" required placeholder="name@example.com"
@@ -86,7 +86,7 @@
                         </div>
                         <button type="submit" class="submit-btn mt-2">ส่งรหัส OTP</button>
                     </form>
-                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 1rem;" onclick="goToWebManagerStep('login')">← กลับไปเข้าสู่ระบบ</span>
+                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 1rem;" onclick="goToSuperAdminStep('login')">← กลับไปเข้าสู่ระบบ</span>
                 </div>
 
                 <!-- ================= STEP: ยืนยัน OTP ================= -->
@@ -101,7 +101,7 @@
                         <h2 class="text-2xl font-bold text-slate-900">ยืนยันรหัส OTP</h2>
                         <p class="text-sm text-slate-500 mt-1">กรอกรหัส 6 หลักที่ส่งไปยังอีเมลของคุณ</p>
                     </div>
-                    <form id="wm-forgot-otp-form" onsubmit="handleWebManagerVerifyOtpSubmit(event)" class="auth-form">
+                    <form id="wm-forgot-otp-form" onsubmit="handleSuperAdminVerifyOtpSubmit(event)" class="auth-form">
                         <div id="wm-otp-boxes" class="otp-input-group">
                             <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
                             <input type="text" inputmode="numeric" maxlength="1" class="otp-digit" required>
@@ -112,8 +112,8 @@
                         </div>
                         <button type="submit" class="submit-btn">ยืนยันรหัส</button>
                     </form>
-                    <button type="button" id="wm-resend-otp" class="resend-otp-link" onclick="handleWebManagerResendOtp()">ส่งรหัสอีกครั้ง</button>
-                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 0.5rem;" onclick="goToWebManagerStep('login')">← กลับไปเข้าสู่ระบบ</span>
+                    <button type="button" id="wm-resend-otp" class="resend-otp-link" onclick="handleSuperAdminResendOtp()">ส่งรหัสอีกครั้ง</button>
+                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 0.5rem;" onclick="goToSuperAdminStep('login')">← กลับไปเข้าสู่ระบบ</span>
                 </div>
 
                 <!-- ================= STEP: ตั้งรหัสผ่านใหม่ ================= -->
@@ -122,12 +122,12 @@
                         <h2 class="text-2xl font-bold text-slate-900">ตั้งรหัสผ่านใหม่</h2>
                         <p class="text-sm text-slate-500 mt-1">ตั้งรหัสผ่านใหม่สำหรับบัญชี SuperAdmin ของคุณ</p>
                     </div>
-                    <form id="wm-forgot-newpass-form" onsubmit="handleWebManagerForgotResetSubmit(event)" class="auth-form">
+                    <form id="wm-forgot-newpass-form" onsubmit="handleSuperAdminForgotResetSubmit(event)" class="auth-form">
                         <div class="form-group">
                             <label for="wm-reset-new-password" class="form-label">รหัสผ่านใหม่</label>
                             <div class="password-field-wrap">
                                 <input type="password" id="wm-reset-new-password" required
-                                    oninput="handleWebManagerNewPasswordInput()" class="form-input">
+                                    oninput="handleSuperAdminNewPasswordInput()" class="form-input">
                                 <button type="button" class="password-toggle-btn" tabindex="-1"
                                     aria-label="แสดงรหัสผ่าน" onclick="togglePasswordVisibility('wm-reset-new-password', this)">
                                     <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -153,7 +153,7 @@
                         </div>
                         <button type="submit" class="submit-btn mt-2">บันทึกรหัสผ่านใหม่</button>
                     </form>
-                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 1rem;" onclick="goToWebManagerStep('login')">← กลับไปเข้าสู่ระบบ</span>
+                    <span class="forgot-pwd" style="display: block; text-align: center; margin-top: 1rem;" onclick="goToSuperAdminStep('login')">← กลับไปเข้าสู่ระบบ</span>
                 </div>
 
                 <div id="wm-login-toast" class="toast hidden"></div>
@@ -161,9 +161,9 @@
         </div>
     </div>
 
-    <script src="../js/layout/otp-input.js?v=20260916-1"></script>
-    <script src="../js/layout/loader.js?v=20260920-1"></script>
-    <script src="js/superadmin-login.js?v=20260820-1"></script>
+    <script src="../js/layout/otp-input.js?v=20260927-9"></script>
+    <script src="../js/layout/loader.js?v=20260927-9"></script>
+    <script src="js/superadmin-login.js?v=20260927-9"></script>
 </body>
 
 </html>

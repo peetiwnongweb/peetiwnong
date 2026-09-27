@@ -111,7 +111,7 @@ let scoreWeightSetting = { explanationWeight: 70, achievementWeight: 30 };
 // ต้องให้ผลตรงกับ isAcademicManager() ฝั่ง backend (requireAuth.js) เป๊ะ ๆ - reuse LEADERSHIP_POSITIONS ที่มีอยู่แล้วจาก auth.js แทนการประกาศซ้ำ
 function computeAcademicTier(user, myAssignedSubjects) {
     // Owner ไม่มีตำแหน่ง/ฝ่ายจริงให้อิงสิทธิ์ตามปกติ แต่ได้สิทธิ์ manager เสมอ (ตรงกับ isAcademicManager() ฝั่ง backend)
-    if (user && user.role === 'WEBMANAGER') return 'manager';
+    if (user && user.role === 'SUPERADMIN') return 'manager';
     const isLeadership = !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
     const isAcademicHead = !!(user && user.position?.name === 'หัวหน้าฝ่าย' && user.department?.name === 'ฝ่ายวิชาการ');
     if (isLeadership || isAcademicHead) return 'manager';

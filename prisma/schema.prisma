@@ -13,13 +13,13 @@ datasource db {
 }
 
 enum UserRole {
-  WEBMANAGER // สิทธิ์สูงสุดในการจัดการเว็บ แยกออกจาก Admin โดยสิ้นเชิง มีหน้า login และแผงควบคุมของตัวเอง (/webmanager)
+  SUPERADMIN // สิทธิ์สูงสุดในการจัดการเว็บ แยกออกจาก Admin โดยสิ้นเชิง มีหน้า login และแผงควบคุมของตัวเอง (/superadmin)
   STAFF // พี่ค่าย (อาจได้รับสิทธิ์ผู้ดูแลระบบ (isAdmin) เพิ่มเติมผ่าน StaffProfile.isAdmin เพื่อเข้าหลังบ้าน /admin)
   PARTICIPANT // น้องค่าย
 }
 
-// สถานะการอนุมัติบัญชี: บัญชีที่ WebManager สร้างเอง (หรือ seed) เริ่มเป็น APPROVED ทันที
-// มีเฉพาะบัญชีที่สมัครเองผ่านฟอร์มสาธารณะเท่านั้นที่เริ่มเป็น PENDING แล้วรอ WebManager อนุมัติ/ปฏิเสธ
+// สถานะการอนุมัติบัญชี: บัญชีที่ SuperAdmin สร้างเอง (หรือ seed) เริ่มเป็น APPROVED ทันที
+// มีเฉพาะบัญชีที่สมัครเองผ่านฟอร์มสาธารณะเท่านั้นที่เริ่มเป็น PENDING แล้วรอ SuperAdmin อนุมัติ/ปฏิเสธ
 enum ApprovalStatus {
   PENDING
   APPROVED
@@ -78,7 +78,7 @@ model SiteSetting {
   participantRegistrationOpen Boolean  @default(true) @map("participant_registration_open") // สวิตช์เปิด/ปิดปุ่ม "ลงทะเบียนน้องค่าย" ในส่วน Hero หน้าแรก
   staffAutoApprove            Boolean  @default(false) @map("staff_auto_approve") // เปิดไว้ = บัญชีพี่ค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
   participantAutoApprove      Boolean  @default(false) @map("participant_auto_approve") // เปิดไว้ = บัญชีน้องค่ายที่สมัครเองได้รับอนุมัติทันทีโดยไม่ต้องรอตรวจสอบ
-  newsAutoApprove             Boolean  @default(false) @map("news_auto_approve") // เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายทั่วไปส่งเข้ามา (submitNews) เผยแพร่ขึ้นเว็บทันทีโดยไม่ต้องรอ Admin/Owner อนุมัติ (ข่าวที่ WebManager/แอดมินเขียนเองอนุมัติทันทีอยู่แล้วเสมอไม่เกี่ยวกับสวิตช์นี้)
+  newsAutoApprove             Boolean  @default(false) @map("news_auto_approve") // เปิดไว้ = ประชาสัมพันธ์ที่พี่ค่ายทั่วไปส่งเข้ามา (submitNews) เผยแพร่ขึ้นเว็บทันทีโดยไม่ต้องรอ Admin/Owner อนุมัติ (ข่าวที่ SuperAdmin/แอดมินเขียนเองอนุมัติทันทีอยู่แล้วเสมอไม่เกี่ยวกับสวิตช์นี้)
   checkRegistrationVisibleStaff       Boolean @default(true) @map("check_registration_visible_staff") // สวิตช์เปิด/ปิดแท็บ "พี่ค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
   checkRegistrationVisibleParticipant Boolean @default(true) @map("check_registration_visible_participant") // สวิตช์เปิด/ปิดแท็บ "น้องค่าย" ในหน้า "ตรวจสอบผลการลงทะเบียน"
   committeeSectionVisible              Boolean @default(true) @map("committee_section_visible") // สวิตช์เปิด/ปิดส่วนทำเนียบประธานค่ายในหน้าแรก
@@ -140,7 +140,7 @@ model News {
   isVisible      Boolean        @default(true) @map("is_visible")
   authorId       Int?           @map("author_user_id")
   author         User?          @relation("NewsAuthor", fields: [authorId], references: [id], onDelete: SetNull)
-  approvalStatus ApprovalStatus @default(APPROVED) @map("approval_status") // ข่าวที่ WebManager/แอดมินเขียนเองอนุมัติทันที ส่วนที่พี่ค่ายทั่วไปส่งเข้ามาจะถูกบังคับเป็น PENDING เสมอ (ดู submitNews ใน newsController.js)
+  approvalStatus ApprovalStatus @default(APPROVED) @map("approval_status") // ข่าวที่ SuperAdmin/แอดมินเขียนเองอนุมัติทันที ส่วนที่พี่ค่ายทั่วไปส่งเข้ามาจะถูกบังคับเป็น PENDING เสมอ (ดู submitNews ใน newsController.js)
   publishedAt    DateTime       @default(now()) @map("published_at")
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
@@ -408,7 +408,7 @@ model OralExamScoreBand {
   @@map("oral_exam_score_bands")
 }
 
-// ค่าย (สร้างโดย WebManager เท่านั้น) 1 แถว = 1 รุ่นของค่าย ครั้งที่ต้องไม่ซ้ำกัน
+// ค่าย (สร้างโดย SuperAdmin เท่านั้น) 1 แถว = 1 รุ่นของค่าย ครั้งที่ต้องไม่ซ้ำกัน
 // สร้างค่ายใหม่จะ (1) มอบตำแหน่ง/ฝ่ายให้ผู้ถูกเลือกใน StaffProfile จริง (2) ลบน้องค่ายทั้งหมดถาวร (ดู campController.js)
 // presidentUserId/secretaryUserId เป็น nullable + onDelete SetNull เพราะบัญชีอาจถูกลบทีหลัง ไม่ต้องการให้ลบแถว Camp ทั้งแถวไปด้วย
 // ครั้งที่จัดค่ายล่าสุด (MAX generationNo) ใช้สร้างรหัสประจำตัวน้องค่ายด้วย เช่น 281001 = ครั้งที่ 28 + รหัสรูปแบบคอร์ส (1=เตรียมสอบ, 0=ปรับพื้นฐาน) + เลขลำดับผู้เข้าร่วม (คีย์หลัก เติม 0 ให้ครบ 3 หลัก) - ดู backend/lib/camp.js
@@ -672,7 +672,7 @@ model UsageHourlyStat {
   guestRequests       Int      @default(0) @map("guest_requests")
   participantRequests Int      @default(0) @map("participant_requests")
   staffRequests       Int      @default(0) @map("staff_requests")
-  webmanagerRequests  Int      @default(0) @map("webmanager_requests")
+  superadminRequests  Int      @default(0) @map("superadmin_requests")
   mobileRequests      Int      @default(0) @map("mobile_requests")
   desktopRequests     Int      @default(0) @map("desktop_requests")
   chromeRequests      Int      @default(0) @map("chrome_requests")

@@ -14,7 +14,7 @@ const {
 const { requireAuth, requireRole } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'WEBMANAGER');
+const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
 const requireParticipantAccess = requireRole('PARTICIPANT');
 
 // อันดับคะแนนรวมทุกกลุ่ม เป็นข้อมูลไม่อ่อนไหว (ชื่อกลุ่ม + คะแนนรวม) จึงเปิดให้ผู้ใช้ที่ล็อกอินแล้วทุก role ดูได้ ไม่เฉพาะฝ่ายจัดการ

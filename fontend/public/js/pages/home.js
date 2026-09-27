@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (major) major.innerText = latest.major || '';
   }
 
-  // สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดใน Hero + ข้อความ "ความเป็นมา" ตั้งค่าได้จากหน้า "ประวัติความเป็นมา" ในแผง WebManager
+  // สวิตช์เปิด/ปิดการ์ดเด่นประธานค่ายล่าสุดใน Hero + ข้อความ "ความเป็นมา" ตั้งค่าได้จากหน้า "ประวัติความเป็นมา" ในแผง SuperAdmin
   // ใช้ window.PTN_SITE_SETTINGS (auth.js ยิงไปแล้วตั้งแต่สคริปต์นั้นโหลด) แทนการ fetch เอง กัน /api/site-settings ยิงซ้ำ 2 รอบบนหน้าแรก
   const siteSettingsLoaded = window.PTN_SITE_SETTINGS
     .then((settings) => {
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
 
-  // ประมวลภาพบรรยากาศค่าย: ซ่อนทั้งการ์ดไว้จนกว่าจะมีรูปจริงที่อัปโหลดจากแผง WebManager
+  // ประมวลภาพบรรยากาศค่าย: ซ่อนทั้งการ์ดไว้จนกว่าจะมีรูปจริงที่อัปโหลดจากแผง SuperAdmin
   const galleryLoaded = fetch('/api/gallery')
     .then((response) => (response.ok ? response.json() : []))
     .then((photos) => {

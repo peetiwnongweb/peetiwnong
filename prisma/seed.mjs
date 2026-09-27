@@ -5,11 +5,11 @@ import bcrypt from 'bcryptjs';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-// WEBMANAGER คือเจ้าของระบบ สิทธิ์สูงสุด แยกออกจาก Admin โดยสิ้นเชิง มีหน้า login และแผงควบคุมของตัวเองที่ /webmanager
-// บัญชีแรกคือบัญชีจริงของเจ้าของระบบ ส่วนบัญชีที่สองเป็นบัญชีทดสอบ (mockup) ไว้ล็อกอินทดสอบหน้า /webmanager/login.html โดยไม่ต้องใช้บัญชีจริง
-// WEBMANAGER ไม่มีตาราง Profile แยก (ไม่มีชื่อ-นามสกุล) มีแค่รูปโปรไฟล์ (avatarUrl) ให้ใส่ในวงกลมแทนตัวอักษรย่อ
+// SUPERADMIN คือเจ้าของระบบ สิทธิ์สูงสุด แยกออกจาก Admin โดยสิ้นเชิง มีหน้า login และแผงควบคุมของตัวเองที่ /superadmin
+// บัญชีแรกคือบัญชีจริงของเจ้าของระบบ ส่วนบัญชีที่สองเป็นบัญชีทดสอบ (mockup) ไว้ล็อกอินทดสอบหน้า /superadmin/login.html โดยไม่ต้องใช้บัญชีจริง
+// SUPERADMIN ไม่มีตาราง Profile แยก (ไม่มีชื่อ-นามสกุล) มีแค่รูปโปรไฟล์ (avatarUrl) ให้ใส่ในวงกลมแทนตัวอักษรย่อ
 const users = [
-  { email: 'webmanager.demo@peetiwnong.camp', password: 'webmanager123', role: 'WEBMANAGER', avatar: '/assets/images/avatars/webmanager/1.png' },
+  { email: 'superadmin.demo@peetiwnong.camp', password: 'superadmin123', role: 'SUPERADMIN', avatar: '/assets/images/avatars/superadmin/1.png' },
 ];
 
 // ฝ่ายงานของค่าย ใช้เป็นตัวกรองเมนู "งาน" ในหน้าพี่ค่าย (ต้องตรงกับชื่อฝ่ายที่มีอยู่จริงในตาราง camp_departments)

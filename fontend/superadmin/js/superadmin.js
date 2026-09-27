@@ -314,7 +314,8 @@ function renderAdminNotifications(items, lastSeen) {
 function checkAdminNotificationBadge() {
     const latestAdmin = activityLogItemsCache.admin?.[0]?.createdAt;
     const latestUser = activityLogItemsCache.user?.[0]?.createdAt;
-    const timestamps = [latestAdmin, latestUser].filter(Boolean).map((d) => new Date(d).getTime());
+    const latestStudy = activityLogItemsCache.study?.[0]?.createdAt;
+    const timestamps = [latestAdmin, latestUser, latestStudy].filter(Boolean).map((d) => new Date(d).getTime());
     if (timestamps.length === 0) return;
     const latest = Math.max(...timestamps);
     const lastSeen = Number(localStorage.getItem('superadminNotifLastSeen') || 0);
@@ -5589,7 +5590,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ข้อมูลของแท็บอื่น ๆ (ข่าว/กำหนดการ/ผู้ใช้/เจ้าของระบบ/ค่าย/สำรองข้อมูล/lookup) โหลดแบบ lazy ตอนเปิดแท็บนั้นจริง ๆ แทน (ดู ADMIN_TAB_LOAD_KEYS/ADMIN_SECTION_LOAD_KEYS ด้านบน)
     // restoreSuperAdminNav() ด้านบนได้ trigger การโหลดของแท็บที่จำไว้ล่าสุดไปแล้วถ้ามี ผ่าน switchAdminTab/switchAdminSection
     const dashboardLoaded = initDashboard();
-    Promise.all([loadActivityLogs('admin'), loadActivityLogs('user')]).then(checkAdminNotificationBadge);
+    Promise.all([loadActivityLogs('admin'), loadActivityLogs('user'), loadActivityLogs('study')]).then(checkAdminNotificationBadge);
 
     const committeeSearchInput = document.getElementById('committee-search');
     if (committeeSearchInput) {
@@ -5622,6 +5623,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('log-admin-search')?.addEventListener('input', (e) => handleActivityLogSearch('admin', e.target.value));
     document.getElementById('log-user-search')?.addEventListener('input', (e) => handleActivityLogSearch('user', e.target.value));
+    document.getElementById('log-study-search')?.addEventListener('input', (e) => handleActivityLogSearch('study', e.target.value));
 
     // รอแค่ข้อมูลที่แดชบอร์ด (แท็บที่เห็นก่อนเสมอตอนเปิดเข้ามา) ใช้จริง ไม่รอครบทุกแท็บ/ทุกตาราง (มีเยอะมาก หลายอันโหลดหลังบ้านเงียบ ๆ ไปเรื่อย ๆ ได้โดยไม่ต้องกันผู้ใช้ไว้)
     Promise.allSettled([adminUserLoaded, dashboardLoaded])

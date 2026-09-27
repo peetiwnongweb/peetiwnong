@@ -289,6 +289,13 @@
                             </svg>
                             Log Users
                         </button>
+                        <button class="admin-shell-nav-child" onclick="switchAdminTab('log-study')" id="admin-tab-log-study">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                            </svg>
+                            Log การเรียน
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -1344,6 +1351,45 @@
                             <button type="button" class="admin-page-nav-btn" id="log-user-next-btn" onclick="changeActivityLogPage('user', 1)">ถัดไป</button>
                         </div>
                     </section>
+
+                    <!-- ของระบบการเรียน -->
+                    <section id="admin-panel-log-study" class="admin-panel">
+                        <div class="admin-panel-header flex items-center justify-between">
+                            <div>
+                                <h2 class="admin-panel-title">ประวัติการดำเนินการของระบบการเรียน</h2>
+                                <p class="admin-panel-desc">วิชา คะแนน ตารางเรียน เอกสาร สอบอธิบาย และเกณฑ์เกรด (ทุกคนที่ทำ) ย้อนหลัง 200 รายการล่าสุด</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-search-box">
+                                <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <input type="text" id="log-study-search" class="admin-search-input" placeholder="ค้นหาผู้ดำเนินการ, ประเภท, รายละเอียด...">
+                            </div>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>เวลา</th>
+                                        <th>ผู้ดำเนินการ</th>
+                                        <th>การกระทำ</th>
+                                        <th>ประเภทข้อมูล</th>
+                                        <th>รายละเอียด</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="log-study-table-body"></tbody>
+                            </table>
+                            <p id="log-study-empty" class="admin-empty hidden">ยังไม่มีประวัติการดำเนินการ</p>
+                            <p id="log-study-no-match" class="admin-empty hidden">ไม่พบข้อมูลที่ตรงกับคำค้นหา</p>
+                        </div>
+                        <div class="admin-pagination hidden" id="log-study-pagination">
+                            <button type="button" class="admin-page-nav-btn" id="log-study-prev-btn" onclick="changeActivityLogPage('study', -1)">ก่อนหน้า</button>
+                            <div class="admin-page-numbers" id="log-study-page-numbers"></div>
+                            <button type="button" class="admin-page-nav-btn" id="log-study-next-btn" onclick="changeActivityLogPage('study', 1)">ถัดไป</button>
+                        </div>
+                    </section>
                 </section>
             </main>
         </div>
@@ -2235,7 +2281,7 @@
     <script src="../js/layout/otp-input.js?v=20260927-9"></script>
     <script src="../js/layout/loader.js?v=20260927-9"></script>
     <script src="../js/layout/date-select.js?v=20260927-9"></script>
-    <script src="js/superadmin.js?v=20260927-11"></script>
+    <script src="js/superadmin.js?v=20260927-12"></script>
     <script src="js/superadmin-dashboard.js?v=20260927-9"></script>
 </body>
 

@@ -6,9 +6,16 @@ const { getPrisma } = require('../lib/prisma');
 // การสมัครลงทะเบียนด้วยตัวเองของพี่ค่าย (actorRole = STAFF) ย้ายไปอยู่ฝั่ง "user" ด้วย ให้เห็นการสมัครของทั้งพี่ค่ายและน้องค่ายที่เดียวกัน
 // แยกด้วยข้อความ summary ที่ขึ้นต้นว่า "สมัครลงทะเบียน" (ดู completeRegistration ใน authController.js)
 const SELF_REGISTER = { summary: { startsWith: 'สมัครลงทะเบียน' } };
+// "study" = ทุกอย่างของระบบการเรียน (วิชา/คะแนน/ตารางเรียน/เอกสาร/สอบอธิบาย/เกณฑ์เกรด) ไม่ว่าใครทำ แยกออกจาก 2 กลุ่มแรก
+const STUDY_ENTITY_TYPES = [
+  'SUBJECT', 'PARTICIPANT_SUBJECT_SCORE', 'CLASS_SCHEDULE', 'STUDY_DOCUMENT',
+  'ORAL_EXAM_SESSION', 'ORAL_EXAM_ATTEMPT', 'ORAL_EXAM_SCORE_BAND', 'GRADE_BAND', 'SCORE_WEIGHT_SETTING',
+];
+const NOT_STUDY = { entityType: { notIn: STUDY_ENTITY_TYPES } };
 const SCOPE_WHERE = {
-  admin: { actorRole: { in: ['SUPERADMIN', 'STAFF', 'HOST', 'ADMIN'] }, NOT: SELF_REGISTER },
-  user: { OR: [{ actorRole: 'PARTICIPANT' }, SELF_REGISTER] },
+  admin: { AND: [{ actorRole: { in: ['SUPERADMIN', 'STAFF', 'HOST', 'ADMIN'] } }, { NOT: SELF_REGISTER }, NOT_STUDY] },
+  user: { AND: [{ OR: [{ actorRole: 'PARTICIPANT' }, SELF_REGISTER] }, NOT_STUDY] },
+  study: { entityType: { in: STUDY_ENTITY_TYPES } },
 };
 
 async function listActivityLogs(req, res) {

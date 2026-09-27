@@ -31,6 +31,14 @@ if (protectedPageArea) {
     window.PTN_AUTH_ME.then(({ user }) => {
         if (!user || !PROTECTED_PAGE_ROLES[protectedPageArea].includes(user.role)) {
             window.location.replace('/');
+            return;
+        }
+        // หน้าระบบของฝ่าย: ต้องสังกัดฝ่ายนั้น หรือเป็นผู้บริหารค่าย/SuperAdmin (ตรงกับ requireDepartmentStaff ฝั่ง backend)
+        const pageDepartment = { '/staff/academic': 'ฝ่ายวิชาการ', '/staff/activities': 'ฝ่ายกิจกรรมและสันทนาการ' }[window.location.pathname.replace(/\.html$|\/$/, '')];
+        if (pageDepartment && user.role === 'STAFF') {
+            const isLeadership = !!(user.position && ['ประธานค่าย', 'รองประธานค่าย', 'เลขานุการ'].includes(user.position.name));
+            const isMember = (user.departments || []).some((d) => d.name === pageDepartment);
+            if (!isLeadership && !isMember) window.location.replace('/');
         }
     });
 }

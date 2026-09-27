@@ -11,10 +11,11 @@ const {
   getMyExamHistory,
   removeAttempt,
 } = require('../controllers/oralExamSessionController');
-const { requireRole } = require('../middleware/requireAuth');
+const { requireRole, requireDepartmentStaff } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
+// พี่ค่ายต้องสังกัดฝ่ายวิชาการ (หรือเป็นผู้บริหารค่าย/SuperAdmin) - ดู requireDepartmentStaff
+const requireStaffAccess = requireDepartmentStaff('ฝ่ายวิชาการ');
 const requireParticipantAccess = requireRole('PARTICIPANT');
 // SuperAdmin ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere) - เฉพาะ /me/history ที่อ่านอย่างเดียวเท่านั้น ห้ามใช้กับ /check-in เพราะเป็นการทำธุรกรรมจริง (เช็คอินเข้าคิวสอบแทนคนอื่นไม่ได้)
 const requireParticipantOrSimulateAccess = requireRole('PARTICIPANT', 'SUPERADMIN');

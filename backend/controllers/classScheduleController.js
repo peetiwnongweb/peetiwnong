@@ -33,11 +33,17 @@ async function listClassSchedules(req, res) {
 
   const prisma = await getPrisma();
   const entries = await prisma.classSchedule.findMany({
-    where: { courseFormatId },
+    where: sharedScheduleWhere(courseFormatId),
     include: SCHEDULE_INCLUDE,
     orderBy: ORDER_BY,
   });
   res.json(entries.map(shapeScheduleEntry));
+}
+
+// รายการกิจกรรม (ไม่ผูกวิชา เช่น ลงทะเบียน/พิธีเปิด) ขึ้นในตารางของทุกคอร์ส - เพิ่มครั้งเดียวจากคอร์สไหนก็ได้ แก้/ลบที่เดียวมีผลทุกคอร์ส
+// ส่วนรายการที่ผูกวิชาขึ้นเฉพาะคอร์สของตัวเองเหมือนเดิม
+function sharedScheduleWhere(courseFormatId) {
+  return { OR: [{ courseFormatId }, { subjectId: null }] };
 }
 
 function validateTimeRange(startTime, endTime) {
@@ -139,8 +145,12 @@ async function updateClassSchedule(req, res) {
     return res.status(400).json({ error: 'เลือกได้แค่วิชาหรือชื่อกิจกรรมอย่างใดอย่างหนึ่ง' });
   }
 
+  // กิจกรรม (ใช้ร่วมทุกคอร์ส) ที่ถูกแก้ให้เป็นรายวิชา: ย้ายไปอยู่คอร์สที่กำลังเปิดแก้อยู่ (ส่ง courseFormatId มา) ไม่งั้นจะติดคอร์สเดิมที่สร้างไว้ตอนแรก
+  const targetCourseFormatId = subjectId && !existing.subjectId && Number(req.body.courseFormatId)
+    ? Number(req.body.courseFormatId)
+    : existing.courseFormatId;
   if (subjectId !== undefined) {
-    const subjectError = await validateSubjectCourseFormat(prisma, subjectId, existing.courseFormatId);
+    const subjectError = await validateSubjectCourseFormat(prisma, subjectId, targetCourseFormatId);
     if (subjectError) return res.status(400).json({ error: subjectError });
   }
 
@@ -153,6 +163,7 @@ async function updateClassSchedule(req, res) {
       ...(note !== undefined && { note: note?.trim() || null }),
       ...(subjectId !== undefined && { subjectId }),
       ...(activityName !== undefined && { activityName }),
+      ...(targetCourseFormatId !== existing.courseFormatId && { courseFormatId: targetCourseFormatId }),
     },
   });
 
@@ -215,7 +226,7 @@ async function getMySchedule(req, res) {
   if (!profile || !profile.courseFormatId) return res.json([]);
 
   const entries = await prisma.classSchedule.findMany({
-    where: { courseFormatId: profile.courseFormatId },
+    where: sharedScheduleWhere(profile.courseFormatId),
     include: SCHEDULE_INCLUDE,
     orderBy: ORDER_BY,
   });

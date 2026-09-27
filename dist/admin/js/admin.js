@@ -75,7 +75,7 @@ const ACTIVITY_ENTITY_LABELS = {
 
 const ACTIVITY_ROLE_LABELS = {
     HOST: 'Host', // ค่าเก่าก่อนเปลี่ยนชื่อ role เป็น WEBMANAGER ยังต้องเก็บไว้แสดงผลประวัติการดำเนินการเก่า
-    WEBMANAGER: 'WebManager',
+    WEBMANAGER: 'SuperAdmin',
     ADMIN: 'แอดมิน',
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',

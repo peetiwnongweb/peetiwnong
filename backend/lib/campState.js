@@ -36,9 +36,9 @@ async function getCampState(prismaClient = null) {
 // ข้อความอธิบายว่าทำไมระบบถึงล็อก ใช้ตรงกันทั้ง API (409) และหน้าเว็บ
 function describeLockedReason(state) {
   if (!state.hasCamp) {
-    return 'ยังไม่มีค่ายที่กำลังดำเนินการ ระบบจะเปิดใช้งานเมื่อ WebManager สร้างค่ายและกำหนดประธานค่ายแล้ว';
+    return 'ยังไม่มีค่ายที่กำลังดำเนินการ ระบบจะเปิดใช้งานเมื่อ SuperAdmin สร้างค่ายและกำหนดประธานค่ายแล้ว';
   }
-  return `ค่ายครั้งที่ ${state.generationNo} จบแล้ว ระบบปิดใช้งานจนกว่า WebManager จะสร้างค่ายครั้งถัดไป`;
+  return `ค่ายครั้งที่ ${state.generationNo} จบแล้ว ระบบปิดใช้งานจนกว่า SuperAdmin จะสร้างค่ายครั้งถัดไป`;
 }
 
 module.exports = { getCampState, invalidateCampStateCache, describeLockedReason };

@@ -44,7 +44,7 @@ window.PTN_SITE_SETTINGS = fetch('/api/site-settings')
 const ROLE_LABELS = {
     STAFF: 'พี่ค่าย',
     PARTICIPANT: 'น้องค่าย',
-    WEBMANAGER: 'WebManager',
+    WEBMANAGER: 'SuperAdmin',
 };
 
 // ตำแหน่งผู้บริหารค่าย: มองเห็นเมนู "งาน" ได้ทั้ง 4 ฝ่าย ส่วนตำแหน่งอื่นเห็นเฉพาะฝ่ายที่ตัวเองสังกัด
@@ -68,10 +68,10 @@ function renderCampLockedPage(mainEl, { systemName, audience = "staff", camp = w
     const desc = ended
         ? (audience === "participant"
             ? "ค่ายสิ้นสุดลงแล้ว ระบบส่วนนี้ปิดใช้งาน ขอบคุณที่มาร่วมค่ายกับเรา"
-            : "ตำแหน่งของพี่ค่ายทุกคนถูกรีเซ็ตกลับเป็นทีมงานค่ายแล้ว ระบบส่วนนี้จะเปิดอีกครั้งเมื่อ WebManager สร้างค่ายครั้งถัดไป")
+            : "ตำแหน่งของพี่ค่ายทุกคนถูกรีเซ็ตกลับเป็นทีมงานค่ายแล้ว ระบบส่วนนี้จะเปิดอีกครั้งเมื่อ SuperAdmin สร้างค่ายครั้งถัดไป")
         : (audience === "participant"
             ? "ยังไม่มีค่ายที่กำลังดำเนินการ ระบบส่วนนี้จะเปิดใช้งานเมื่อค่ายเริ่มดำเนินการแล้ว"
-            : "ยังไม่มีค่ายที่กำลังดำเนินการ ระบบจะเปิดใช้งานเมื่อ WebManager สร้างค่ายและกำหนดประธานค่ายแล้ว ก่อนหน้านั้นพี่ค่ายทุกคนมีสถานะเป็นทีมงานค่ายปกติ และยังไม่มีน้องค่ายในระบบ");
+            : "ยังไม่มีค่ายที่กำลังดำเนินการ ระบบจะเปิดใช้งานเมื่อ SuperAdmin สร้างค่ายและกำหนดประธานค่ายแล้ว ก่อนหน้านั้นพี่ค่ายทุกคนมีสถานะเป็นทีมงานค่ายปกติ และยังไม่มีน้องค่ายในระบบ");
     const steps = [
         { label: "สร้างค่าย + กำหนดประธานค่าย", state: camp && camp.hasCamp ? "done" : "current" },
         { label: "ดำเนินการค่าย · ระบบวิชาการและกิจกรรมเปิดใช้งาน", state: isCampActive(camp) ? "current" : "" },
@@ -503,7 +503,7 @@ function renderAvatar(el, avatarUrl, initial) {
 // เปลี่ยนแค่ข้อความท้ายปุ่ม (text node หลังไอคอน svg) ไม่แตะไอคอน
 function pointAdminLinkForRole(link, isWebManager) {
     if (!link) return;
-    const label = isWebManager ? 'Superadmin' : 'Admin';
+    const label = isWebManager ? 'SuperAdmin' : 'Admin';
     const target = isWebManager ? '/webmanager/' : '/admin/';
     link.onclick = () => { window.location.href = target; };
     const textNode = [...link.childNodes].reverse().find((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());

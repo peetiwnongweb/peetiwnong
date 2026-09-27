@@ -767,7 +767,7 @@ function renderDashboardActivities(panel, d) {
 // แท็บ 5: เว็บไซต์ & ระบบ
 // ==========================================
 function renderDashboardSystem(panel, d) {
-    const roleLabel = { WEBMANAGER: 'WebManager', STAFF: 'พี่ค่าย', PARTICIPANT: 'น้องค่าย' };
+    const roleLabel = { WEBMANAGER: 'SuperAdmin', STAFF: 'พี่ค่าย', PARTICIPANT: 'น้องค่าย' };
     const statusLabel = { APPROVED: 'อนุมัติแล้ว', PENDING: 'รออนุมัติ', REJECTED: 'ไม่อนุมัติ' };
     const usersByRole = ['WEBMANAGER', 'STAFF', 'PARTICIPANT'].map((role) => {
         const rows = d.users.filter((u) => u.role === role);
@@ -894,7 +894,7 @@ function renderDashboardUsage(panel, d) {
         { name: 'น้องค่าย', count: d.breakdown.roles.participant, cls: 'blue' },
         { name: 'พี่ค่าย', count: d.breakdown.roles.staff, cls: '' },
         { name: 'ผู้เยี่ยมชม (ไม่ล็อกอิน)', count: d.breakdown.roles.guest, cls: 'green' },
-        { name: 'WebManager', count: d.breakdown.roles.webmanager, cls: 'violet' },
+        { name: 'SuperAdmin', count: d.breakdown.roles.webmanager, cls: 'violet' },
     ];
     const totalBreakdown = breakdownRoles.reduce((s, x) => s + x.count, 0);
     const browsers = [

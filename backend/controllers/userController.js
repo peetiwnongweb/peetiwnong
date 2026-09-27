@@ -196,10 +196,10 @@ async function createUser(req, res) {
     return res.status(400).json({ error: PASSWORD_REQUIREMENTS_MESSAGE });
   }
   if (role === 'WEBMANAGER' && req.session.user.role !== 'WEBMANAGER') {
-    return res.status(403).json({ error: 'เฉพาะ WebManager เท่านั้นที่จัดการบัญชี WebManager ได้' });
+    return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่จัดการบัญชี SuperAdmin ได้' });
   }
   if (isAdmin && req.session.user.role !== 'WEBMANAGER') {
-    return res.status(403).json({ error: 'เฉพาะ WebManager เท่านั้นที่มอบสิทธิ์ผู้ดูแลระบบให้พี่ค่ายได้' });
+    return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่มอบสิทธิ์ผู้ดูแลระบบให้พี่ค่ายได้' });
   }
 
   // profile เป็นข้อมูลเสริม (ชื่อ-นามสกุล/ฝ่าย/ตำแหน่ง ฯลฯ) ส่งมาเฉพาะตอนสร้างจากหน้า "สร้างบัญชีผู้ใช้" เท่านั้น
@@ -276,10 +276,10 @@ async function updateUser(req, res) {
 
     const targetRole = role !== undefined ? role : existing.role;
     if ((existing.role === 'WEBMANAGER' || targetRole === 'WEBMANAGER') && req.session.user.role !== 'WEBMANAGER') {
-      return res.status(403).json({ error: 'เฉพาะ WebManager เท่านั้นที่จัดการบัญชี WebManager ได้' });
+      return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่จัดการบัญชี SuperAdmin ได้' });
     }
     if (isAdmin !== undefined && req.session.user.role !== 'WEBMANAGER') {
-      return res.status(403).json({ error: 'เฉพาะ WebManager เท่านั้นที่มอบสิทธิ์ผู้ดูแลระบบให้พี่ค่ายได้' });
+      return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่มอบสิทธิ์ผู้ดูแลระบบให้พี่ค่ายได้' });
     }
 
     // profile เป็นข้อมูลเสริม (ชื่อ-นามสกุล/ฝ่าย/ตำแหน่ง ฯลฯ) เหมือนตอนสร้างบัญชีจากหน้า "สร้างบัญชีผู้ใช้"
@@ -393,7 +393,7 @@ async function deleteUser(req, res) {
     const existing = await prisma.user.findUnique({ where: { id }, select: { role: true } });
     if (!existing) return res.status(404).json({ error: 'ไม่พบผู้ใช้งานที่ต้องการลบ' });
     if (existing.role === 'WEBMANAGER' && req.session.user.role !== 'WEBMANAGER') {
-      return res.status(403).json({ error: 'เฉพาะ WebManager เท่านั้นที่จัดการบัญชี WebManager ได้' });
+      return res.status(403).json({ error: 'เฉพาะ SuperAdmin เท่านั้นที่จัดการบัญชี SuperAdmin ได้' });
     }
     // บัญชี WebManager ที่สร้างไว้ก่อนใคร (createdAt เก่าสุด) คือบัญชีพื้นฐานของระบบ ลบไม่ได้เด็ดขาดไม่ว่าใครจะล็อกอินอยู่ก็ตาม กันระบบไม่มี Owner เหลือเลย
     if (existing.role === 'WEBMANAGER') {

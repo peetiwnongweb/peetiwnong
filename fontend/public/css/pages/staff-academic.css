@@ -887,6 +887,11 @@
   right: 1.85rem;
 }
 
+.timetable-cell-copy-btn {
+  right: 3.4rem;
+}
+
+.timetable-cell-copy-btn:hover,
 .timetable-cell-edit-btn:hover {
   background-color: var(--brand-50);
   color: var(--brand-600);
@@ -1958,7 +1963,8 @@
 
   /* ปุ่มลบเป็นเครื่องมือแก้ไขบนจอ ไม่เกี่ยวกับเอกสารที่พิมพ์ออกมา ซ่อนออก พร้อมคืนที่ว่างฝั่งขวาของชื่อวิชาที่เผื่อไว้ให้ปุ่มด้วย */
   body.printing-schedule .timetable-cell-delete-btn,
-  body.printing-schedule .timetable-cell-edit-btn {
+  body.printing-schedule .timetable-cell-edit-btn,
+  body.printing-schedule .timetable-cell-copy-btn {
     display: none !important;
   }
 

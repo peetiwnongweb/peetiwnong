@@ -31,6 +31,7 @@ const EDIT_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="
     <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
 </svg>`;
 const PENCIL_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" /></svg>`;
+const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>`;
 const TRASH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
     <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
 </svg>`;
@@ -1342,7 +1343,7 @@ function renderTimetableGrid(wrap, entries, options = {}) {
                 ? `<button type="button" class="timetable-cell-delete-btn" data-entry-id="${entry.id}" title="ลบ">${TRASH_ICON}</button>`
                 : '';
             const editBtn = options.editable && options.onEdit
-                ? `<button type="button" class="timetable-cell-delete-btn timetable-cell-edit-btn" data-entry-id="${entry.id}" title="แก้ไข">${PENCIL_ICON}</button>`
+                ? `<button type="button" class="timetable-cell-delete-btn timetable-cell-copy-btn" data-entry-id="${entry.id}" title="ทำสำเนา">${COPY_ICON}</button><button type="button" class="timetable-cell-delete-btn timetable-cell-edit-btn" data-entry-id="${entry.id}" title="แก้ไข">${PENCIL_ICON}</button>`
                 : '';
             const editingClass = entry.id === editingScheduleEntryId ? 'timetable-entry--editing' : '';
 
@@ -1389,9 +1390,16 @@ function renderTimetableGrid(wrap, entries, options = {}) {
                 options.onEdit(entry);
             });
         });
+        wrap.querySelectorAll('.timetable-cell-copy-btn').forEach((btn) => {
+            const entry = entries.find((e) => e.id === Number(btn.dataset.entryId));
+            btn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                options.onEdit(entry, { duplicate: true });
+            });
+        });
     }
     if (options.editable && options.onDelete) {
-        wrap.querySelectorAll('.timetable-cell-delete-btn:not(.timetable-cell-edit-btn)').forEach((btn) => {
+        wrap.querySelectorAll('.timetable-cell-delete-btn:not(.timetable-cell-edit-btn):not(.timetable-cell-copy-btn)').forEach((btn) => {
             const entryId = Number(btn.dataset.entryId);
             const entry = entries.find((e) => e.id === entryId);
             btn.addEventListener('click', (event) => {
@@ -1614,9 +1622,10 @@ function loadScheduleHighlightOnly() {
 }
 
 // กดดินสอบนการ์ด: เติมค่าเดิมลงฟอร์มด้านบน แล้วเปลี่ยนเป็นโหมดแก้ไข (เช่น เปลี่ยนผู้สอน/เวลา/วิชา)
-function startScheduleEdit(entry) {
+// duplicate: true (ปุ่มทำสำเนา) = เติมค่าเดิมเหมือนกันแต่ยังเป็นโหมด "เพิ่มรายการ" แก้วันที่/เวลาแล้วกดเพิ่มเป็นรายการใหม่ ของเดิมไม่เปลี่ยน
+function startScheduleEdit(entry, { duplicate = false } = {}) {
     closeScheduleFullscreen();
-    editingScheduleEntryId = entry.id;
+    editingScheduleEntryId = duplicate ? null : entry.id;
 
     const subjectSelect = document.getElementById('schedule-subject-select');
     const activityInput = document.getElementById('schedule-activity-input');
@@ -1640,8 +1649,11 @@ function startScheduleEdit(entry) {
     handleScheduleActivityInput();
     document.getElementById('schedule-note-input').value = entry.note || '';
 
-    document.getElementById('schedule-form-title').textContent = `แก้ไขรายการตารางเรียน (${entry.startTime}-${entry.endTime})`;
-    document.getElementById('schedule-submit-btn').textContent = 'บันทึกการแก้ไข';
+    document.getElementById('schedule-form-title').textContent = duplicate
+        ? `ทำสำเนา "${entry.subject?.name || entry.activityName || 'รายการ'}" (แก้วันที่/เวลาแล้วกดเพิ่มรายการ)`
+        : `แก้ไขรายการตารางเรียน (${entry.startTime}-${entry.endTime})`;
+    document.getElementById('schedule-submit-btn').textContent = duplicate ? 'เพิ่มรายการ' : 'บันทึกการแก้ไข';
+    document.getElementById('schedule-cancel-edit-btn').textContent = duplicate ? 'ยกเลิกการทำสำเนา' : 'ยกเลิกการแก้ไข';
     document.getElementById('schedule-cancel-edit-btn').classList.remove('hidden');
     document.getElementById('schedule-cancel-edit-spacer').classList.add('hidden');
     loadScheduleHighlightOnly();

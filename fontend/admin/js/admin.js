@@ -120,7 +120,7 @@ function loadAdminUser() {
             const fullName = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null;
             const positionLabel = (user.position && user.position.name) || roleLabel;
             const subLabel = isPrivilegedStaff ? `${positionLabel} · ผู้ดูแลระบบ` : positionLabel;
-            const nameLine = fullName || (user.role === 'SUPERADMIN' ? 'Owner' : user.email);
+            const nameLine = fullName || (user.role === 'SUPERADMIN' ? 'PTN@main' : user.email);
             const initial = nameLine.charAt(0).toUpperCase();
 
             const display = document.getElementById('admin-username-display');

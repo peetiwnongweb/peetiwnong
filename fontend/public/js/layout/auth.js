@@ -524,7 +524,7 @@ function loginUser(userData) {
     const fullName = userData.firstName && userData.lastName ? `${userData.firstName} ${userData.lastName}` : null;
     const positionLabel = (userData.position && userData.position.name) || roleLabel;
     const subLabel = isPrivilegedStaff ? `${positionLabel} · ผู้ดูแลระบบ` : positionLabel;
-    const nameLine = fullName || (userData.role === 'SUPERADMIN' ? 'Owner' : userData.email);
+    const nameLine = fullName || (userData.role === 'SUPERADMIN' ? 'PTN@main' : userData.email);
     const initial = nameLine.charAt(0).toUpperCase();
     // ปุ่มตัวเรียกที่ header เอาไว้แค่ชื่อ-นามสกุลเฉย ๆ (ตำแหน่ง/ผู้ดูแลระบบไปโชว์ในเมนูที่กดเปิดแทน กันยาวจนล้นบรรทัด)
     const displayName = nameLine;

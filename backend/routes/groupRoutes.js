@@ -8,10 +8,11 @@ const {
   addMember,
   removeMember,
 } = require('../controllers/groupController');
-const { requireRole, requireGroupManagementAccess } = require('../middleware/requireAuth');
+const { requireRole, requireGroupManagementAccess, requireDepartmentStaff } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
+// พี่ค่ายต้องสังกัดฝ่ายกิจกรรมและสันทนาการ (หรือเป็นผู้บริหารค่าย/SuperAdmin) - ดู requireDepartmentStaff
+const requireStaffAccess = requireDepartmentStaff('ฝ่ายกิจกรรมและสันทนาการ');
 
 // รายชื่อกลุ่ม (แค่ดู) ใช้ร่วมกับแท็บ "บันทึกคะแนน" ด้วย พี่ค่ายฝ่ายกิจกรรมทั่วไปเข้าถึงได้
 router.get('/', requireStaffAccess, listGroups);

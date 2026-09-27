@@ -64,6 +64,23 @@ function requireGroupManagementAccess(req, res, next) {
   next();
 }
 
+// ระบบวิชาการ/กิจกรรมเข้าได้เฉพาะพี่ค่ายที่สังกัดฝ่ายนั้น (1 คนอยู่ได้หลายฝ่าย) หรือผู้บริหารค่าย หรือ SuperAdmin
+// เดิมเช็คแค่ "เป็นพี่ค่าย" ทำให้พี่ค่ายฝ่ายอื่นพิมพ์ URL /staff/academic เข้ามาดู/แก้คะแนนได้
+function requireDepartmentStaff(departmentName) {
+  return (req, res, next) => {
+    const user = req.session && req.session.user;
+    if (!user) return res.status(401).json({ error: 'กรุณาเข้าสู่ระบบ' });
+    if (user.role === 'SUPERADMIN') return next();
+    if (user.role !== 'STAFF') return res.status(403).json({ error: 'ไม่มีสิทธิ์เข้าถึง' });
+    const isLeadership = user.position && CAMP_LEADERSHIP_POSITIONS.includes(user.position.name);
+    const isMember = (user.departments || []).some((d) => d.name === departmentName);
+    if (!isLeadership && !isMember) {
+      return res.status(403).json({ error: `ไม่มีสิทธิ์เข้าถึง (เฉพาะพี่ค่าย${departmentName} หรือผู้บริหารค่ายเท่านั้น)` });
+    }
+    next();
+  };
+}
+
 // เช็คว่า user เป็น "manager" ของงานวิชาการหรือไม่ (ผู้บริหารค่าย หรือหัวหน้าฝ่ายวิชาการ) — ใช้ทั้งใน middleware ด้านล่าง
 // และในคอนโทรลเลอร์ที่ต้องเช็คสิทธิ์รายทรัพยากร (เช่น ผู้สอนแก้วิชาตัวเองได้ไหม) เพื่อไม่ให้ตรรกะซ้ำกันสองที่
 function isAcademicManager(user) {
@@ -95,6 +112,7 @@ module.exports = {
   requireGroupManagementAccess,
   isAcademicManager,
   requireAcademicManageAccess,
+  requireDepartmentStaff,
   CAMP_LEADERSHIP_POSITIONS,
 };
 

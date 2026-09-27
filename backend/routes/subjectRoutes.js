@@ -8,10 +8,11 @@ const {
   setSubjectInstructors,
   deleteSubject,
 } = require('../controllers/subjectController');
-const { requireRole, requireAcademicManageAccess } = require('../middleware/requireAuth');
+const { requireRole, requireAcademicManageAccess, requireDepartmentStaff } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
+// พี่ค่ายต้องสังกัดฝ่ายวิชาการ (หรือเป็นผู้บริหารค่าย/SuperAdmin) - ดู requireDepartmentStaff
+const requireStaffAccess = requireDepartmentStaff('ฝ่ายวิชาการ');
 
 router.get('/mine', requireStaffAccess, listMySubjects);
 router.get('/instructor-candidates', requireAcademicManageAccess, listInstructorCandidates);

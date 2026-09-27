@@ -6,11 +6,12 @@ const {
   deleteStudyDocument,
   getMyStudyDocuments,
 } = require('../controllers/studyDocumentController');
-const { requireRole, requireAcademicManageAccess } = require('../middleware/requireAuth');
+const { requireRole, requireAcademicManageAccess, requireDepartmentStaff } = require('../middleware/requireAuth');
 const { uploadStudyDocument, describeUploadError } = require('../middleware/upload');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
+// พี่ค่ายต้องสังกัดฝ่ายวิชาการ (หรือเป็นผู้บริหารค่าย/SuperAdmin) - ดู requireDepartmentStaff
+const requireStaffAccess = requireDepartmentStaff('ฝ่ายวิชาการ');
 
 // SuperAdmin ดูแทนน้องค่ายคนใดคนหนึ่งได้ผ่าน ?simulateParticipantId= (ดู resolveParticipantWhere ใน backend/lib/participantSimulation.js)
 router.get('/me', requireRole('PARTICIPANT', 'SUPERADMIN'), getMyStudyDocuments);

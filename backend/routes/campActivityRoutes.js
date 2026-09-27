@@ -11,10 +11,11 @@ const {
   getScoreSummary,
   getMyGroupScores,
 } = require('../controllers/campActivityController');
-const { requireAuth, requireRole } = require('../middleware/requireAuth');
+const { requireAuth, requireRole, requireDepartmentStaff } = require('../middleware/requireAuth');
 
 const router = express.Router();
-const requireStaffAccess = requireRole('STAFF', 'SUPERADMIN');
+// พี่ค่ายต้องสังกัดฝ่ายกิจกรรมและสันทนาการ (หรือเป็นผู้บริหารค่าย/SuperAdmin) - ดู requireDepartmentStaff
+const requireStaffAccess = requireDepartmentStaff('ฝ่ายกิจกรรมและสันทนาการ');
 const requireParticipantAccess = requireRole('PARTICIPANT');
 
 // อันดับคะแนนรวมทุกกลุ่ม เป็นข้อมูลไม่อ่อนไหว (ชื่อกลุ่ม + คะแนนรวม) จึงเปิดให้ผู้ใช้ที่ล็อกอินแล้วทุก role ดูได้ ไม่เฉพาะฝ่ายจัดการ

@@ -93,7 +93,8 @@ function loadAdminUser() {
 
             const display = document.getElementById('admin-username-display');
             const avatar = document.getElementById('admin-avatar');
-            if (display) display.textContent = `${nameLine} (${subLabel})`;
+            // ชิปบนหัวขึ้นแค่ชื่อ เหมือนหน้าแรก (บทบาทดูได้ในเมนูบัญชี)
+            if (display) display.textContent = nameLine;
             renderAvatar(avatar, user.avatarUrl, initial);
 
             const menuAvatar = document.getElementById('admin-menu-avatar');

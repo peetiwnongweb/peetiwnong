@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>คู่มืออธิบายระบบ PTN Camp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f7f6f3;
+  --paper: #ffffff;
+  --ink: #1d2330;
+  --muted: #5d6576;
+  --line: #e4e1da;
+  --accent: #e8651a;
+  --accent-soft: #fdf0e6;
+  --navy: #26324a;
+  --navy-soft: #eef1f6;
+  --ok: #1f8a5b;
+  --no: #b3413a;
+  --warn-bg: #fff6e0;
+  --warn-line: #e9c46a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #14171d; --paper: #1c2029; --ink: #e8e9ec; --muted: #a2a8b5; --line: #2e3442;
+    --accent: #f5873f; --accent-soft: #33241a; --navy: #b9c6e0; --navy-soft: #232a38;
+    --ok: #4cc28b; --no: #ef7c74; --warn-bg: #2e2816; --warn-line: #8a7230;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #14171d; --paper: #1c2029; --ink: #e8e9ec; --muted: #a2a8b5; --line: #2e3442;
+  --accent: #f5873f; --accent-soft: #33241a; --navy: #b9c6e0; --navy-soft: #232a38;
+  --ok: #4cc28b; --no: #ef7c74; --warn-bg: #2e2816; --warn-line: #8a7230;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: "IBM Plex Sans Thai", "Noto Sans Thai", Tahoma, sans-serif;
+  font-size: 16px; line-height: 1.75;
+  padding: 0 16px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 80px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; }
+@media (max-width: 860px) { .wrap { grid-template-columns: 1fr; gap: 24px; padding-block: 24px 60px; } }
+h1, h2, h3 { font-family: "Prompt", "IBM Plex Sans Thai", sans-serif; line-height: 1.3; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); color: var(--ink); }
+h2 { font-size: 1.45rem; color: var(--navy); display: flex; align-items: baseline; gap: 12px; }
+h2 .no { font-size: .8rem; font-weight: 600; letter-spacing: .08em; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+h3 { font-size: 1.08rem; margin-top: 20px; color: var(--ink); }
+p { margin: 8px 0; max-width: 68ch; }
+ul { margin: 8px 0; padding-left: 1.3em; max-width: 72ch; }
+li { margin: 3px 0; }
+code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: .88em; background: var(--navy-soft); color: var(--navy); padding: 1px 6px; border-radius: 5px; }
+header.intro { grid-column: 1 / -1; border-bottom: 2px solid var(--ink); padding-bottom: 20px; }
+header.intro .eyebrow { font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+header.intro p { color: var(--muted); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 12px; font-size: .9rem; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 600; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font-size: .92rem; }
+nav.toc .label { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: t; }
+nav.toc a { display: block; color: var(--ink); text-decoration: none; padding: 5px 10px; border-radius: 6px; border-left: 2px solid transparent; }
+nav.toc a:hover, nav.toc a:focus-visible { background: var(--accent-soft); border-left-color: var(--accent); outline: none; }
+@media (max-width: 860px) {
+  nav.toc { position: static; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  nav.toc ol { grid-template-columns: 1fr 1fr; }
+}
+main { display: grid; gap: 44px; min-width: 0; }
+section { scroll-margin-top: 20px; }
+section > h2 { padding-bottom: 10px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { background: var(--navy-soft); color: var(--navy); font-weight: 600; font-family: "Prompt", sans-serif; font-size: .88rem; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.c, th.c { text-align: center; }
+.y { color: var(--ok); font-weight: 600; }
+.n { color: var(--muted); }
+.note { border-left: 3px solid var(--warn-line); background: var(--warn-bg); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; max-width: 72ch; }
+.note b { color: var(--ink); }
+.demo { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; margin: 12px 0; max-width: 72ch; }
+.demo .tag { font-size: .75rem; font-weight: 600; letter-spacing: .08em; color: var(--accent); text-transform: uppercase; display: block; }
+.say { font-style: italic; color: var(--navy); border-left: 3px solid var(--navy); padding-left: 12px; margin: 12px 0; max-width: 68ch; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+@media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+.step { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.step .k { font-family: "Prompt", sans-serif; font-weight: 600; color: var(--accent); }
+.step p { font-size: .92rem; margin: 4px 0 0; }
+.time { font-variant-numeric: tabular-nums; }
+footer { grid-column: 1 / -1; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="intro">
+    <div class="eyebrow">ค่ายวิชาการพี่ติวน้อง · PEETIWNONG Academics Camp</div>
+    <h1>คู่มืออธิบายระบบเว็บค่าย</h1>
+    <p>ลำดับการอธิบายระบบ peetiwnong.site ทีละบทบาท ตั้งแต่ SuperAdmin สร้างค่าย ไปจนถึงสิ่งที่พี่ค่ายและน้องค่ายแต่ละคนทำได้ ใช้เป็นสคริปต์ตอนอธิบายและเป็นเอกสารอ้างอิงหลังจากนั้น</p>
+    <div class="meta">
+      <span><b>เว็บ:</b> peetiwnong.site</span>
+      <span><b>หลังบ้าน:</b> /superadmin, /admin</span>
+      <span><b>เวลาอธิบาย:</b> ประมาณ 1 ชั่วโมง</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="สารบัญ">
+    <div class="label">สารบัญ</div>
+    <ol>
+      <li><a href="#prep">เตรียมก่อนอธิบาย</a></li>
+      <li><a href="#superadmin">1 SuperAdmin</a></li>
+      <li><a href="#public">2 หน้าเว็บสาธารณะ</a></li>
+      <li><a href="#staff">3 พี่ค่ายไม่มีฝ่าย</a></li>
+      <li><a href="#academic">4 ฝ่ายวิชาการ</a></li>
+      <li><a href="#activity">5 ฝ่ายกิจกรรม</a></li>
+      <li><a href="#participant">6 น้องค่าย</a></li>
+      <li><a href="#admin">7 Admin</a></li>
+      <li><a href="#leaders">8 ประธาน รอง เลขา</a></li>
+      <li><a href="#matrix">ตารางสรุปสิทธิ์</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="prep">
+      <h2>เตรียมก่อนอธิบาย</h2>
+      <p>เตรียมบัญชีทดสอบไว้ 1 บัญชีต่อบทบาท จะได้ login สลับโชว์ได้ทันที</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>บัญชี</th><th>ใช้โชว์</th></tr></thead>
+        <tbody>
+          <tr><td>SuperAdmin (PTN@main)</td><td>ส่วนที่ 1</td></tr>
+          <tr><td>พี่ค่ายที่ยังไม่มีฝ่าย</td><td>ส่วนที่ 3</td></tr>
+          <tr><td>หัวหน้าฝ่ายวิชาการ และพี่ค่ายวิชาการที่ถูกตั้งเป็นผู้สอน 1 วิชา</td><td>ส่วนที่ 4</td></tr>
+          <tr><td>หัวหน้าฝ่ายกิจกรรม และพี่ค่ายกิจกรรมทั่วไป</td><td>ส่วนที่ 5</td></tr>
+          <tr><td>น้องค่ายที่อยู่ในกลุ่มแล้ว (ใช้มือถือ)</td><td>ส่วนที่ 6</td></tr>
+          <tr><td>พี่ค่ายที่ได้สิทธิ์ Admin</td><td>ส่วนที่ 7</td></tr>
+          <tr><td>ประธานค่าย (ตั้งผ่านคณะทำงาน)</td><td>ส่วนที่ 8</td></tr>
+        </tbody>
+      </table></div>
+      <p class="say">"เห็นเมนูอะไร ขึ้นกับ 2 อย่าง คือฝ่ายที่สังกัดและตำแหน่ง ต่อให้พิมพ์ลิงก์เข้าตรง ๆ ก็เข้าไม่ได้ ระบบกันไว้ทั้งหน้าเว็บและเซิร์ฟเวอร์"</p>
+    </section>
+
+    <section id="superadmin">
+      <h2><span class="no">ส่วนที่ 1</span>SuperAdmin ผู้ดูแลสูงสุด</h2>
+      <p>เข้าที่ <code>/superadmin/login</code> เริ่มจากแดชบอร์ดให้เห็นภาพรวมจำนวนคนและสถานะค่าย</p>
+
+      <h3>จัดการค่าย → ขั้นตอนดำเนินการค่าย</h3>
+      <p>ส่วนที่สำคัญที่สุด ค่ายแต่ละรุ่นมี 3 ขั้น</p>
+      <div class="steps">
+        <div class="step"><div class="k">สร้างค่าย</div><p>ใส่ครั้งที่และเลือกประธานค่าย (บังคับ) ส่วนเลขา รองประธาน หัวหน้าฝ่ายเพิ่มทีหลังได้</p></div>
+        <div class="step"><div class="k">ดำเนินการค่าย</div><p>ระบบวิชาการและกิจกรรมเปิดใช้ แก้ไขคณะทำงานได้ตลอด</p></div>
+        <div class="step"><div class="k">จบค่าย</div><p>ทุกคนกลับเป็นทีมงานค่าย ฝ่ายถูกล้าง ระบบวิชาการและกิจกรรมล็อก</p></div>
+      </div>
+      <ul>
+        <li><b>จำนวนตำแหน่ง:</b> ประธาน 1, รองประธานไม่เกิน 2, เลขานุการ 1, หัวหน้าฝ่ายละ 1 (5 ฝ่าย) และ 1 คนถือได้ตำแหน่งเดียว</li>
+        <li><b>แก้ไขคณะทำงาน:</b> เปลี่ยนประธาน รองประธาน เลขา หรือหัวหน้าฝ่ายได้ระหว่างค่าย คนที่ถูกเอาออกกลับเป็นทีมงานค่าย</li>
+        <li><b>ประวัติค่าย:</b> ดูคณะทำงานของรุ่นก่อน ๆ</li>
+        <li><b>สำรองข้อมูล:</b> สำรองขึ้น Google Drive อัตโนมัติ เก็บ 50 ครั้งล่าสุด</li>
+      </ul>
+      <div class="note"><b>ต้องบอกทุกครั้ง:</b> ก่อนสร้างค่ายใหม่ ระบบจะสำรองข้อมูลก่อน แล้วลบบัญชีน้องค่ายรุ่นเดิมทั้งหมด</div>
+
+      <h3>Home (ตั้งค่าหน้าเว็บสาธารณะ)</h3>
+      <ul>
+        <li>หน้าแรก: เปิดหรือปิดการ์ดประธานค่ายและส่วนต่าง ๆ</li>
+        <li>ประชาสัมพันธ์: เขียนข่าว และอนุมัติข่าวที่พี่ค่ายส่งมา</li>
+        <li>กำหนดการ และประวัติความเป็นมา</li>
+      </ul>
+
+      <h3>การลงทะเบียน</h3>
+      <p>อนุมัติหรือปฏิเสธพี่ค่ายและน้องค่ายที่สมัครเข้ามา มีสวิตช์อนุมัติอัตโนมัติแยกของพี่ค่ายและน้องค่าย</p>
+
+      <h3>จัดการข้อมูลผู้ใช้</h3>
+      <ul>
+        <li>แก้ข้อมูลพี่ค่าย เลือกฝ่ายได้หลายฝ่ายต่อคน</li>
+        <li>มอบสิทธิ์ผู้ดูแลระบบ (Admin) ให้พี่ค่าย</li>
+        <li>ตำแหน่ง "หัวหน้าฝ่าย" ตั้งจากหน้านี้ไม่ได้ ต้องตั้งที่แก้ไขคณะทำงาน</li>
+      </ul>
+
+      <h3>จัดการบัญชี SuperAdmin และประวัติการดำเนินการ</h3>
+      <ul>
+        <li>เพิ่มอีเมลอื่นให้มีสิทธิ์ SuperAdmin เท่ากัน</li>
+        <li>ประวัติแยก 4 แท็บ: Log Admin, Log Users (การสมัคร), Log การเรียน, Log กิจกรรม</li>
+      </ul>
+    </section>
+
+    <section id="public">
+      <h2><span class="no">ส่วนที่ 2</span>หน้าเว็บสาธารณะ</h2>
+      <p>ทุกคนเข้าได้โดยไม่ต้อง login เมนูมี หน้าแรก, ประชาสัมพันธ์, กำหนดการ และประวัติความเป็นมา</p>
+      <ul>
+        <li>การ์ดประธานค่ายรุ่นล่าสุด</li>
+        <li>ปุ่มสมัครพี่ค่ายและน้องค่าย (เปิดหรือปิดได้จากหลังบ้าน)</li>
+        <li>ตรวจสอบผลการลงทะเบียน</li>
+      </ul>
+      <div class="demo"><span class="tag">สาธิต</span>สมัครด้วยอีเมลจริง รับ OTP ทางอีเมล แล้วรออนุมัติ บอกผู้ฟังให้เช็คถังขยะถ้าไม่เห็นอีเมล พี่ค่ายเลือกฝ่ายที่สนใจได้หลายฝ่าย</div>
+    </section>
+
+    <section id="staff">
+      <h2><span class="no">ส่วนที่ 3</span>พี่ค่ายที่ยังไม่มีฝ่าย</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ทำได้</th><th>ทำไม่ได้</th></tr></thead>
+        <tbody><tr>
+          <td>ดูหน้าเว็บสาธารณะ<br>ดูโปรไฟล์ เปลี่ยนได้แค่รูปโปรไฟล์<br>เขียนประชาสัมพันธ์ ส่งแล้วรออนุมัติ และตรวจสอบสถานะข่าว</td>
+          <td>ไม่มีเมนูวิชาการหรือกิจกรรม<br>พิมพ์ลิงก์ <code>/staff/academic</code> เองจะถูกส่งกลับหน้าแรก<br>แก้ข้อมูลส่วนตัวไม่ได้ ต้องแจ้ง Admin</td>
+        </tr></tbody>
+      </table></div>
+      <p class="say">"อยากทำงานฝ่ายไหน ให้ Admin หรือ SuperAdmin เพิ่มฝ่ายให้ เพิ่มแล้วกดรีเฟรชหน้า เมนูจะขึ้นทันที"</p>
+    </section>
+
+    <section id="academic">
+      <h2><span class="no">ส่วนที่ 4</span>ฝ่ายวิชาการ</h2>
+      <p>หน้า <code>/staff/academic</code> เข้าได้เฉพาะพี่ค่ายที่สังกัดฝ่ายวิชาการ ผู้บริหารค่าย และ SuperAdmin</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>งาน</th><th>หัวหน้าฝ่ายวิชาการ</th><th>พี่ค่ายวิชาการทั่วไป</th></tr></thead>
+        <tbody>
+          <tr><td>รายวิชา</td><td>จัดการรายวิชา สร้างวิชาและมอบหมายผู้สอน</td><td>รายวิชาของฉัน เฉพาะวิชาที่ตัวเองสอน</td></tr>
+          <tr><td>คะแนน</td><td>จัดการคะแนน กรอกได้ทุกวิชา</td><td>กรอกได้เฉพาะวิชาตัวเอง วิชาอื่นดูอย่างเดียว</td></tr>
+          <tr><td>ตารางเรียน</td><td>เพิ่ม แก้ไข ทำสำเนา ลบ</td><td>ดูอย่างเดียว กดการ์ดดูรายละเอียดได้</td></tr>
+          <tr><td>เอกสาร</td><td>จัดการเอกสารทั้งหมด</td><td>เอกสารในวิชาตัวเอง</td></tr>
+          <tr><td>สอบอธิบาย</td><td>ตั้งเกณฑ์คะแนน</td><td>เปิดรอบสอบ ขึ้น QR ให้น้องสแกน แล้วประเมินผ่านหรือไม่ผ่านทั้งกลุ่ม</td></tr>
+        </tbody>
+      </table></div>
+      <div class="demo"><span class="tag">สาธิต</span>เพิ่มตารางเรียนแบบกิจกรรม (เช่น พิธีเปิด) แล้วสลับคอร์สให้เห็นว่าขึ้นทั้ง 2 คอร์ส จากนั้นเปิดรอบสอบอธิบายจริงโดยให้มือถือน้องค่าย 1 เครื่องสแกน QR</div>
+    </section>
+
+    <section id="activity">
+      <h2><span class="no">ส่วนที่ 5</span>ฝ่ายกิจกรรมและสันทนาการ</h2>
+      <p>หน้า <code>/staff/activities</code> เข้าได้เฉพาะพี่ค่ายที่สังกัดฝ่ายกิจกรรม ผู้บริหารค่าย และ SuperAdmin</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>งาน</th><th class="c">หัวหน้าฝ่ายกิจกรรม</th><th class="c">พี่ค่ายกิจกรรมทั่วไป</th></tr></thead>
+        <tbody>
+          <tr><td>สร้างกิจกรรม</td><td class="c y">✓</td><td class="c y">✓</td></tr>
+          <tr><td>บันทึกคะแนนกลุ่ม</td><td class="c y">✓</td><td class="c y">✓</td></tr>
+          <tr><td>จัดการกลุ่ม (สร้างกลุ่ม ย้ายน้องเข้ากลุ่ม)</td><td class="c y">✓</td><td class="c n">–</td></tr>
+        </tbody>
+      </table></div>
+      <div class="demo"><span class="tag">สาธิต</span>จัดน้องเข้ากลุ่ม ให้คะแนนกลุ่ม แล้วสลับไปบัญชีน้องค่ายให้เห็นคะแนนขึ้น</div>
+    </section>
+
+    <section id="participant">
+      <h2><span class="no">ส่วนที่ 6</span>น้องค่าย</h2>
+      <ul>
+        <li><b>การเรียน:</b> คะแนนของฉัน, ตารางเรียน (กดการ์ดดูรายละเอียดได้), เอกสาร, ระบบสอบอธิบาย (สแกน QR เข้ารอบสอบ)</li>
+        <li><b>กิจกรรม:</b> ดูกลุ่มของตัวเองและคะแนนกลุ่ม</li>
+        <li><b>โปรไฟล์:</b> ข้อมูลตัวเองและรหัสประจำตัวน้องค่าย</li>
+      </ul>
+      <div class="note"><b>บอกผู้ฟัง:</b> ระบบการเรียนและกิจกรรมใช้ได้เฉพาะตอนค่าย "กำลังดำเนินการ" ก่อนสร้างค่ายหรือหลังจบค่ายจะขึ้นหน้าล็อก</div>
+    </section>
+
+    <section id="admin">
+      <h2><span class="no">ส่วนที่ 7</span>Admin (พี่ค่ายที่ได้สิทธิ์ผู้ดูแลระบบ)</h2>
+      <p>หน้า <code>/admin</code> หน้าตาเหมือน SuperAdmin แต่มีเมนูน้อยกว่า</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ทำได้</th><th>ทำไม่ได้</th></tr></thead>
+        <tbody><tr>
+          <td>แดชบอร์ด<br>Home: ประชาสัมพันธ์และกำหนดการ<br>การลงทะเบียน: อนุมัติพี่ค่ายและน้องค่าย<br>จัดการข้อมูลผู้ใช้ รวมถึงเลือกฝ่าย<br>ประวัติการดำเนินการ 4 แท็บ</td>
+          <td>สร้างค่าย จบค่าย และตั้งคณะทำงาน<br>กำหนดตำแหน่ง<br>มอบสิทธิ์ Admin ให้คนอื่น<br>จัดการบัญชี SuperAdmin</td>
+        </tr></tbody>
+      </table></div>
+      <div class="note"><b>เน้น:</b> สิทธิ์ Admin ไม่ได้ทำให้เข้าระบบวิชาการหรือกิจกรรมได้ ต้องสังกัดฝ่ายนั้นด้วย</div>
+    </section>
+
+    <section id="leaders">
+      <h2><span class="no">ส่วนที่ 8</span>ประธานค่าย รองประธาน เลขานุการ</h2>
+      <ul>
+        <li>ได้สิทธิ์ Admin อัตโนมัติ ไม่ต้องมีคนกดมอบให้</li>
+        <li>เห็นและจัดการได้ทุกฝ่าย เทียบเท่าหัวหน้าฝ่ายของทั้งระบบวิชาการและกิจกรรม</li>
+        <li>ตั้งได้จาก "สร้างค่าย" หรือ "แก้ไขคณะทำงาน" เท่านั้น และหมดตำแหน่งเมื่อจบค่าย</li>
+      </ul>
+    </section>
+
+    <section id="matrix">
+      <h2>ตารางสรุปสิทธิ์</h2>
+      <p>ใช้ปิดท้ายการอธิบาย</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>บทบาท</th><th class="c">หน้าแรก</th><th class="c">เขียนข่าว</th><th>วิชาการ</th><th>กิจกรรม</th><th class="c">/admin</th><th class="c">/superadmin</th></tr></thead>
+        <tbody>
+          <tr><td>ผู้เยี่ยมชม</td><td class="c y">✓</td><td class="c n">–</td><td class="n">–</td><td class="n">–</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>น้องค่าย</td><td class="c y">✓</td><td class="c n">–</td><td>ดูคะแนน ตาราง เอกสาร และเข้าสอบ</td><td>ดูกลุ่มและคะแนน</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>พี่ค่ายไม่มีฝ่าย</td><td class="c y">✓</td><td class="c y">✓</td><td class="n">–</td><td class="n">–</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>พี่ค่ายวิชาการ</td><td class="c y">✓</td><td class="c y">✓</td><td>วิชาที่ตัวเองสอน</td><td class="n">–</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>หัวหน้าฝ่ายวิชาการ</td><td class="c y">✓</td><td class="c y">✓</td><td>จัดการทั้งหมด</td><td class="n">–</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>พี่ค่ายกิจกรรม</td><td class="c y">✓</td><td class="c y">✓</td><td class="n">–</td><td>ยกเว้นจัดกลุ่ม</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>หัวหน้าฝ่ายกิจกรรม</td><td class="c y">✓</td><td class="c y">✓</td><td class="n">–</td><td>จัดการทั้งหมด</td><td class="c n">–</td><td class="c n">–</td></tr>
+          <tr><td>Admin</td><td class="c y">✓</td><td class="c y">✓</td><td>ตามฝ่ายที่สังกัด</td><td>ตามฝ่ายที่สังกัด</td><td class="c y">✓</td><td class="c n">–</td></tr>
+          <tr><td>ประธาน รอง เลขา</td><td class="c y">✓</td><td class="c y">✓</td><td>จัดการทั้งหมด</td><td>จัดการทั้งหมด</td><td class="c y">✓</td><td class="c n">–</td></tr>
+          <tr><td>SuperAdmin</td><td class="c y">✓</td><td class="c y">✓</td><td>จัดการทั้งหมด</td><td>จัดการทั้งหมด</td><td class="c y">✓</td><td class="c y">✓</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>เวลาโดยประมาณ</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ส่วน</th><th class="c">นาที</th></tr></thead>
+        <tbody class="time">
+          <tr><td>1 SuperAdmin</td><td class="c">15</td></tr>
+          <tr><td>2–3 หน้าเว็บสาธารณะ และพี่ค่ายไม่มีฝ่าย</td><td class="c">5</td></tr>
+          <tr><td>4 ฝ่ายวิชาการ</td><td class="c">15</td></tr>
+          <tr><td>5 ฝ่ายกิจกรรม</td><td class="c">10</td></tr>
+          <tr><td>6–8 น้องค่าย, Admin, ผู้บริหารค่าย</td><td class="c">10</td></tr>
+          <tr><td><b>รวม</b></td><td class="c"><b>55–60</b></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </main>
+
+  <footer>อ้างอิงจากระบบ ณ วันที่ 28 กันยายน 2569 · ค่ายวิชาการพี่ติวน้อง</footer>
+</div>
+</body>
+</html>

@@ -66,6 +66,7 @@ tfoot td { font-weight: 700; background: #fafafa; }
     <div class="tabs" role="tablist">
       <button class="tab active" id="tab-real" type="button" onclick="setMode('real')">ใช้รายชื่อจริงจากระบบ</button>
       <button class="tab" id="tab-manual" type="button" onclick="setMode('manual')">กรอกจำนวนเอง (วางแผน)</button>
+      <button class="tab" id="tab-mock" type="button" onclick="setMode('mock')">ข้อมูลตัวอย่าง</button>
     </div>
 
     <div id="panel-real">
@@ -73,6 +74,14 @@ tfoot td { font-weight: 700; background: #fafafa; }
         <button class="btn ghost" id="load-btn" type="button" onclick="loadParticipants()">ดึงรายชื่อน้องค่ายที่อนุมัติแล้ว</button>
       </div>
       <p class="msg" id="load-msg">ต้องเข้าสู่ระบบด้วยบัญชี Admin หรือ SuperAdmin ในเบราว์เซอร์นี้ก่อน</p>
+    </div>
+
+    <div id="panel-mock" hidden>
+      <div class="row">
+        <label class="f">จำนวนน้องค่ายสมมติ<input type="number" id="mock-count" min="1" max="500" value="80"></label>
+        <button class="btn ghost" type="button" onclick="makeMock()">สร้างรายชื่อตัวอย่างใหม่</button>
+      </div>
+      <p class="msg" id="mock-msg">รายชื่อสมมติ ไม่ใช่ข้อมูลจริง ใช้ทดลองการแบ่งกลุ่มเท่านั้น</p>
     </div>
 
     <div id="panel-manual" hidden>
@@ -113,12 +122,38 @@ function setMode(next) {
   mode = next;
   document.getElementById('tab-real').classList.toggle('active', next === 'real');
   document.getElementById('tab-manual').classList.toggle('active', next === 'manual');
+  document.getElementById('tab-mock').classList.toggle('active', next === 'mock');
+  document.getElementById('panel-mock').hidden = next !== 'mock';
+  if (next === 'mock' && !mockParticipants.length) makeMock();
   document.getElementById('panel-real').hidden = next !== 'real';
   document.getElementById('panel-manual').hidden = next !== 'manual';
   document.getElementById('shuffle-btn').hidden = true;
   document.getElementById('csv-btn').hidden = true;
   document.getElementById('summary-card').hidden = true;
   document.getElementById('groups-card').hidden = true;
+}
+
+// ข้อมูลตัวอย่าง: สุ่มชื่อจริง นามสกุล ชื่อเล่น และระดับชั้น ม.4-ม.6
+const MOCK_FIRST_M = ['ธนกร', 'ภูมิพัฒน์', 'ณัฐวุฒิ', 'กิตติพัฒน์', 'ศุภกร', 'วรเมธ', 'ปัณณวัฒน์', 'ธีรวัฒน์', 'พีรพัฒน์', 'ชยพล', 'อนุชา', 'สิรวิชญ์', 'ภัทรพล', 'จิรายุ', 'กฤษดา', 'ณัฐภัทร', 'ธนพล', 'วีรภัทร', 'ปกรณ์', 'ศักดิ์ชัย'];
+const MOCK_FIRST_F = ['ณัฐธิดา', 'ปุณยาพร', 'กัญญารัตน์', 'พิมพ์ชนก', 'ธัญชนก', 'ชนิดาภา', 'สุพิชญา', 'อรอุมา', 'ปวีณา', 'ศศิธร', 'กมลชนก', 'วรรณิศา', 'นภัสสร', 'ภัทรธิดา', 'จิราพร', 'พรนภา', 'ณิชาภัทร', 'ธนัชพร', 'รุ่งนภา', 'สุดารัตน์'];
+const MOCK_LAST = ['ศรีสุข', 'ใจดี', 'แก้วมณี', 'บุญเรือง', 'ทองคำ', 'สมบูรณ์', 'วงศ์ใหญ่', 'มั่นคง', 'รุ่งเรือง', 'แสงทอง', 'พิมพ์ทอง', 'ชัยมงคล', 'เพชรสุวรรณ', 'ศรีวงศ์', 'นาคประเสริฐ', 'จันทร์หอม', 'สุขเจริญ', 'อินทร์แก้ว', 'หมื่นไธสง', 'ดวงดี'];
+const MOCK_NICK = ['ต้น', 'บอล', 'ภูมิ', 'ฟ้า', 'มายด์', 'พลอย', 'แนน', 'บิ๊ก', 'ข้าวหอม', 'น้ำใส', 'ปลื้ม', 'เจ', 'ไอซ์', 'มิว', 'โอ๊ต', 'เฟิร์น', 'กาย', 'แพรว', 'ปาล์ม', 'ใบเตย', 'ตาล', 'นิว', 'บีม', 'เมย์', 'ฟิล์ม', 'ขิม', 'เก่ง', 'ออม', 'ต่อ', 'แบงค์'];
+let mockParticipants = [];
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+function makeMock() {
+  const n = Math.max(1, Math.min(500, Number(document.getElementById('mock-count').value) || 80));
+  mockParticipants = Array.from({ length: n }, () => {
+    const female = Math.random() < 0.5;
+    return {
+      name: `${female ? 'นางสาว' : 'นาย'}${pick(female ? MOCK_FIRST_F : MOCK_FIRST_M)} ${pick(MOCK_LAST)}`,
+      nickname: pick(MOCK_NICK),
+      grade: pick(['ม.4', 'ม.4', 'ม.5', 'ม.5', 'ม.6']),
+      course: '',
+    };
+  });
+  const byGrade = countByGrade(mockParticipants.map((p) => p.grade));
+  document.getElementById('mock-msg').textContent = `สร้างรายชื่อสมมติ ${n} คน (${['ม.4', 'ม.5', 'ม.6'].map((g) => `${g} ${byGrade[g] || 0}`).join(', ')}) ไม่ใช่ข้อมูลจริง`;
+  if (lastGroups && mode === 'mock') run();
 }
 
 function gradeClass(g) {
@@ -205,6 +240,9 @@ function run(reshuffle) {
       return;
     }
     people = participants;
+  } else if (mode === 'mock') {
+    if (!mockParticipants.length) makeMock();
+    people = mockParticipants;
   } else {
     people = [];
     [['ม.4', 'n-4'], ['ม.5', 'n-5'], ['ม.6', 'n-6']].forEach(([grade, id]) => {
@@ -214,8 +252,8 @@ function run(reshuffle) {
   }
   lastGroups = distribute(people, groupCount);
   render(lastGroups, people.length);
-  document.getElementById('shuffle-btn').hidden = mode !== 'real';
-  document.getElementById('csv-btn').hidden = mode !== 'real';
+  document.getElementById('shuffle-btn').hidden = mode === 'manual';
+  document.getElementById('csv-btn').hidden = mode === 'manual';
 }
 
 function render({ groups, grades }, total) {
@@ -232,7 +270,7 @@ function render({ groups, grades }, total) {
   document.getElementById('summary-table').innerHTML = head + `<tbody>${body}</tbody>` + foot;
   document.getElementById('summary-card').hidden = false;
 
-  const showNames = mode === 'real';
+  const showNames = mode !== 'manual';
   document.getElementById('groups-card').hidden = !showNames;
   if (showNames) {
     document.getElementById('groups').innerHTML = groups.map((g, i) => `

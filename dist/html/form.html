@@ -2,7 +2,7 @@
 <html lang="th">
 
 <head>
-    <script src="/js/config.js?v=20260927-20"></script>
+    <script src="/js/config.js?v=20261002-1"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ลงทะเบียนเข้าร่วมค่ายวิชาการ Academy Camp ครั้งที่ 28">
@@ -11,12 +11,12 @@
 
     <!-- Link CSS -->
     <link rel="stylesheet" href="../scr/output.css">
-    <link rel="stylesheet" href="../css/base/variables.css?v=20260927-20">
+    <link rel="stylesheet" href="../css/base/variables.css?v=20261002-1">
     <link rel="stylesheet" href="../css/base/utilities.css">
     <link rel="stylesheet" href="../css/base/loader.css">
-    <link rel="stylesheet" href="../css/layout/footer.css?v=20260927-20">
-    <link rel="stylesheet" href="../css/layout/modal.css?v=20260927-20">
-    <link rel="stylesheet" href="../css/pages/form.css?v=20260927-20">
+    <link rel="stylesheet" href="../css/layout/footer.css?v=20261002-1">
+    <link rel="stylesheet" href="../css/layout/modal.css?v=20261002-1">
+    <link rel="stylesheet" href="../css/pages/form.css?v=20261002-1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,6 +176,21 @@
                         <div class="form-group">
                             <label for="reg-parent-phone" class="form-label">เบอร์โทรผู้ปกครอง <span class="required-mark">*</span></label>
                             <input type="tel" id="reg-parent-phone" required placeholder="0XX-XXX-XXXX" class="form-input" oninput="handleRegPhoneInput(event)">
+                        </div>
+                    </div>
+
+                    <div class="form-grid mb-4">
+                        <div class="form-group">
+                            <label for="reg-grade-level" class="form-label">ระดับชั้น <span class="required-mark">*</span></label>
+                            <select id="reg-grade-level" required class="form-input">
+                                <option value="">-- เลือกระดับชั้น --</option>
+                                <option value="ม.1">ม.1</option>
+                                <option value="ม.2">ม.2</option>
+                                <option value="ม.3">ม.3</option>
+                                <option value="ม.4">ม.4</option>
+                                <option value="ม.5">ม.5</option>
+                                <option value="ม.6">ม.6</option>
+                            </select>
                         </div>
                     </div>
 
@@ -599,8 +614,8 @@
 
     <!-- Link JS -->
     <script src="../js/layout/loader.js"></script>
-    <script src="../js/layout/otp-input.js?v=20260927-20"></script>
-    <script src="../js/pages/form.js?v=20260927-20"></script>
+    <script src="../js/layout/otp-input.js?v=20261002-1"></script>
+    <script src="../js/pages/form.js?v=20261002-1"></script>
 </body>
 
 </html>

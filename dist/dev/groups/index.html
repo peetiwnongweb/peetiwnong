@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>แบ่งกลุ่มน้องค่าย | PTN Camp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap">
+<script src="/js/config.js?v=20261002-1"></script>
+<style>
+:root {
+  --bg: #f7f6f3; --paper: #fff; --ink: #1d2330; --muted: #5d6576; --line: #e4e1da;
+  --accent: #ff7220; --accent-soft: #fff1e6; --navy: #26324a; --navy-soft: #eef1f6;
+  --g4: #2563eb; --g5: #16a34a; --g6: #c2410c; --gx: #6b7280; --err: #b3413a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Prompt", "Leelawadee UI", Tahoma, sans-serif; font-size: 15px; line-height: 1.6; padding: 0 16px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 60px; display: grid; gap: 20px; }
+header h1 { margin: 0; font-size: 1.7rem; }
+header p { margin: 4px 0 0; color: var(--muted); }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+.card h2 { margin: 0 0 12px; font-size: 1.1rem; color: var(--navy); }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.tab { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 8px 16px; font: inherit; cursor: pointer; }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+label.f { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+input[type=number] { width: 120px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; color: var(--ink); background: #fff; }
+button.btn { border: 0; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+button.btn.ghost { background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+button.btn:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.msg { margin-top: 10px; font-size: .92rem; color: var(--muted); }
+.msg.err { color: var(--err); }
+.msg a { color: var(--accent); }
+.stats { display: flex; flex-wrap: wrap; gap: 10px; }
+.stat { background: var(--navy-soft); border-radius: 10px; padding: 8px 14px; font-variant-numeric: tabular-nums; }
+.stat b { font-size: 1.15rem; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { background: var(--navy-soft); color: var(--navy); font-weight: 600; }
+tfoot td { font-weight: 700; background: #fafafa; }
+.groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.group { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.group-head { background: var(--navy); color: #fff; padding: 8px 14px; display: flex; justify-content: space-between; font-weight: 600; }
+.group ol { margin: 0; padding: 10px 14px 12px 34px; font-size: .9rem; }
+.group li { margin: 2px 0; }
+.pill { display: inline-block; font-size: .72rem; font-weight: 600; color: #fff; border-radius: 999px; padding: 0 8px; margin-right: 6px; vertical-align: 1px; }
+.pill.g4 { background: var(--g4); } .pill.g5 { background: var(--g5); } .pill.g6 { background: var(--g6); } .pill.gx { background: var(--gx); }
+.muted { color: var(--muted); font-size: .85rem; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>แบ่งกลุ่มน้องค่าย</h1>
+    <p>แบ่งน้องแต่ละระดับชั้นเข้ากลุ่มแบบวนรอบ ให้ทุกกลุ่มมีน้องทุกชั้นใกล้เคียงกัน และจำนวนรวมต่างกันไม่เกิน 1 คน หน้านี้แค่คำนวณให้ดู ยังไม่บันทึกลงระบบ</p>
+  </header>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="tab active" id="tab-real" type="button" onclick="setMode('real')">ใช้รายชื่อจริงจากระบบ</button>
+      <button class="tab" id="tab-manual" type="button" onclick="setMode('manual')">กรอกจำนวนเอง (วางแผน)</button>
+    </div>
+
+    <div id="panel-real">
+      <div class="row">
+        <button class="btn ghost" id="load-btn" type="button" onclick="loadParticipants()">ดึงรายชื่อน้องค่ายที่อนุมัติแล้ว</button>
+      </div>
+      <p class="msg" id="load-msg">ต้องเข้าสู่ระบบด้วยบัญชี Admin หรือ SuperAdmin ในเบราว์เซอร์นี้ก่อน</p>
+    </div>
+
+    <div id="panel-manual" hidden>
+      <div class="row">
+        <label class="f">ม.4 (คน)<input type="number" id="n-4" min="0" value="40"></label>
+        <label class="f">ม.5 (คน)<input type="number" id="n-5" min="0" value="35"></label>
+        <label class="f">ม.6 (คน)<input type="number" id="n-6" min="0" value="25"></label>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <label class="f">จำนวนกลุ่ม<input type="number" id="group-count" min="1" max="50" value="8"></label>
+      <button class="btn" id="run-btn" type="button" onclick="run()">แบ่งกลุ่ม</button>
+      <button class="btn ghost" id="shuffle-btn" type="button" onclick="run(true)" hidden>สุ่มรายชื่อใหม่</button>
+      <button class="btn ghost" id="csv-btn" type="button" onclick="downloadCsv()" hidden>ดาวน์โหลด CSV</button>
+    </div>
+  </section>
+
+  <section class="card" id="summary-card" hidden>
+    <h2>สรุปจำนวนต่อกลุ่ม</h2>
+    <div class="stats" id="stats"></div>
+    <div class="table-wrap" style="margin-top:12px"><table id="summary-table"></table></div>
+  </section>
+
+  <section id="groups-card" hidden>
+    <div class="groups" id="groups"></div>
+  </section>
+</div>
+
+<script>
+const GRADE_ORDER = ['ม.4', 'ม.5', 'ม.6'];
+const NO_GRADE = 'ไม่ระบุชั้น';
+let mode = 'real';
+let participants = [];
+let lastGroups = null;
+
+function setMode(next) {
+  mode = next;
+  document.getElementById('tab-real').classList.toggle('active', next === 'real');
+  document.getElementById('tab-manual').classList.toggle('active', next === 'manual');
+  document.getElementById('panel-real').hidden = next !== 'real';
+  document.getElementById('panel-manual').hidden = next !== 'manual';
+  document.getElementById('shuffle-btn').hidden = true;
+  document.getElementById('csv-btn').hidden = true;
+  document.getElementById('summary-card').hidden = true;
+  document.getElementById('groups-card').hidden = true;
+}
+
+function gradeClass(g) {
+  return { 'ม.4': 'g4', 'ม.5': 'g5', 'ม.6': 'g6' }[g] || 'gx';
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function loadParticipants() {
+  const msg = document.getElementById('load-msg');
+  const btn = document.getElementById('load-btn');
+  btn.disabled = true;
+  msg.className = 'msg';
+  msg.textContent = 'กำลังดึงรายชื่อ...';
+  try {
+    const res = await fetch('/api/users?role=PARTICIPANT&approvalStatus=APPROVED');
+    if (res.status === 401 || res.status === 403) {
+      msg.className = 'msg err';
+      msg.innerHTML = 'ยังไม่ได้เข้าสู่ระบบด้วยบัญชี Admin หรือ SuperAdmin <a href="/superadmin/login" target="_blank" rel="noopener">เข้าสู่ระบบ</a> แล้วกลับมากดดึงรายชื่ออีกครั้ง';
+      return;
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const users = await res.json();
+    participants = users.map((u) => ({
+      name: [`${u.prefix || ''}${u.firstName || ''}`, u.lastName].filter(Boolean).join(' ') || u.email,
+      nickname: u.nickname || '',
+      grade: u.gradeLevel || NO_GRADE,
+      course: u.courseFormat?.name || '',
+    }));
+    const byGrade = countByGrade(participants.map((p) => p.grade));
+    msg.textContent = `ได้รายชื่อ ${participants.length} คน (${Object.entries(byGrade).map(([g, n]) => `${g} ${n}`).join(', ')})`;
+    if (byGrade[NO_GRADE]) msg.textContent += ` · มี ${byGrade[NO_GRADE]} คนยังไม่ระบุชั้น จะถูกแบ่งเฉลี่ยรวมไว้ท้ายสุด`;
+  } catch (error) {
+    msg.className = 'msg err';
+    msg.textContent = 'ดึงรายชื่อไม่สำเร็จ: ' + error.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function countByGrade(grades) {
+  const out = {};
+  grades.forEach((g) => { out[g] = (out[g] || 0) + 1; });
+  return out;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// วนแจกทีละชั้น โดยกลุ่มที่จะได้คนถัดไปต่อจากชั้นก่อนหน้า (ไม่เริ่มกลุ่ม 1 ใหม่ทุกชั้น)
+// ทำให้แต่ละชั้นต่อกลุ่มต่างกันไม่เกิน 1 คน และจำนวนรวมต่อกลุ่มต่างกันไม่เกิน 1 คน
+function distribute(people, groupCount) {
+  const groups = Array.from({ length: groupCount }, () => []);
+  const grades = [...new Set(people.map((p) => p.grade))].sort((a, b) => {
+    const ia = GRADE_ORDER.indexOf(a), ib = GRADE_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.localeCompare(b, 'th');
+  });
+  let pointer = 0;
+  grades.forEach((grade) => {
+    shuffle(people.filter((p) => p.grade === grade)).forEach((p) => {
+      groups[pointer % groupCount].push(p);
+      pointer += 1;
+    });
+  });
+  return { groups, grades };
+}
+
+function run(reshuffle) {
+  const groupCount = Math.max(1, Math.min(50, Number(document.getElementById('group-count').value) || 1));
+  let people;
+  if (mode === 'real') {
+    if (!participants.length) {
+      const msg = document.getElementById('load-msg');
+      msg.className = 'msg err';
+      msg.textContent = 'กดดึงรายชื่อน้องค่ายก่อน';
+      return;
+    }
+    people = participants;
+  } else {
+    people = [];
+    [['ม.4', 'n-4'], ['ม.5', 'n-5'], ['ม.6', 'n-6']].forEach(([grade, id]) => {
+      const n = Math.max(0, Number(document.getElementById(id).value) || 0);
+      for (let i = 0; i < n; i++) people.push({ grade, name: '', nickname: '', course: '' });
+    });
+  }
+  lastGroups = distribute(people, groupCount);
+  render(lastGroups, people.length);
+  document.getElementById('shuffle-btn').hidden = mode !== 'real';
+  document.getElementById('csv-btn').hidden = mode !== 'real';
+}
+
+function render({ groups, grades }, total) {
+  const sizes = groups.map((g) => g.length);
+  document.getElementById('stats').innerHTML = [
+    ['น้องค่ายทั้งหมด', total + ' คน'],
+    ['จำนวนกลุ่ม', groups.length + ' กลุ่ม'],
+    ['กลุ่มละ', Math.min(...sizes) === Math.max(...sizes) ? `${sizes[0]} คน` : `${Math.min(...sizes)}–${Math.max(...sizes)} คน`],
+  ].map(([k, v]) => `<div class="stat">${k} <b>${v}</b></div>`).join('');
+
+  const head = `<thead><tr><th>กลุ่ม</th>${grades.map((g) => `<th><span class="pill ${gradeClass(g)}">${esc(g)}</span></th>`).join('')}<th>รวม</th></tr></thead>`;
+  const body = groups.map((g, i) => `<tr><td>กลุ่ม ${i + 1}</td>${grades.map((gr) => `<td>${g.filter((p) => p.grade === gr).length}</td>`).join('')}<td><b>${g.length}</b></td></tr>`).join('');
+  const foot = `<tfoot><tr><td>รวม</td>${grades.map((gr) => `<td>${groups.reduce((n, g) => n + g.filter((p) => p.grade === gr).length, 0)}</td>`).join('')}<td>${total}</td></tr></tfoot>`;
+  document.getElementById('summary-table').innerHTML = head + `<tbody>${body}</tbody>` + foot;
+  document.getElementById('summary-card').hidden = false;
+
+  const showNames = mode === 'real';
+  document.getElementById('groups-card').hidden = !showNames;
+  if (showNames) {
+    document.getElementById('groups').innerHTML = groups.map((g, i) => `
+      <div class="group">
+        <div class="group-head"><span>กลุ่ม ${i + 1}</span><span>${g.length} คน</span></div>
+        <ol>${g.map((p) => `<li><span class="pill ${gradeClass(p.grade)}">${esc(p.grade)}</span>${esc(p.name)}${p.nickname ? ` (${esc(p.nickname)})` : ''}${p.course ? ` <span class="muted">· ${esc(p.course)}</span>` : ''}</li>`).join('')}</ol>
+      </div>`).join('');
+  }
+}
+
+function downloadCsv() {
+  if (!lastGroups) return;
+  const rows = [['กลุ่ม', 'ระดับชั้น', 'ชื่อ-นามสกุล', 'ชื่อเล่น', 'คอร์สเรียน']];
+  lastGroups.groups.forEach((g, i) => g.forEach((p) => rows.push([`กลุ่ม ${i + 1}`, p.grade, p.name, p.nickname, p.course])));
+  const csv = '﻿' + rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'แบ่งกลุ่มน้องค่าย.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

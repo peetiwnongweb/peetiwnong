@@ -3,7 +3,7 @@ const { getPrisma } = require('../lib/prisma');
 const { getCampState } = require('../lib/campState');
 const { sendOtpEmail, sendApprovalEmail } = require('../lib/mailer');
 const { logActivity } = require('../lib/activityLog');
-const { buildStaffProfileData, buildParticipantProfileData } = require('./userController');
+const { buildStaffProfileData, buildParticipantProfileData, staffDepartmentsWrite } = require('./userController');
 const { getLatestGenerationNo } = require('../lib/camp');
 const { isPasswordValid, PASSWORD_REQUIREMENTS_MESSAGE } = require('../lib/password');
 const { CAMP_LEADERSHIP_POSITIONS } = require('../middleware/requireAuth');
@@ -404,7 +404,7 @@ async function completeRegistration(req, res) {
       role,
       approvalStatus,
       ...(role === 'STAFF'
-        ? { staffProfile: { create: { ...profileData, campGenerationNo: staffLatestGenerationNo } } }
+        ? { staffProfile: { create: { ...staffDepartmentsWrite(profileData, 'create'), campGenerationNo: staffLatestGenerationNo } } }
         : { participantProfile: { create: { ...profileData, campGenerationNo: participantLatestGenerationNo } } }),
     },
   });

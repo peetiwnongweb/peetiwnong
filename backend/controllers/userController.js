@@ -432,4 +432,4 @@ async function deleteUser(req, res) {
   }
 }
 
-module.exports = { listUsers, createUser, updateUser, deleteUser, buildStaffProfileData, buildParticipantProfileData };
+module.exports = { listUsers, createUser, updateUser, deleteUser, buildStaffProfileData, buildParticipantProfileData, staffDepartmentsWrite };

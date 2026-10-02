@@ -88,6 +88,7 @@ function fillProfileForm(user) {
     setVal('profile-birth-date', formatBirthDateDisplay(user.birthDate));
     setVal('profile-phone', formatPhoneNumber(user.phone));
     setVal('profile-parent-phone', formatPhoneNumber(user.parentPhone));
+    setVal('profile-grade-level', user.gradeLevel);
     setVal('profile-study-plan', formatStudyPlanDisplay(user.studyPlan, user.studyPlanOther));
 
     currentAvatarUrl = user.avatarUrl || null;

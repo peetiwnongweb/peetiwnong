@@ -4024,6 +4024,7 @@ function openApprovalDetail(item, role) {
         ]
         : [
             ['เบอร์โทรผู้ปกครอง', item.parentPhone || '-'],
+            ['ระดับชั้น', item.gradeLevel || '-'],
             ['รูปแบบคอร์สเรียน', item.courseFormat?.name || '-'],
             ['แผนการเรียน', formatStudyPlanLabel(item)],
             ['กลุ่มวิชาที่สนใจ', formatInterestSubjectGroupLabel(item)],
@@ -4736,6 +4737,7 @@ function openUserForm(item, role, onSaved) {
     userParticipantBirthDateSelects?.setValue(item?.birthDate ? toDateInputValue(item.birthDate) : '');
     document.getElementById('user-participant-phone').value = formatPhoneNumber(item?.phone || '');
     document.getElementById('user-participant-parentPhone').value = formatPhoneNumber(item?.parentPhone || '');
+    document.getElementById('user-participant-gradeLevel').value = item?.gradeLevel || '';
     document.getElementById('user-participant-courseFormat').value = item?.courseFormat?.id || '';
     document.getElementById('user-participant-group').value = item?.group?.id || '';
     document.getElementById('user-participant-studyPlan').value = item?.studyPlan || '';
@@ -4820,6 +4822,7 @@ function submitUserForm(event) {
             birthDate: document.getElementById('user-participant-birthDate').value,
             phone: document.getElementById('user-participant-phone').value.trim(),
             parentPhone: document.getElementById('user-participant-parentPhone').value.trim(),
+            gradeLevel: document.getElementById('user-participant-gradeLevel').value,
             courseFormatId: document.getElementById('user-participant-courseFormat').value,
             studyPlan: document.getElementById('user-participant-studyPlan').value,
             studyPlanOther: document.getElementById('user-participant-studyPlanOther').value.trim(),

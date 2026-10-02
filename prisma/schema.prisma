@@ -561,6 +561,7 @@ model ParticipantProfile {
   birthDate                 DateTime?                 @map("birth_date")
   phone                     String?
   parentPhone               String?                   @map("parent_phone")
+  gradeLevel                String?                   @map("grade_level") // ระดับชั้น ม.1-ม.6
   courseFormatId            Int?                      @map("course_format_id")
   courseFormat              CourseFormat?             @relation(fields: [courseFormatId], references: [id], onDelete: SetNull)
   studyPlan                 StudyPlan?                @map("study_plan")

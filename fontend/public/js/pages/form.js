@@ -456,6 +456,7 @@ function handleFormSubmit(event) {
         birthDate: document.getElementById('reg-dob').value,
         phone: document.getElementById('reg-phone').value.replace(/\D/g, ''),
         parentPhone: document.getElementById('reg-parent-phone').value.replace(/\D/g, ''),
+        gradeLevel: document.getElementById('reg-grade-level').value,
         courseFormat: document.getElementById('reg-course').value,
         studyPlan: document.getElementById('reg-plan').value,
         studyPlanOther: document.getElementById('reg-plan-other').value.trim(),

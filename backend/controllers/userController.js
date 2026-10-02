@@ -16,6 +16,9 @@ function staffDepartmentsWrite(data, mode) {
   return { ...rest, departments: mode === 'update' ? { deleteMany: {}, create } : { create } };
 }
 
+// ระดับชั้นของน้องค่าย (ตรงกับตัวเลือกในฟอร์มสมัครและหน้าแก้ไขผู้ใช้)
+const GRADE_LEVELS = ['ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+
 const VALID_ROLES = ['SUPERADMIN', 'STAFF', 'PARTICIPANT'];
 // บัญชี Owner ทุกบัญชีใช้รูปโปรไฟล์คงที่รูปเดียวกัน (ล็อกไว้ เปลี่ยนไม่ได้ - ดู updateAvatar ใน authController.js)
 const SUPERADMIN_AVATAR_URL = '/assets/images/avatars/superadmin/1.png';
@@ -58,6 +61,7 @@ const USER_SAFE_SELECT = {
       birthDate: true,
       phone: true,
       parentPhone: true,
+      gradeLevel: true,
       studyPlan: true,
       studyPlanOther: true,
       interestSubjectGroup: true,
@@ -86,6 +90,7 @@ function toSafeUser(user) {
     birthDate: profile?.birthDate || null,
     phone: profile?.phone || null,
     parentPhone: participantProfile?.parentPhone || null,
+    gradeLevel: participantProfile?.gradeLevel || null,
     affiliation: staffProfile?.affiliation || null,
     occupation: staffProfile?.occupation || null,
     faculty: staffProfile?.faculty || null,
@@ -154,6 +159,9 @@ function buildParticipantProfileData(profile) {
   if (profile.parentPhone && !PHONE_PATTERN.test(parentPhoneDigits)) {
     return { error: 'เบอร์โทรผู้ปกครองไม่ถูกต้อง' };
   }
+  if (profile.gradeLevel && !GRADE_LEVELS.includes(profile.gradeLevel)) {
+    return { error: 'ระดับชั้นไม่ถูกต้อง' };
+  }
   if (profile.studyPlan && !STUDY_PLANS.includes(profile.studyPlan)) {
     return { error: 'แผนการเรียนไม่ถูกต้อง' };
   }
@@ -183,6 +191,7 @@ function buildParticipantProfileData(profile) {
       birthDate,
       phone: phoneDigits || null,
       parentPhone: parentPhoneDigits || null,
+      gradeLevel: profile.gradeLevel || null,
       courseFormatId: profile.courseFormatId ? Number(profile.courseFormatId) : null,
       studyPlan: profile.studyPlan || null,
       studyPlanOther: studyPlanOther || null,

@@ -585,7 +585,7 @@ function subjectScoringSummary(subject) {
     return `อธิบาย:สอบ ${w.explanationWeight}:${w.achievementWeight} &nbsp;|&nbsp; คะแนนเต็มอธิบาย ${subject.explanationMaxScore} / คะแนนสอบ ${subject.achievementMaxScore}`;
 }
 
-// lockWeights = true: สวิตช์สอบอธิบาย/สัดส่วนแสดงอย่างเดียว (ผู้สอนแก้ไม่ได้ ให้หัวหน้าฝ่ายวิชาการตั้ง) แก้ได้แค่คะแนนเต็ม
+// lockWeights = true: สวิตช์สอบอธิบาย/สัดส่วน/คะแนนเต็มอธิบาย แสดงอย่างเดียว (ผู้สอนแก้ไม่ได้ ให้หัวหน้าฝ่ายวิชาการตั้ง) แก้ได้แค่คะแนนเต็มของคะแนนสอบ
 function buildSubjectScoringFieldsHtml(prefix, subject = {}, { lockWeights = false } = {}) {
     const hasExplanation = subject.hasExplanation !== false;
     const lockAttr = lockWeights ? 'disabled title="แก้ไขได้เฉพาะหัวหน้าฝ่ายวิชาการ"' : '';
@@ -613,7 +613,7 @@ function buildSubjectScoringFieldsHtml(prefix, subject = {}, { lockWeights = fal
         <div class="form-grid mb-6">
             <div class="form-group ${hasExplanation ? '' : 'hidden'}" id="${prefix}-explanation-max-group">
                 <label class="form-label">คะแนนเต็ม (อธิบาย)</label>
-                <input type="number" min="1" step="1" class="form-input" id="${prefix}-explanation-max" value="${subject.explanationMaxScore ?? 100}">
+                <input type="number" min="1" step="1" class="form-input${lockInputClass}" id="${prefix}-explanation-max" value="${subject.explanationMaxScore ?? 100}" ${lockAttr}>
             </div>
             <div class="form-group">
                 <label class="form-label">คะแนนเต็ม (คะแนนสอบ)</label>
@@ -2292,11 +2292,8 @@ function openMySubjectEditForm(itemEl, subject) {
     itemEl.querySelector('.activity-edit-form').addEventListener('submit', (event) => {
         event.preventDefault();
         if (!subject.requiresScoring) return renderMySubjectList();
-        // ผู้สอนแก้ได้แค่คะแนนเต็ม (สัดส่วน/การสอบอธิบายให้หัวหน้าฝ่ายวิชาการตั้ง - backend ก็ไม่รับค่าเหล่านี้จากผู้สอน)
+        // ผู้สอนแก้ได้แค่คะแนนเต็มของคะแนนสอบ (คะแนนเต็มอธิบาย/สัดส่วน/การสอบอธิบายให้หัวหน้าฝ่ายวิชาการตั้ง - backend ก็ไม่รับค่าเหล่านี้จากผู้สอน)
         const payload = { achievementMaxScore: Number(itemEl.querySelector('#my-subject-edit-achievement-max').value) || 100 };
-        if (subject.hasExplanation !== false) {
-            payload.explanationMaxScore = Number(itemEl.querySelector('#my-subject-edit-explanation-max').value) || 100;
-        }
         fetch(`/api/subjects/${subject.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

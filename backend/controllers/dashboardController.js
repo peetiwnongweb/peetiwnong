@@ -415,7 +415,7 @@ async function getPeople(req, res) {
 // ==========================================
 async function getAcademic(req, res) {
   const prisma = await getPrisma();
-  const [subjects, courseFormats, participants, scoreRows, attempts, sessions, classSchedules, documents, scoreWeight, gradeBands, oralBands] = await Promise.all([
+  const [subjects, courseFormats, participants, scoreRows, attempts, sessions, classSchedules, documents, gradeBands, oralBands] = await Promise.all([
     prisma.subject.findMany({
       orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
       include: {
@@ -430,7 +430,6 @@ async function getAcademic(req, res) {
     prisma.oralExamSession.findMany({ select: { subjectId: true, status: true, startedAt: true } }),
     prisma.classSchedule.groupBy({ by: ['courseFormatId'], _count: { _all: true } }),
     prisma.studyDocument.groupBy({ by: ['courseFormatId'], _count: { _all: true } }),
-    prisma.scoreWeightSetting.findUnique({ where: { id: 1 } }),
     prisma.gradeBand.count(),
     prisma.oralExamScoreBand.findMany({ orderBy: { attemptNumber: 'asc' }, select: { attemptNumber: true, scorePercent: true } }),
   ]);
@@ -458,6 +457,9 @@ async function getAcademic(req, res) {
       credits: subject.credits,
       explanationMaxScore: subject.explanationMaxScore,
       achievementMaxScore: subject.achievementMaxScore,
+      hasExplanation: subject.hasExplanation,
+      explanationWeight: subject.hasExplanation ? subject.explanationWeight : 0,
+      achievementWeight: subject.hasExplanation ? subject.achievementWeight : 100,
       instructors: subject.instructors.map((i) => i.user.staffProfile?.nickname || toFullName(i.user.staffProfile)),
       periods: subject._count.scheduleEntries,
       eligibleParticipants: eligible.length,
@@ -487,8 +489,6 @@ async function getAcademic(req, res) {
     })),
     sharedDocuments: documents.find((r) => r.courseFormatId === null)?._count._all || 0,
     settings: {
-      explanationWeight: scoreWeight?.explanationWeight ?? 70,
-      achievementWeight: scoreWeight?.achievementWeight ?? 30,
       gradeBands,
       oralExamBands: oralBands,
     },

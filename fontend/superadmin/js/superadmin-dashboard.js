@@ -654,13 +654,15 @@ function renderDashboardPeople(panel, d) {
 function renderDashboardAcademic(panel, d) {
     const scoringRows = d.subjects.filter((s) => s.requiresScoring);
     const subjectRow = (s) => {
-        const expl = s.requiresScoring ? `${s.explanationRecorded}/${s.eligibleParticipants}` : '-';
+        // วิชาที่ไม่สอบอธิบายนับว่าคะแนนอธิบายครบเสมอ
+        const explRecorded = s.hasExplanation === false ? s.eligibleParticipants : s.explanationRecorded;
+        const expl = !s.requiresScoring ? '-' : s.hasExplanation === false ? 'ไม่สอบ' : `${s.explanationRecorded}/${s.eligibleParticipants}`;
         const ach = s.requiresScoring ? `${s.achievementRecorded}/${s.eligibleParticipants}` : '-';
         const scoreTag = !s.requiresScoring ? dashTag('ไม่เก็บคะแนน', 'muted')
             : s.eligibleParticipants === 0 ? dashTag('ไม่มีน้อง', 'muted')
-                : (s.explanationRecorded >= s.eligibleParticipants && s.achievementRecorded >= s.eligibleParticipants) ? dashTag('ครบ', 'ok')
-                    : (s.explanationRecorded === 0 && s.achievementRecorded === 0) ? dashTag('ยังไม่เริ่ม', 'bad')
-                        : dashTag(`${dashPct(s.explanationRecorded + s.achievementRecorded, s.eligibleParticipants * 2)}%`, 'wait');
+                : (explRecorded >= s.eligibleParticipants && s.achievementRecorded >= s.eligibleParticipants) ? dashTag('ครบ', 'ok')
+                    : (explRecorded === 0 && s.achievementRecorded === 0) ? dashTag('ยังไม่เริ่ม', 'bad')
+                        : dashTag(`${dashPct(explRecorded + s.achievementRecorded, s.eligibleParticipants * 2)}%`, 'wait');
         const oral = s.oralExam;
         return `
             <tr>
@@ -669,7 +671,7 @@ function renderDashboardAcademic(panel, d) {
                 <td>${s.instructors.length ? escapeHtml(s.instructors.join(', ')) : dashTag('ยังไม่มีผู้สอน', 'bad')}</td>
                 <td class="dash-num">${s.credits}</td>
                 <td class="dash-num">${dashNum(s.periods)}</td>
-                <td class="dash-num">${expl} <span class="dash-table-sub">เต็ม ${s.explanationMaxScore}</span></td>
+                <td class="dash-num">${expl}${s.hasExplanation === false ? '' : ` <span class="dash-table-sub">เต็ม ${s.explanationMaxScore}</span>`}</td>
                 <td class="dash-num">${ach} <span class="dash-table-sub">เต็ม ${s.achievementMaxScore}</span></td>
                 <td class="dash-num">${scoreTag}</td>
                 <td class="dash-num">${s.requiresScoring ? `${dashNum(oral.passedParticipants)} / ${dashNum(s.eligibleParticipants)}${oral.pendingAttempts ? ` <span class="dash-table-sub">รอ ${oral.pendingAttempts}</span>` : ''}` : '-'}</td>
@@ -695,7 +697,7 @@ function renderDashboardAcademic(panel, d) {
             <div class="dash-card">
                 <p class="dash-card-h">การตั้งค่าคะแนนกลาง</p>
                 ${dashKv([
-                    ['สัดส่วน อธิบาย : สอบ', `${d.settings.explanationWeight} : ${d.settings.achievementWeight}`],
+                    ['สัดส่วน อธิบาย : สอบ', 'ผู้สอนกำหนดแยกรายวิชา'],
                     ['ช่วงเกรด (grade band)', `${d.settings.gradeBands} ช่วง`],
                     ['คะแนนสอบอธิบายตามครั้ง', d.settings.oralExamBands.length ? d.settings.oralExamBands.map((b) => `ครั้ง ${b.attemptNumber}=${b.scorePercent}%`).join(' · ') : '-'],
                 ])}

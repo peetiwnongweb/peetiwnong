@@ -39,14 +39,20 @@ const DOWNLOAD_ICON = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewB
     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 12m0 0l4.5-4.5M12 12V3" />
 </svg>`;
 
-// คะแนนภาพรวม (0-100) = ผลรวมคะแนนที่แต่ละวิชา (เฉพาะที่ requiresScoring) "แบ่ง" มาจากสัดส่วนกลาง (scoreWeightSetting เช่น 70:30) ตามสัดส่วนหน่วยกิตเทียบกับผลรวมหน่วยกิตของวิชาที่เก็บคะแนนทั้งหมด
+// คะแนนภาพรวม (0-100) = ผลรวมคะแนนของแต่ละวิชา (เฉพาะที่ requiresScoring) ถ่วงด้วยหน่วยกิต - แต่ละวิชาใช้สัดส่วนอธิบาย:สอบของตัวเอง (ดู subjectWeights) ตามสัดส่วนหน่วยกิตเทียบกับผลรวมหน่วยกิตของวิชาที่เก็บคะแนนทั้งหมด
 // คะแนนอธิบาย/คะแนนสอบเป็นคะแนนดิบ แปลงเป็นสัดส่วนด้วยคะแนนเต็มของวิชานั้น (explanationMaxScore/achievementMaxScore) ก่อนคูณส่วนแบ่งข้างต้น - ตั้งค่าได้ที่แท็บ "จัดการรายวิชา"
 // สูตรต้องตรงกับ backend (subjectScoreController.js) เป๊ะ ๆ เพื่อให้ preview ตอนพิมพ์ตรงกับค่าที่บันทึกจริง
 // subjects ที่ส่งเข้ามาต้องเป็นวิชาที่ requiresScoring แล้วเท่านั้น (rosterSubjects จาก /api/subject-scores/roster กรองมาให้แล้ว)
 // bands ต้องเรียงจากคะแนนสูงไปต่ำและครอบคลุม 0-100 ครบ (ดู gradeBands ด้านล่าง)
 // totalCreditsOverride: ใช้ตอนคำนวณ preview สดของผู้สอน ที่ subjects ที่มองเห็นถูกกรองเหลือแค่วิชาตัวเอง (ไม่ใช่ทุกวิชาที่เก็บคะแนนจริง)
 // ต้องส่งฐานหน่วยกิตจริงทั้งคอร์สมาแทน ไม่งั้นสัดส่วน % จะพองเกินจริง (ดู totalCredits จาก /api/subject-scores/roster)
-function computeSubjectScoreSummary(subjects, scoreBySubjectId, bands, weights, totalCreditsOverride) {
+// สัดส่วนอธิบาย:สอบที่ใช้จริงของวิชา (ผู้สอนกำหนดเอง) - วิชาที่ไม่สอบอธิบายคิดคะแนนสอบ 100% ตรงกับ backend (lib/subjectScoring.js)
+function subjectWeights(subject) {
+    if (subject.hasExplanation === false) return { explanationWeight: 0, achievementWeight: 100 };
+    return { explanationWeight: subject.explanationWeight ?? 70, achievementWeight: subject.achievementWeight ?? 30 };
+}
+
+function computeSubjectScoreSummary(subjects, scoreBySubjectId, bands, totalCreditsOverride) {
     const totalCredits = totalCreditsOverride ?? subjects.reduce((sum, s) => sum + s.credits, 0);
 
     const perSubject = subjects.map((s) => {
@@ -54,8 +60,8 @@ function computeSubjectScoreSummary(subjects, scoreBySubjectId, bands, weights, 
         const explanationScore = score?.explanationScore || 0;
         const achievementScore = score?.achievementScore || 0;
         const creditShare = totalCredits ? s.credits / totalCredits : 0;
-        const explanationQuota = weights.explanationWeight * creditShare;
-        const achievementQuota = weights.achievementWeight * creditShare;
+        const explanationQuota = subjectWeights(s).explanationWeight * creditShare;
+        const achievementQuota = subjectWeights(s).achievementWeight * creditShare;
         const explanationPart = (explanationScore / s.explanationMaxScore) * explanationQuota;
         const achievementPart = (achievementScore / s.achievementMaxScore) * achievementQuota;
         const subjectScore = Math.round((explanationPart + achievementPart) * 100) / 100;
@@ -107,8 +113,6 @@ let gradeBands = [
     { minScore: 0, maxScore: 0, label: 'ไม่ผ่าน', colorKey: 'rose' },
 ];
 
-// สัดส่วนคะแนนอธิบาย:คะแนนสอบโดยรวม ใช้ร่วมกันทุกวิชาที่ requiresScoring (กำหนดเองได้ที่แท็บ "จัดการคะแนน") ค่าเริ่มต้นตรงกับ default ฝั่ง backend (scoreWeightSetting.js)
-let scoreWeightSetting = { explanationWeight: 70, achievementWeight: 30 };
 
 // ต้องให้ผลตรงกับ isAcademicManager() ฝั่ง backend (requireAuth.js) เป๊ะ ๆ - reuse LEADERSHIP_POSITIONS ที่มีอยู่แล้วจาก auth.js แทนการประกาศซ้ำ
 function computeAcademicTier(user, myAssignedSubjects) {
@@ -371,7 +375,7 @@ function renderSubjectList() {
                 <div class="activity-item-header-row">
                     <div>
                         <p class="activity-item-name">${subject.name}</p>
-                        <p class="activity-item-desc">${subject.requiresScoring ? `เก็บคะแนน &nbsp;|&nbsp; คะแนนเต็มอธิบาย ${subject.explanationMaxScore} / คะแนนสอบ ${subject.achievementMaxScore}` : 'ไม่เก็บคะแนน'} &nbsp;|&nbsp; ${subject.credits} หน่วยกิต</p>
+                        <p class="activity-item-desc">${subject.requiresScoring ? `เก็บคะแนน &nbsp;|&nbsp; ${subjectScoringSummary(subject)}` : 'ไม่เก็บคะแนน'} &nbsp;|&nbsp; ${subject.credits} หน่วยกิต</p>
                     </div>
                     <div class="activity-item-actions">
                         <button type="button" class="activity-icon-btn edit" title="แก้ไข">${EDIT_ICON}</button>
@@ -495,16 +499,7 @@ function openSubjectEditForm(itemEl, subject) {
                 </label>
             </div>
             <div id="subject-edit-scoring-fields" class="${subject.requiresScoring ? '' : 'hidden'}">
-                <div class="form-grid mb-6">
-                    <div class="form-group">
-                        <label class="form-label">คะแนนเต็ม (อธิบาย)</label>
-                        <input type="number" min="1" step="1" class="form-input" id="subject-edit-explanation-max" value="${subject.explanationMaxScore}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">คะแนนเต็ม (คะแนนสอบ)</label>
-                        <input type="number" min="1" step="1" class="form-input" id="subject-edit-achievement-max" value="${subject.achievementMaxScore}">
-                    </div>
-                </div>
+                ${buildSubjectScoringFieldsHtml('subject-edit', subject)}
                 <div class="form-group mb-6" style="max-width: 12rem;">
                     <label class="form-label">หน่วยกิต</label>
                     <input type="number" min="0.5" step="0.5" class="form-input" id="subject-edit-credits" value="${subject.credits}">
@@ -520,17 +515,20 @@ function openSubjectEditForm(itemEl, subject) {
     itemEl.querySelector('#subject-edit-requires-scoring').addEventListener('change', (event) => {
         handleSubjectRequiresScoringToggle(event.target, itemEl.querySelector('#subject-edit-scoring-fields'));
     });
+    wireSubjectScoringFields(itemEl, 'subject-edit');
     itemEl.querySelector('.activity-edit-form').addEventListener('submit', (event) => {
         event.preventDefault();
+        const requiresScoring = itemEl.querySelector('#subject-edit-requires-scoring').checked;
+        const scoring = readSubjectScoringFields(itemEl, 'subject-edit');
+        if (requiresScoring && !scoring) return;
         updateSubject(subject.id, {
+            ...(requiresScoring ? scoring : {}),
             name: itemEl.querySelector('#subject-edit-name').value.trim(),
             courseFormatId: (() => {
                 const v = itemEl.querySelector('#subject-edit-course-format').value;
                 return v === 'both' ? null : Number(v);
             })(),
-            requiresScoring: itemEl.querySelector('#subject-edit-requires-scoring').checked,
-            explanationMaxScore: Number(itemEl.querySelector('#subject-edit-explanation-max').value),
-            achievementMaxScore: Number(itemEl.querySelector('#subject-edit-achievement-max').value),
+            requiresScoring,
             credits: Number(itemEl.querySelector('#subject-edit-credits').value),
         });
     });
@@ -577,13 +575,105 @@ function handleSubjectRequiresScoringToggle(checkboxEl, fieldsWrapEl) {
     fieldsWrapEl.classList.toggle('hidden', !checkboxEl.checked);
 }
 
+// ==========================================
+// ตั้งค่าการเก็บคะแนนรายวิชา: สอบอธิบายไหม + สัดส่วนอธิบาย:สอบ + คะแนนเต็ม (ผู้สอนกำหนดเองต่อวิชา)
+// ใช้ร่วมกันทั้งฟอร์มเพิ่มวิชา ฟอร์มแก้ไขของหัวหน้าฝ่าย และฟอร์มแก้ไขของผู้สอน (prefix แยก id กันชน)
+// ==========================================
+function subjectScoringSummary(subject) {
+    if (subject.hasExplanation === false) return `ไม่สอบอธิบาย (คะแนนสอบ 100%) &nbsp;|&nbsp; คะแนนสอบเต็ม ${subject.achievementMaxScore}`;
+    const w = subjectWeights(subject);
+    return `อธิบาย:สอบ ${w.explanationWeight}:${w.achievementWeight} &nbsp;|&nbsp; คะแนนเต็มอธิบาย ${subject.explanationMaxScore} / คะแนนสอบ ${subject.achievementMaxScore}`;
+}
+
+function buildSubjectScoringFieldsHtml(prefix, subject = {}) {
+    const hasExplanation = subject.hasExplanation !== false;
+    const w = subject.hasExplanation === false
+        ? { explanationWeight: subject.explanationWeight ?? 70, achievementWeight: subject.achievementWeight ?? 30 }
+        : subjectWeights(subject);
+    return `
+        <div class="form-group mb-6">
+            <label class="toggle-switch-label">
+                <input type="checkbox" id="${prefix}-has-explanation" class="toggle-switch" ${hasExplanation ? 'checked' : ''}>
+                มีสอบอธิบาย (ปิด = คิดจากคะแนนสอบ 100%)
+            </label>
+        </div>
+        <div id="${prefix}-weight-fields" class="form-grid mb-6 ${hasExplanation ? '' : 'hidden'}">
+            <div class="form-group">
+                <label class="form-label">สัดส่วนคะแนนอธิบาย (%)</label>
+                <input type="number" min="0" max="100" step="1" class="form-input" id="${prefix}-explanation-weight" value="${w.explanationWeight}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">สัดส่วนคะแนนสอบ (%)</label>
+                <input type="number" min="0" max="100" step="1" class="form-input" id="${prefix}-achievement-weight" value="${w.achievementWeight}">
+            </div>
+        </div>
+        <div class="form-grid mb-6">
+            <div class="form-group ${hasExplanation ? '' : 'hidden'}" id="${prefix}-explanation-max-group">
+                <label class="form-label">คะแนนเต็ม (อธิบาย)</label>
+                <input type="number" min="1" step="1" class="form-input" id="${prefix}-explanation-max" value="${subject.explanationMaxScore ?? 100}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">คะแนนเต็ม (คะแนนสอบ)</label>
+                <input type="number" min="1" step="1" class="form-input" id="${prefix}-achievement-max" value="${subject.achievementMaxScore ?? 100}">
+            </div>
+        </div>
+    `;
+}
+
+// สลับซ่อน/แสดงช่องที่เกี่ยวกับการสอบอธิบาย + กรอกสัดส่วนฝั่งหนึ่งแล้วอีกฝั่งเติมให้ครบ 100 อัตโนมัติ
+function wireSubjectScoringFields(root, prefix) {
+    const q = (id) => root.querySelector(`#${prefix}-${id}`);
+    const toggle = q('has-explanation');
+    toggle.addEventListener('change', () => {
+        q('weight-fields').classList.toggle('hidden', !toggle.checked);
+        q('explanation-max-group').classList.toggle('hidden', !toggle.checked);
+    });
+    const explanation = q('explanation-weight');
+    const achievement = q('achievement-weight');
+    const complement = (from, to) => from.addEventListener('input', () => {
+        const v = Number(from.value);
+        if (from.value !== '' && Number.isInteger(v) && v >= 0 && v <= 100) to.value = 100 - v;
+    });
+    complement(explanation, achievement);
+    complement(achievement, explanation);
+}
+
+// คืน payload สำหรับ API หรือ null ถ้าค่าไม่ถูกต้อง (แจ้งเตือนให้แล้ว)
+function readSubjectScoringFields(root, prefix) {
+    const q = (id) => root.querySelector(`#${prefix}-${id}`);
+    const hasExplanation = q('has-explanation').checked;
+    const explanationWeight = Number(q('explanation-weight').value);
+    const achievementWeight = Number(q('achievement-weight').value);
+    if (hasExplanation && (!Number.isInteger(explanationWeight) || !Number.isInteger(achievementWeight)
+        || explanationWeight < 0 || achievementWeight < 0 || explanationWeight + achievementWeight !== 100)) {
+        showActivitiesToast('สัดส่วนคะแนนอธิบาย + คะแนนสอบ ต้องเป็นจำนวนเต็มและรวมกันเท่ากับ 100', false);
+        return null;
+    }
+    const payload = {
+        hasExplanation,
+        achievementMaxScore: Number(q('achievement-max').value) || 100,
+    };
+    if (hasExplanation) {
+        payload.explanationWeight = explanationWeight;
+        payload.achievementWeight = achievementWeight;
+        payload.explanationMaxScore = Number(q('explanation-max').value) || 100;
+    }
+    return payload;
+}
+
+function renderSubjectCreateScoringFields() {
+    const root = document.getElementById('subject-create-scoring-fields');
+    if (!root) return;
+    root.innerHTML = buildSubjectScoringFieldsHtml('subject-create');
+    wireSubjectScoringFields(root, 'subject-create');
+}
+
 function handleSubjectCreateSubmit(event) {
     event.preventDefault();
     const nameInput = document.getElementById('subject-name-input');
     const courseFormatSelect = document.getElementById('subject-course-format-select');
     const requiresScoringInput = document.getElementById('subject-requires-scoring-input');
-    const explanationMaxInput = document.getElementById('subject-explanation-max-input');
-    const achievementMaxInput = document.getElementById('subject-achievement-max-input');
+    const scoringRoot = document.getElementById('subject-create-scoring-fields');
     const creditsInput = document.getElementById('subject-credits-input');
     const btn = event.target.querySelector('button[type="submit"]');
 
@@ -591,6 +681,8 @@ function handleSubjectCreateSubmit(event) {
         showActivitiesToast('กรุณาเลือกคอร์ส', false);
         return;
     }
+    const scoring = requiresScoringInput.checked ? readSubjectScoringFields(scoringRoot, 'subject-create') : {};
+    if (!scoring) return;
 
     Loader.setButtonLoading(btn, 'กำลังเพิ่ม...');
 
@@ -601,8 +693,7 @@ function handleSubjectCreateSubmit(event) {
             name: nameInput.value.trim(),
             courseFormatId: courseFormatSelect.value === 'both' ? null : Number(courseFormatSelect.value),
             requiresScoring: requiresScoringInput.checked,
-            explanationMaxScore: Number(explanationMaxInput.value) || 100,
-            achievementMaxScore: Number(achievementMaxInput.value) || 100,
+            ...scoring,
             credits: Number(creditsInput.value) || 1,
         }),
     })
@@ -611,8 +702,7 @@ function handleSubjectCreateSubmit(event) {
             nameInput.value = '';
             requiresScoringInput.checked = true;
             handleSubjectRequiresScoringToggle(requiresScoringInput, document.getElementById('subject-scoring-fields'));
-            explanationMaxInput.value = '100';
-            achievementMaxInput.value = '100';
+            renderSubjectCreateScoringFields();
             creditsInput.value = '1';
             showActivitiesToast('เพิ่มรายวิชาสำเร็จ', true);
             loadSubjects();
@@ -629,53 +719,6 @@ function handleSubjectCreateSubmit(event) {
 // ==========================================
 // แท็บ: จัดการคะแนน
 // ==========================================
-function loadScoreWeightSetting() {
-    return fetch('/api/score-weight-setting')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((setting) => {
-            if (!setting) return;
-            scoreWeightSetting = { explanationWeight: setting.explanationWeight, achievementWeight: setting.achievementWeight };
-            const explanationInput = document.getElementById('score-weight-explanation-input');
-            const achievementInput = document.getElementById('score-weight-achievement-input');
-            if (explanationInput) explanationInput.value = scoreWeightSetting.explanationWeight;
-            if (achievementInput) achievementInput.value = scoreWeightSetting.achievementWeight;
-        })
-        .catch((error) => console.error('โหลดสัดส่วนคะแนนโดยรวมไม่สำเร็จ:', error));
-}
-
-async function handleScoreWeightFormSubmit(event) {
-    event.preventDefault();
-    const explanationWeight = Number(document.getElementById('score-weight-explanation-input').value);
-    const achievementWeight = Number(document.getElementById('score-weight-achievement-input').value);
-
-    if (explanationWeight + achievementWeight !== 100) {
-        showActivitiesToast('สัดส่วนคะแนนอธิบาย + คะแนนสอบ ต้องรวมกันเท่ากับ 100', false);
-        return;
-    }
-
-    const confirmed = await showConfirm(
-        `บันทึกสัดส่วนคะแนนอธิบาย:คะแนนสอบเป็น ${explanationWeight}:${achievementWeight} มีผลกับทุกวิชาที่ต้องเก็บคะแนนทันที ใช่หรือไม่?`,
-        { title: 'ยืนยันการบันทึกสัดส่วนคะแนน', confirmText: 'บันทึก' }
-    );
-    if (!confirmed) return;
-
-    fetch('/api/score-weight-setting', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ explanationWeight, achievementWeight }),
-    })
-        .then(async (res) => {
-            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
-            scoreWeightSetting = { explanationWeight, achievementWeight };
-            showActivitiesToast('บันทึกสัดส่วนคะแนนโดยรวมสำเร็จ', true);
-            loadScoreRoster();
-        })
-        .catch((error) => {
-            console.error(error);
-            showActivitiesToast(error.message || 'บันทึกสัดส่วนคะแนนโดยรวมไม่สำเร็จ', false);
-        });
-}
-
 function loadGradeBands() {
     return fetch('/api/grade-bands')
         .then((res) => (res.ok ? res.json() : null))
@@ -913,7 +956,7 @@ function renderScoreTable(rosterSubjects, roster, totalCreditsOverride) {
         return;
     }
 
-    // ส่วนแบ่งคะแนนรวมของแต่ละวิชา = สัดส่วนกลาง (scoreWeightSetting) x สัดส่วนหน่วยกิตของวิชานี้เทียบกับผลรวมหน่วยกิตของ "ทุกวิชา" ที่เก็บคะแนนทั้งคอร์ส
+    // ส่วนแบ่งคะแนนรวมของแต่ละวิชา = สัดส่วนอธิบาย:สอบของวิชานั้น (subjectWeights) x สัดส่วนหน่วยกิตของวิชานี้เทียบกับผลรวมหน่วยกิตของ "ทุกวิชา" ที่เก็บคะแนนทั้งคอร์ส
     // ไม่ใช่แค่ rosterSubjects.reduce(...) เพราะฝั่งผู้สอนมองเห็นแค่วิชาตัวเอง (rosterSubjects ถูกกรองแล้ว) ต้องใช้ totalCreditsOverride จาก backend (ฐานหน่วยกิตจริงทั้งคอร์ส) แทนเสมอถ้ามีมา
     const totalCredits = totalCreditsOverride ?? rosterSubjects.reduce((sum, s) => sum + s.credits, 0);
     const subjectHeaders = rosterSubjects.map((s) => `
@@ -922,10 +965,10 @@ function renderScoreTable(rosterSubjects, roster, totalCreditsOverride) {
     // แสดงคะแนนเต็มและส่วนแบ่งคะแนนรวมแยกใต้หัวข้อของแต่ละประเภท (อธิบาย/สอบ) เช่น "เต็ม 100 · 14%" แทนที่จะรวมไว้แถวเดียวด้านบน
     const subjectSubHeaders = rosterSubjects.map((s) => {
         const creditShare = totalCredits ? s.credits / totalCredits : 0;
-        const explanationSharePct = Math.round(scoreWeightSetting.explanationWeight * creditShare * 10) / 10;
-        const achievementSharePct = Math.round(scoreWeightSetting.achievementWeight * creditShare * 10) / 10;
+        const explanationSharePct = Math.round(subjectWeights(s).explanationWeight * creditShare * 10) / 10;
+        const achievementSharePct = Math.round(subjectWeights(s).achievementWeight * creditShare * 10) / 10;
         return `
-        <th class="subject-score-subcol subject-score-group-start">คะแนนอธิบาย<br><span class="subject-score-max-hint">เต็ม ${s.explanationMaxScore} · ${explanationSharePct}%</span></th>
+        <th class="subject-score-subcol subject-score-group-start">คะแนนอธิบาย<br><span class="subject-score-max-hint">${s.hasExplanation === false ? 'ไม่สอบอธิบาย' : `เต็ม ${s.explanationMaxScore} · ${explanationSharePct}%`}</span></th>
         <th class="subject-score-subcol">คะแนนสอบ<br><span class="subject-score-max-hint">เต็ม ${s.achievementMaxScore} · ${achievementSharePct}%</span></th>
     `;
     }).join('');
@@ -967,9 +1010,10 @@ function renderScoreTable(rosterSubjects, roster, totalCreditsOverride) {
             const existing = participant.scores.find((sc) => sc.subjectId === s.id);
             const draft = draftForParticipant?.[s.id];
             // ถ้ามีร่างที่ยังไม่บันทึกไว้ (ตอนพิมพ์ก่อนหน้าแล้วรีเฟรชหน้าไปก่อนกดบันทึก) ใช้ค่าร่างแทนค่าที่บันทึกจริงในการแสดงผล
-            const explanationSaved = existing?.explanationScore ?? '';
+            const noExplanation = s.hasExplanation === false;
+            const explanationSaved = noExplanation ? '' : (existing?.explanationScore ?? '');
             const achievementSaved = existing?.achievementScore ?? '';
-            const explanationValue = draft ? draft.explanationScore : explanationSaved;
+            const explanationValue = draft && !noExplanation ? draft.explanationScore : explanationSaved;
             const achievementValue = draft ? draft.achievementScore : achievementSaved;
             // ไฮไลต์ช่องที่ค่าปัจจุบันต่างจากค่าที่บันทึกจริงไว้แล้ว (ยังไม่ได้กดบันทึก) - ดู .subject-score-input--dirty
             const explanationDirty = String(explanationValue) !== String(explanationSaved) ? 'subject-score-input--dirty' : '';
@@ -978,14 +1022,14 @@ function renderScoreTable(rosterSubjects, roster, totalCreditsOverride) {
             const disabledAttr = canEditThisView ? '' : 'disabled';
             // % ที่แสดง = คะแนนดิบ/คะแนนเต็ม คูณส่วนแบ่งคะแนนรวมของประเภทนี้ (ตัวเดียวกับที่ใช้คำนวณคะแนนรวม) ไม่ใช่แค่คะแนนดิบ/คะแนนเต็มเฉย ๆ
             const creditShare = totalCredits ? s.credits / totalCredits : 0;
-            const explanationQuota = scoreWeightSetting.explanationWeight * creditShare;
-            const achievementQuota = scoreWeightSetting.achievementWeight * creditShare;
+            const explanationQuota = subjectWeights(s).explanationWeight * creditShare;
+            const achievementQuota = subjectWeights(s).achievementWeight * creditShare;
             const explanationPercent = `${explanationValue !== '' ? Math.round((Number(explanationValue) / s.explanationMaxScore) * explanationQuota) : 0}%`;
             const achievementPercent = `${achievementValue !== '' ? Math.round((Number(achievementValue) / s.achievementMaxScore) * achievementQuota) : 0}%`;
             return `
                 <td class="subject-score-group-start">
                     <div class="subject-score-cell">
-                        <input type="number" min="0" max="${s.explanationMaxScore}" step="1" class="subject-score-input ${explanationDirty}" data-subject-id="${s.id}" data-type="explanation" data-saved-value="${explanationSaved}" value="${explanationValue}" ${disabledAttr}>
+                        <input type="number" min="0" max="${s.explanationMaxScore}" step="1" class="subject-score-input ${explanationDirty}" data-subject-id="${s.id}" data-type="explanation" data-saved-value="${explanationSaved}" value="${explanationValue}" ${noExplanation ? 'disabled placeholder="-" title="วิชานี้ไม่สอบอธิบาย"' : disabledAttr}>
                         <span class="subject-score-percent" data-subject-id="${s.id}" data-type="explanation">${explanationPercent}</span>
                     </div>
                 </td>
@@ -1082,14 +1126,14 @@ function buildScoreReportHtml(rosterSubjects, roster, courseName, generationNo, 
     const subjectHeaderRow1 = rosterSubjects.map((s) => `
         <th colspan="4" class="print-report-subject-header">${s.name}<br><span class="print-report-hint">(${s.credits} นก.)</span></th>
     `).join('');
-    const subjectHeaderRow2 = rosterSubjects.map(() => `
-        <th colspan="2" class="print-report-hint">คะแนนอธิบาย</th>
+    const subjectHeaderRow2 = rosterSubjects.map((s) => `
+        <th colspan="2" class="print-report-hint">${s.hasExplanation === false ? 'ไม่สอบอธิบาย' : 'คะแนนอธิบาย'}</th>
         <th colspan="2" class="print-report-hint">คะแนนสอบ</th>
     `).join('');
     const subjectHeaderRow3 = rosterSubjects.map((s) => {
         const creditShare = totalCredits ? s.credits / totalCredits : 0;
-        const explanationSharePct = Math.round(scoreWeightSetting.explanationWeight * creditShare * 10) / 10;
-        const achievementSharePct = Math.round(scoreWeightSetting.achievementWeight * creditShare * 10) / 10;
+        const explanationSharePct = Math.round(subjectWeights(s).explanationWeight * creditShare * 10) / 10;
+        const achievementSharePct = Math.round(subjectWeights(s).achievementWeight * creditShare * 10) / 10;
         return `
         <th class="print-report-hint">เต็ม<br>(${s.explanationMaxScore})</th>
         <th class="print-report-hint">คำนวณ<br>(${explanationSharePct}%)</th>
@@ -1108,11 +1152,11 @@ function buildScoreReportHtml(rosterSubjects, roster, courseName, generationNo, 
         const rows = pageRoster.map((participant) => {
             const scoreCells = rosterSubjects.map((s) => {
                 const scoreEntry = participant.scores.find((sc) => sc.subjectId === s.id);
-                const explanationScore = scoreEntry?.explanationScore ?? null;
+                const explanationScore = s.hasExplanation === false ? null : (scoreEntry?.explanationScore ?? null);
                 const achievementScore = scoreEntry?.achievementScore ?? null;
                 const creditShare = totalCredits ? s.credits / totalCredits : 0;
-                const explanationQuota = scoreWeightSetting.explanationWeight * creditShare;
-                const achievementQuota = scoreWeightSetting.achievementWeight * creditShare;
+                const explanationQuota = subjectWeights(s).explanationWeight * creditShare;
+                const achievementQuota = subjectWeights(s).achievementWeight * creditShare;
                 const explanationPercent = explanationScore !== null ? `${Math.round((explanationScore / s.explanationMaxScore) * explanationQuota)}%` : '-';
                 const achievementPercent = achievementScore !== null ? `${Math.round((achievementScore / s.achievementMaxScore) * achievementQuota)}%` : '-';
                 return `
@@ -1186,15 +1230,15 @@ function recomputeRowPreview(row, rosterSubjects, totalCreditsOverride) {
 
         // แสดง % สดที่คะแนนดิบนี้จะได้จากคะแนนรวม (คะแนนดิบ/คะแนนเต็ม คูณส่วนแบ่งคะแนนรวมของประเภทนี้) ระหว่างพิมพ์ - สูตรเดียวกับ subjectScore ใน computeSubjectScoreSummary
         const creditShare = totalCredits ? s.credits / totalCredits : 0;
-        const explanationQuota = scoreWeightSetting.explanationWeight * creditShare;
-        const achievementQuota = scoreWeightSetting.achievementWeight * creditShare;
+        const explanationQuota = subjectWeights(s).explanationWeight * creditShare;
+        const achievementQuota = subjectWeights(s).achievementWeight * creditShare;
         const explanationPercentEl = row.querySelector(`.subject-score-percent[data-subject-id="${s.id}"][data-type="explanation"]`);
         const achievementPercentEl = row.querySelector(`.subject-score-percent[data-subject-id="${s.id}"][data-type="achievement"]`);
         if (explanationPercentEl) explanationPercentEl.textContent = `${Math.round((explanationScore / s.explanationMaxScore) * explanationQuota)}%`;
         if (achievementPercentEl) achievementPercentEl.textContent = `${Math.round((achievementScore / s.achievementMaxScore) * achievementQuota)}%`;
     });
 
-    const summary = computeSubjectScoreSummary(rosterSubjects, scoreBySubjectId, gradeBands, scoreWeightSetting, totalCredits);
+    const summary = computeSubjectScoreSummary(rosterSubjects, scoreBySubjectId, gradeBands, totalCredits);
     // พี่ค่ายที่สอน (instructor) ไม่มีคอลัมน์คะแนนรวม/ผลการประเมินในตาราง (ดู renderScoreTable) เซลล์เหล่านี้เลยไม่มีอยู่จริงในแถว ต้องเช็คก่อนเสมอ
     const grandTotalEl = row.querySelector('[data-field="grandTotal"]');
     if (grandTotalEl) {
@@ -1854,10 +1898,10 @@ function exportScoreTableToExcel() {
     const headerRow3 = ['', ''];
     currentRosterSubjects.forEach((s) => {
         const creditShare = totalCredits ? s.credits / totalCredits : 0;
-        const explanationSharePct = Math.round(scoreWeightSetting.explanationWeight * creditShare * 10) / 10;
-        const achievementSharePct = Math.round(scoreWeightSetting.achievementWeight * creditShare * 10) / 10;
+        const explanationSharePct = Math.round(subjectWeights(s).explanationWeight * creditShare * 10) / 10;
+        const achievementSharePct = Math.round(subjectWeights(s).achievementWeight * creditShare * 10) / 10;
         headerRow1.push(`${s.name} (${s.credits} นก.)`, '', '', '');
-        headerRow2.push('คะแนนอธิบาย', '', 'คะแนนสอบ', '');
+        headerRow2.push(s.hasExplanation === false ? 'ไม่สอบอธิบาย' : 'คะแนนอธิบาย', '', 'คะแนนสอบ', '');
         headerRow3.push(`เต็ม ${s.explanationMaxScore} · ${explanationSharePct}%`, '', `เต็ม ${s.achievementMaxScore} · ${achievementSharePct}%`, '');
     });
     if (showOverallColumns) {
@@ -1874,11 +1918,11 @@ function exportScoreTableToExcel() {
 
         currentRosterSubjects.forEach((s, subjIdx) => {
             const scoreEntry = participant.scores.find((sc) => sc.subjectId === s.id);
-            const explanationScore = scoreEntry?.explanationScore ?? '';
+            const explanationScore = s.hasExplanation === false ? '' : (scoreEntry?.explanationScore ?? '');
             const achievementScore = scoreEntry?.achievementScore ?? '';
             const creditShare = totalCredits ? s.credits / totalCredits : 0;
-            const explanationQuota = scoreWeightSetting.explanationWeight * creditShare;
-            const achievementQuota = scoreWeightSetting.achievementWeight * creditShare;
+            const explanationQuota = subjectWeights(s).explanationWeight * creditShare;
+            const achievementQuota = subjectWeights(s).achievementWeight * creditShare;
 
             const baseCol = 3 + subjIdx * 4;
             const explRawRef = `${excelColumnLetter(baseCol)}${excelRow}`;
@@ -2203,7 +2247,7 @@ function renderMySubjectList() {
         item.innerHTML = `
             <div>
                 <p class="activity-item-name">${subject.name}</p>
-                <p class="activity-item-desc">${courseName ? `${courseName} &nbsp;|&nbsp; ` : ''}${subject.requiresScoring ? `เก็บคะแนน &nbsp;|&nbsp; คะแนนเต็มอธิบาย ${subject.explanationMaxScore} / คะแนนสอบ ${subject.achievementMaxScore}` : 'ไม่เก็บคะแนน'} &nbsp;|&nbsp; ${subject.credits} หน่วยกิต</p>
+                <p class="activity-item-desc">${courseName ? `${courseName} &nbsp;|&nbsp; ` : ''}${subject.requiresScoring ? `เก็บคะแนน &nbsp;|&nbsp; ${subjectScoringSummary(subject)}` : 'ไม่เก็บคะแนน'} &nbsp;|&nbsp; ${subject.credits} หน่วยกิต</p>
             </div>
             <div class="activity-item-actions">
                 <button type="button" class="activity-icon-btn edit" title="แก้ไข">${EDIT_ICON}</button>
@@ -2228,16 +2272,7 @@ function openMySubjectEditForm(itemEl, subject) {
                 </label>
             </div>
             <div id="my-subject-edit-scoring-fields" class="${subject.requiresScoring ? '' : 'hidden'}">
-                <div class="form-grid mb-6">
-                    <div class="form-group">
-                        <label class="form-label">คะแนนเต็ม (อธิบาย)</label>
-                        <input type="number" min="1" step="1" class="form-input" id="my-subject-edit-explanation-max" value="${subject.explanationMaxScore}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">คะแนนเต็ม (คะแนนสอบ)</label>
-                        <input type="number" min="1" step="1" class="form-input" id="my-subject-edit-achievement-max" value="${subject.achievementMaxScore}">
-                    </div>
-                </div>
+                ${buildSubjectScoringFieldsHtml('my-subject-edit', subject)}
                 <div class="form-group mb-6" style="max-width: 12rem;">
                     <label class="form-label">หน่วยกิต</label>
                     <input type="number" class="form-input form-input-readonly" value="${subject.credits}" disabled title="แก้ไขได้เฉพาะหัวหน้าฝ่ายวิชาการ">
@@ -2250,12 +2285,12 @@ function openMySubjectEditForm(itemEl, subject) {
         </form>
     `;
     itemEl.querySelector('#my-subject-edit-cancel').addEventListener('click', () => renderMySubjectList());
+    wireSubjectScoringFields(itemEl, 'my-subject-edit');
     itemEl.querySelector('.activity-edit-form').addEventListener('submit', (event) => {
         event.preventDefault();
-        const payload = {
-            explanationMaxScore: Number(itemEl.querySelector('#my-subject-edit-explanation-max').value),
-            achievementMaxScore: Number(itemEl.querySelector('#my-subject-edit-achievement-max').value),
-        };
+        if (!subject.requiresScoring) return renderMySubjectList();
+        const payload = readSubjectScoringFields(itemEl, 'my-subject-edit');
+        if (!payload) return;
         fetch(`/api/subjects/${subject.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -2304,7 +2339,7 @@ function renderOralExamCourseSelect() {
 function renderOralExamSubjectSelect() {
     const select = document.getElementById('oral-exam-subject-select');
     if (!select) return;
-    const pool = (academicTier === 'manager' ? subjects : mySubjects).filter((s) => s.requiresScoring);
+    const pool = (academicTier === 'manager' ? subjects : mySubjects).filter((s) => s.requiresScoring && s.hasExplanation !== false);
     const options = selectedOralExamCourseId
         ? pool.filter((s) => s.courseFormatId === selectedOralExamCourseId || s.courseFormatId === null)
         : [];
@@ -2820,7 +2855,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('subject-requires-scoring-input')?.addEventListener('change', (event) => {
         handleSubjectRequiresScoringToggle(event.target, document.getElementById('subject-scoring-fields'));
     });
-    document.getElementById('score-weight-form')?.addEventListener('submit', handleScoreWeightFormSubmit);
+    renderSubjectCreateScoringFields();
     document.getElementById('grade-band-form')?.addEventListener('submit', handleGradeBandFormSubmit);
     document.getElementById('grade-band-add-btn')?.addEventListener('click', handleGradeBandAddClick);
     document.getElementById('oral-exam-band-form')?.addEventListener('submit', handleOralExamBandFormSubmit);
@@ -2910,7 +2945,6 @@ window.addEventListener('DOMContentLoaded', () => {
             fetch('/api/subjects/mine').then((res) => (res.ok ? res.json() : [])).catch(() => []),
             loadGradeBands(),
             loadOralExamScoreBands(),
-            loadScoreWeightSetting(),
             loadCurrentGeneration(),
         ]).then(([mine]) => {
             mySubjects = mine;

@@ -1,6 +1,7 @@
 const { getPrisma } = require('../lib/prisma');
 const { logActivity } = require('../lib/activityLog');
 const { isAcademicManager } = require('../middleware/requireAuth');
+const { validateSubjectWeights } = require('../lib/subjectScoring');
 
 const INSTRUCTOR_INCLUDE = {
   instructors: {
@@ -79,6 +80,9 @@ async function createSubject(req, res) {
   const explanationMaxScore = req.body.explanationMaxScore !== undefined ? Number(req.body.explanationMaxScore) : 100;
   const achievementMaxScore = req.body.achievementMaxScore !== undefined ? Number(req.body.achievementMaxScore) : 100;
   const credits = req.body.credits !== undefined ? Number(req.body.credits) : 1;
+  const hasExplanation = req.body.hasExplanation !== undefined ? Boolean(req.body.hasExplanation) : true;
+  const explanationWeight = req.body.explanationWeight !== undefined ? Number(req.body.explanationWeight) : 70;
+  const achievementWeight = req.body.achievementWeight !== undefined ? Number(req.body.achievementWeight) : 30;
   // courseFormatId: null = "ทั้งคู่" (ใช้ร่วมกันทุกคอร์ส) ต้องแยกจากกรณีไม่ได้ส่งฟิลด์นี้มาเลย (undefined = ไม่ถูกต้อง ยังไม่ได้เลือก)
   if (req.body.courseFormatId === undefined) {
     return res.status(400).json({ error: 'ต้องระบุคอร์ส' });
@@ -91,12 +95,13 @@ async function createSubject(req, res) {
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'ต้องระบุชื่อวิชา' });
   }
-  const validationError = validateMaxScores(explanationMaxScore, achievementMaxScore) || validateCredits(credits);
+  const validationError = validateMaxScores(explanationMaxScore, achievementMaxScore) || validateCredits(credits)
+    || validateSubjectWeights(explanationWeight, achievementWeight);
   if (validationError) return res.status(400).json({ error: validationError });
 
   const prisma = await getPrisma();
   const created = await prisma.subject.create({
-    data: { name: name.trim(), requiresScoring, explanationMaxScore, achievementMaxScore, credits, courseFormatId },
+    data: { name: name.trim(), requiresScoring, explanationMaxScore, achievementMaxScore, credits, courseFormatId, hasExplanation, explanationWeight, achievementWeight },
     include: INSTRUCTOR_INCLUDE,
   });
 
@@ -119,6 +124,10 @@ async function updateSubject(req, res) {
   const explanationMaxScore = req.body.explanationMaxScore !== undefined ? Number(req.body.explanationMaxScore) : undefined;
   const achievementMaxScore = req.body.achievementMaxScore !== undefined ? Number(req.body.achievementMaxScore) : undefined;
   let credits = req.body.credits !== undefined ? Number(req.body.credits) : undefined;
+  // สัดส่วนคะแนนและการสอบอธิบาย ผู้สอนของวิชานี้กำหนดเองได้ (เหมือนคะแนนเต็ม)
+  const hasExplanation = req.body.hasExplanation !== undefined ? Boolean(req.body.hasExplanation) : undefined;
+  const explanationWeight = req.body.explanationWeight !== undefined ? Number(req.body.explanationWeight) : undefined;
+  const achievementWeight = req.body.achievementWeight !== undefined ? Number(req.body.achievementWeight) : undefined;
   // courseFormatId: null = "ทั้งคู่" (ใช้ร่วมกันทุกคอร์ส) เป็นค่าที่ตั้งใจส่งมาจริง ต้องแยกจาก undefined (ไม่ได้ส่งฟิลด์นี้มาเลย = ไม่แก้ไขค่านี้)
   const courseFormatIdProvided = req.body.courseFormatId !== undefined;
   const courseFormatId = courseFormatIdProvided
@@ -143,7 +152,11 @@ async function updateSubject(req, res) {
   if (!manager && !isOwnSubject) {
     return res.status(403).json({ error: 'ไม่มีสิทธิ์แก้ไขรายวิชานี้ (แก้ได้เฉพาะวิชาที่ตัวเองเป็นผู้สอน)' });
   }
-  // หน่วยกิต/ชื่อวิชา/ต้องเก็บคะแนน เป็นข้อมูลเชิงโครงสร้างที่กระทบทั้งคอร์ส (หน่วยกิตกระทบสูตรคะแนนรวม, ชื่อวิชาต้องผ่านหัวหน้าฝ่ายวิชาการกันตั้งชื่อมั่ว, ปิด/เปิดเก็บคะแนนกระทบว่าวิชานี้จะโผล่ในตารางคะแนน/สอบอธิบายไหม) - ผู้สอนที่ไม่ใช่ manager แก้ได้แค่คะแนนเต็มของวิชาตัวเองเท่านั้น
+  if (explanationWeight !== undefined || achievementWeight !== undefined) {
+    validationError = validateSubjectWeights(explanationWeight ?? existing.explanationWeight, achievementWeight ?? existing.achievementWeight);
+    if (validationError) return res.status(400).json({ error: validationError });
+  }
+  // หน่วยกิต/ชื่อวิชา/ต้องเก็บคะแนน เป็นข้อมูลเชิงโครงสร้างที่กระทบทั้งคอร์ส (หน่วยกิตกระทบสูตรคะแนนรวม, ชื่อวิชาต้องผ่านหัวหน้าฝ่ายวิชาการกันตั้งชื่อมั่ว, ปิด/เปิดเก็บคะแนนกระทบว่าวิชานี้จะโผล่ในตารางคะแนน/สอบอธิบายไหม) - ผู้สอนที่ไม่ใช่ manager แก้ได้แค่คะแนนเต็ม สัดส่วนคะแนน และการสอบอธิบายของวิชาตัวเอง
   // ค่าที่ส่งมาแต่แก้ไม่ได้จะถูกเพิกเฉยเงียบ ๆ เหมือน pattern เดียวกับ subjectScoreController.js (ไม่ error เพราะช่องถูก disable ไว้ฝั่ง frontend อยู่แล้ว)
   if (!manager) {
     credits = undefined;
@@ -161,6 +174,9 @@ async function updateSubject(req, res) {
         ...(achievementMaxScore !== undefined && { achievementMaxScore }),
         ...(credits !== undefined && { credits }),
         ...(courseFormatId !== undefined && { courseFormatId }),
+        ...(hasExplanation !== undefined && { hasExplanation }),
+        ...(explanationWeight !== undefined && { explanationWeight }),
+        ...(achievementWeight !== undefined && { achievementWeight }),
       },
       include: INSTRUCTOR_INCLUDE,
     });

@@ -127,6 +127,7 @@ async function openSession(req, res) {
   const subject = await findSubjectWithInstructors(prisma, subjectId);
   if (!subject) return res.status(404).json({ error: 'ไม่พบวิชานี้' });
   if (!subject.requiresScoring) return res.status(400).json({ error: 'วิชานี้ไม่ต้องเก็บคะแนน เปิดสอบอธิบายไม่ได้' });
+  if (!subject.hasExplanation) return res.status(400).json({ error: 'วิชานี้ตั้งค่าไม่สอบอธิบาย เปิดรอบสอบไม่ได้' });
   if (!canManageSubjectExam(req.session.user, subject)) {
     return res.status(403).json({ error: 'ไม่มีสิทธิ์เปิดรอบสอบวิชานี้' });
   }

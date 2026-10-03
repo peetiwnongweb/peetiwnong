@@ -40,10 +40,9 @@ async function listClassSchedules(req, res) {
   res.json(entries.map(shapeScheduleEntry));
 }
 
-// รายการกิจกรรม (ไม่ผูกวิชา เช่น ลงทะเบียน/พิธีเปิด) ขึ้นในตารางของทุกคอร์ส - เพิ่มครั้งเดียวจากคอร์สไหนก็ได้ แก้/ลบที่เดียวมีผลทุกคอร์ส
-// ส่วนรายการที่ผูกวิชาขึ้นเฉพาะคอร์สของตัวเองเหมือนเดิม
+// ทุกรายการ (ทั้งวิชาและกิจกรรม) ขึ้นเฉพาะคอร์สของตัวเอง - กิจกรรมแยกกันระหว่าง 2 คอร์ส ต้องเพิ่มแยกในแต่ละคอร์ส
 function sharedScheduleWhere(courseFormatId) {
-  return { OR: [{ courseFormatId }, { subjectId: null }] };
+  return { courseFormatId };
 }
 
 function validateTimeRange(startTime, endTime) {
@@ -145,7 +144,7 @@ async function updateClassSchedule(req, res) {
     return res.status(400).json({ error: 'เลือกได้แค่วิชาหรือชื่อกิจกรรมอย่างใดอย่างหนึ่ง' });
   }
 
-  // กิจกรรม (ใช้ร่วมทุกคอร์ส) ที่ถูกแก้ให้เป็นรายวิชา: ย้ายไปอยู่คอร์สที่กำลังเปิดแก้อยู่ (ส่ง courseFormatId มา) ไม่งั้นจะติดคอร์สเดิมที่สร้างไว้ตอนแรก
+  // กิจกรรมที่ถูกแก้ให้เป็นรายวิชา: ย้ายไปอยู่คอร์สที่กำลังเปิดแก้อยู่ (ส่ง courseFormatId มา) - ปกติเป็นคอร์สเดียวกับที่สร้างไว้อยู่แล้ว
   const targetCourseFormatId = subjectId && !existing.subjectId && Number(req.body.courseFormatId)
     ? Number(req.body.courseFormatId)
     : existing.courseFormatId;

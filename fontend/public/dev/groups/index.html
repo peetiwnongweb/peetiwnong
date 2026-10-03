@@ -97,6 +97,7 @@ tfoot td { font-weight: 700; background: #fafafa; }
       <button class="btn" id="run-btn" type="button" onclick="run()">แบ่งกลุ่ม</button>
       <button class="btn ghost" id="shuffle-btn" type="button" onclick="run(true)" hidden>สุ่มรายชื่อใหม่</button>
       <button class="btn ghost" id="csv-btn" type="button" onclick="downloadCsv()" hidden>ดาวน์โหลด CSV</button>
+      <button class="btn ghost" id="print-btn" type="button" onclick="printGroups()" hidden>พิมพ์รายชื่อกลุ่ม</button>
     </div>
   </section>
 
@@ -129,6 +130,7 @@ function setMode(next) {
   document.getElementById('panel-manual').hidden = next !== 'manual';
   document.getElementById('shuffle-btn').hidden = true;
   document.getElementById('csv-btn').hidden = true;
+  document.getElementById('print-btn').hidden = true;
   document.getElementById('summary-card').hidden = true;
   document.getElementById('groups-card').hidden = true;
 }
@@ -254,6 +256,7 @@ function run(reshuffle) {
   render(lastGroups, people.length);
   document.getElementById('shuffle-btn').hidden = mode === 'manual';
   document.getElementById('csv-btn').hidden = mode === 'manual';
+  document.getElementById('print-btn').hidden = mode === 'manual';
 }
 
 function render({ groups, grades }, total) {
@@ -279,6 +282,57 @@ function render({ groups, grades }, total) {
         <ol>${g.map((p) => `<li><span class="pill ${gradeClass(p.grade)}">${esc(p.grade)}</span>${esc(p.name)}${p.nickname ? ` (${esc(p.nickname)})` : ''}${p.course ? ` <span class="muted">· ${esc(p.course)}</span>` : ''}</li>`).join('')}</ol>
       </div>`).join('');
   }
+}
+
+// พิมพ์: หน้าแรกเป็นสรุปจำนวนต่อกลุ่ม แล้วขึ้นหน้าใหม่ทีละกลุ่ม (กลุ่มที่ยาวเกินหน้าจะต่อหน้าถัดไป)
+const PRINT_ROWS_PER_PAGE = 25;
+function printGroups() {
+  if (!lastGroups) return;
+  const { groups, grades } = lastGroups;
+  const total = groups.reduce((n, g) => n + g.length, 0);
+  const win = window.open('', '_blank');
+  if (!win) { alert('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป'); return; }
+  const dateText = new Date().toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+  const pages = [];
+  const page = (title, sub, content) => pages.push(`<section class="page"><header><div><h1>${title}</h1><p>${sub}</p></div><p>พิมพ์เมื่อ ${dateText}</p></header>${content}<footer>หน้า {{n}} / {{total}}</footer></section>`);
+
+  const sumHead = `<tr><th>กลุ่ม</th>${grades.map((g) => `<th class="c">${esc(g)}</th>`).join('')}<th class="c">รวม</th></tr>`;
+  const sumBody = groups.map((g, i) => `<tr><td>กลุ่ม ${i + 1}</td>${grades.map((gr) => `<td class="c">${g.filter((p) => p.grade === gr).length}</td>`).join('')}<td class="c"><b>${g.length}</b></td></tr>`).join('');
+  const sumFoot = `<tr class="total"><td>รวม</td>${grades.map((gr) => `<td class="c">${groups.reduce((n, g) => n + g.filter((p) => p.grade === gr).length, 0)}</td>`).join('')}<td class="c">${total}</td></tr>`;
+  page('สรุปการแบ่งกลุ่มน้องค่าย', `ค่ายพี่ติวน้อง · ${total} คน · ${groups.length} กลุ่ม`, `<table><thead>${sumHead}</thead><tbody>${sumBody}${sumFoot}</tbody></table>`);
+
+  groups.forEach((g, i) => {
+    const counts = grades.map((gr) => `${gr} ${g.filter((p) => p.grade === gr).length}`).join(' · ');
+    for (let start = 0; start < g.length || start === 0; start += PRINT_ROWS_PER_PAGE) {
+      const rows = g.slice(start, start + PRINT_ROWS_PER_PAGE).map((p, j) => `<tr><td class="c">${start + j + 1}</td><td>${esc(p.nickname || '-')}</td><td>${esc(p.name || '-')}</td><td class="c">${esc(p.grade || '-')}</td><td>${esc(p.course || '-')}</td></tr>`).join('');
+      page(`กลุ่ม ${i + 1}${start ? ' (ต่อ)' : ''}`, `${g.length} คน · ${counts}`,
+        `<table><thead><tr><th class="c" style="width:12mm">ลำดับ</th><th style="width:28mm">ชื่อเล่น</th><th>ชื่อ-นามสกุล</th><th class="c" style="width:16mm">ชั้น</th><th style="width:42mm">คอร์ส</th></tr></thead><tbody>${rows}</tbody></table>`);
+      if (!g.length) break;
+    }
+  });
+  const html = pages.map((p, i) => p.replace('{{n}}', i + 1).replace('{{total}}', pages.length)).join('');
+  win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>แบ่งกลุ่มน้องค่าย</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@600&family=Sarabun:wght@400;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 12mm 14mm; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: 'Sarabun', sans-serif; color: #111; background: #e5e7eb; }
+  .page { background: #fff; width: 182mm; height: 272mm; margin: 0 auto; display: flex; flex-direction: column; break-after: page; page-break-after: always; overflow: hidden; }
+  .page:last-child { break-after: auto; page-break-after: auto; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #26324a; padding-bottom: 6px; margin-bottom: 10px; }
+  header p { margin: 0; font-size: 12px; color: #555; }
+  h1 { margin: 0; font-family: 'Prompt', sans-serif; font-size: 20px; color: #26324a; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { background: #26324a; color: #fff; font-weight: 600; text-align: left; padding: 6px 8px; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+  tbody tr:nth-child(even) td { background: #f6f7fb; }
+  tr.total td { font-weight: 600; border-top: 2px solid #26324a; background: #fff; }
+  .c { text-align: center; }
+  footer { margin-top: auto; text-align: right; font-size: 11px; color: #777; }
+  @media screen { body { padding: 12mm 0; } .page { padding: 12mm 14mm; width: 210mm; height: 297mm; margin-bottom: 8mm; box-shadow: 0 2px 10px rgba(0,0,0,.15); } }
+</style></head><body>${html}
+<script>(document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { window.print(); }, 200); });<\/script></body></html>`);
+  win.document.close();
 }
 
 function downloadCsv() {

@@ -3046,8 +3046,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(() => Loader.hideFullPageLoader());
 });
 
-// ส่งออกรายชื่อน้องค่ายที่อนุมัติแล้ว (ตามคำค้นหาปัจจุบัน) เป็น PDF
-function exportParticipantPdf(button) {
+// ส่งออกรายชื่อน้องค่ายที่อนุมัติแล้ว (ตามคำค้นหาปัจจุบัน): พิมพ์ หรือ CSV
+function exportParticipantList(type) {
     const items = getFilteredUserItems('PARTICIPANT').filter((item) => item.approvalStatus === 'APPROVED');
-    exportParticipantsPdf(items, button);
+    if (type === 'csv') downloadParticipantsCsv(items);
+    else printParticipants(items);
 }

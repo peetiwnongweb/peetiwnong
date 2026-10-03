@@ -1245,6 +1245,13 @@
                                     </svg>
                                     รีเฟรช
                                 </button>
+                                <select id="participant-export-sort" class="form-input" style="width:auto;min-width:0;padding-top:0.45rem;padding-bottom:0.45rem" title="เรียงลำดับรายชื่อที่นำออก">
+                                    <option value="course">เรียงตามคอร์ส</option>
+                                    <option value="birthMonth">เรียงตามเดือนเกิด</option>
+                                    <option value="grade">เรียงตามชั้น</option>
+                                    <option value="name">เรียงตามชื่อ</option>
+                                    <option value="nickname">เรียงตามชื่อเล่น</option>
+                                </select>
                                 <button type="button" class="btn-outline" onclick="exportParticipantList('print')">พิมพ์รายชื่อ</button>
                                 <button type="button" class="btn-outline" onclick="exportParticipantList('csv')">ดาวน์โหลด CSV</button>
                                 <button class="btn-primary" onclick="openUserForm(null, 'PARTICIPANT')">เพิ่ม</button>
@@ -2340,7 +2347,7 @@
     <script src="../js/layout/otp-input.js?v=20261002-1"></script>
     <script src="../js/layout/loader.js?v=20261002-1"></script>
     <script src="../js/layout/date-select.js?v=20261002-1"></script>
-    <script src="../js/layout/participant-export.js?v=20261003-2"></script>
+    <script src="../js/layout/participant-export.js?v=20261003-3"></script>
     <script src="js/superadmin.js?v=20261002-1"></script>
     <script src="js/superadmin-dashboard.js?v=20261002-1"></script>
 </body>

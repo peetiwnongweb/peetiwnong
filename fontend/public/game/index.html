@@ -512,12 +512,8 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
       ticket.classList.remove("land"); void ticket.offsetWidth; ticket.classList.add("land");
       live.textContent = "รอบที่ " + state.round + " " + trait;
     }
-    if (reduced) { finish(); return; }
-    roundEl.hidden = false; roundEl.textContent = "กำลังสุ่ม"; ticket.classList.remove("idle");
-    var n = 0, timer = setInterval(function(){
-      traitEl.textContent = state.traits[Math.floor(Math.random()*state.traits.length)];
-      if (++n >= 10) { clearInterval(timer); finish(); }
-    }, 70);
+    // แสดงเฉพาะลักษณะที่สุ่มได้ ไม่วนโชว์ลักษณะอื่นระหว่างสุ่ม
+    finish();
   }
 
   function start(){

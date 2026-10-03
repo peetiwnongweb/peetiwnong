@@ -51,6 +51,11 @@ body[data-mode="play"] .layout{grid-template-areas:"caller" "board" "extras"}
   }
 }
 body[data-mode="edit"] .play-only{display:none}
+/* โหมดเล่น: ไม่แสดงตาราง แสดงแค่ลักษณะที่สุ่ม (ผู้เล่นใช้การ์ดที่พิมพ์) */
+body[data-mode="play"] .board-area{display:none}
+body[data-mode="play"] .layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;grid-template-areas:"caller" "extras";max-width:760px;margin:0 auto}
+body[data-mode="play"] .ticket{min-height:18rem}
+body[data-mode="play"] .trait{font-size:clamp(2.2rem,8vw,4rem)}
 body[data-mode="play"] .edit-only{display:none}
 
 /* buttons */
@@ -178,7 +183,7 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
       <div class="edit-only">
         <h2>วิธีเล่น</h2>
         <ol class="steps">
-          <li>เขียนชื่อคน ตัวการ์ตูน หรือตัวละครลงให้ครบทุกช่อง</li>
+          <li>พิมพ์การ์ดแจกผู้เล่น หรือเขียนชื่อคน ตัวการ์ตูน ตัวละครลงตารางเอง</li>
           <li>กดสุ่มลักษณะ ช่องไหนตรงกับลักษณะนั้น แตะเพื่อกา</li>
           <li>กาครบหนึ่งแถว แนวนอน แนวตั้ง หรือแนวทแยง ได้บิงโก</li>
         </ol>
@@ -199,10 +204,10 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
         <h2>ลักษณะที่ออกแล้ว</h2>
         <ol class="history" id="history"></ol>
       </div>
-      <label class="check play-only"><input type="checkbox" id="oneRule"> กาได้รอบละ 1 ช่อง</label>
+      <label class="check play-only" hidden><input type="checkbox" id="oneRule"> กาได้รอบละ 1 ช่อง</label>
       <div class="row play-only">
         <button type="button" class="btn small" id="newBtn">เริ่มเกมใหม่</button>
-        <button type="button" class="btn small" id="editBtn">แก้ชื่อในตาราง</button>
+        <button type="button" class="btn small" id="editBtn">กลับหน้าตั้งค่า</button>
       </div>
       <div class="row traits-line">
         <button type="button" class="btn small" id="traitsBtn">แก้รายการลักษณะ</button>
@@ -517,13 +522,7 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
   }
 
   function start(){
-    var empties = inUse().filter(function(i){ return !state.names[i]; });
-    if (empties.length) {
-      hint("ยังว่างอีก " + empties.length + " ช่อง เขียนชื่อให้ครบก่อนเริ่ม");
-      var first = board.querySelector('.name[data-i="' + empties[0] + '"]');
-      if (first) focusEnd(first);
-      return;
-    }
+    // โหมดเล่นไม่แสดงตาราง (ใช้การ์ดที่พิมพ์) เริ่มได้เลยไม่ต้องเขียนชื่อให้ครบ
     hint(""); state.mode = "play"; resetRound(); renderBoard(); renderPanel();
     window.scrollTo(0, 0);
   }
@@ -639,7 +638,7 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
   armed($("newBtn"), "กดอีกครั้งเพื่อเริ่มใหม่",
     function(){ return state.round > 0; },
     function(){ hint(""); resetRound(); renderBoard(); renderPanel(); });
-  armed($("editBtn"), "กดอีกครั้ง รอยกาจะหาย",
+  armed($("editBtn"), "กดอีกครั้ง ประวัติจะหาย",
     function(){ return state.round > 0; },
     function(){ hint(""); resetRound(); state.mode = "edit"; renderBoard(); renderPanel(); });
   $("oneRule").addEventListener("change", function(e){ state.oneRule = e.target.checked; hint(""); save(); });

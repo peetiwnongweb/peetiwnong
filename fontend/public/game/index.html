@@ -135,6 +135,9 @@ dialog textarea{width:100%;font:inherit;font-size:16px;line-height:1.6;padding:1
 dialog .row{margin-top:14px;justify-content:flex-end}
 dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
 .btn.save{background:var(--pink);color:var(--pink-ink)}
+.print-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 14px}
+.print-grid label{display:grid;gap:4px;font-weight:500}
+.print-grid input,.print-grid select{font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none !important;transition:none !important}
@@ -145,7 +148,7 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
 <div class="page">
   <header>
     <h1>บิงโกลักษณะ</h1>
-    <p>เขียนชื่อใครก็ได้ลงตาราง แล้วสุ่มลักษณะ ใครตรงก็กา ครบแถวก่อนคือบิงโก</p>
+    <p>เขียนชื่อใครก็ได้ลงตาราง หรือกดสุ่มชื่อดัง แล้วสุ่มลักษณะ ใครตรงก็กา ครบแถวก่อนคือบิงโก</p>
   </header>
 
   <main class="layout">
@@ -157,6 +160,7 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
           <label><input type="radio" name="size" value="4"><span>4×4</span></label>
           <label><input type="radio" name="size" value="5"><span>5×5</span></label>
         </fieldset>
+        <button type="button" class="btn small" id="randomBtn">สุ่มชื่อดังใส่ตาราง</button>
         <button type="button" class="btn small" id="shuffleBtn">สลับตำแหน่งชื่อ</button>
         <button type="button" class="btn small" id="clearBtn">ล้างชื่อทั้งหมด</button>
       </div>
@@ -204,6 +208,10 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
         <button type="button" class="btn small" id="traitsBtn">แก้รายการลักษณะ</button>
         <span id="traitCount"></span>
       </div>
+      <div class="row">
+        <button type="button" class="btn small" id="printBtn">พิมพ์การ์ด A4</button>
+        <span class="status">แผ่นละ 4 การ์ด ชื่อสุ่มไม่ซ้ำกันทุกใบ</span>
+      </div>
     </section>
   </main>
 </div>
@@ -222,6 +230,21 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
   </div>
 </dialog>
 
+<dialog id="printDlg" aria-labelledby="printTitle">
+  <h2 id="printTitle">พิมพ์การ์ดบิงโก</h2>
+  <p>A4 แผ่นละ 4 การ์ด แต่ละใบสุ่มชื่อดังจากคลังชื่อ (ไม่ซ้ำกันในใบเดียวกัน)</p>
+  <div class="print-grid">
+    <label>จำนวนแผ่น<input type="number" id="printSheets" min="1" max="100" value="30"></label>
+    <label>ขนาดตาราง<select id="printSize"><option value="3">3×3</option><option value="4">4×4</option><option value="5">5×5</option></select></label>
+  </div>
+  <label class="check"><input type="checkbox" id="printTraits" checked> แนบหน้ารายการลักษณะสำหรับผู้ดำเนินเกม</label>
+  <p class="err" id="printErr"></p>
+  <div class="row">
+    <button type="button" class="btn small" id="cancelPrint">ยกเลิก</button>
+    <button type="button" class="btn small save" id="doPrint">พิมพ์</button>
+  </div>
+</dialog>
+
 <script>
 (function(){
   var DEFAULT_TRAITS = [
@@ -233,9 +256,33 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
     "มีพี่น้อง","มีสัตว์เลี้ยงหรือคู่หู","ใส่ชุดสีแดง","ใส่ชุดสีฟ้าหรือน้ำเงิน","ใส่ชุดเดิมแทบทุกวัน",
     "มีชื่อเสียง คนรู้จักเยอะ","อายุมากกว่าเรา","อายุน้อยกว่าเรา","เป็นคนไทย","มาจากต่างประเทศหรือต่างโลก",
     "ชื่อมี 2 พยางค์","ชื่อยาวเกิน 3 พยางค์","มีคำพูดติดปาก","มีหนวดหรือเครา","ยิ้มบ่อย",
-    "มียานพาหนะประจำตัว","เป็นหัวหน้าหรือผู้นำ","มีความลับ"
+    "มียานพาหนะประจำตัว","เป็นหัวหน้าหรือผู้นำ","มีความลับ",
+    "เป็นนักร้อง","เป็นนักแสดง","เป็นนักกีฬา","เป็นนักธุรกิจหรือรวยมาก","เป็นตัวการ์ตูนหรืออนิเมะ",
+    "มาจากหนังฮอลลีวูด","มาจากญี่ปุ่น","มาจากเกาหลี","มาจากอเมริกา","มีเพลงดังที่ทุกคนร้องได้",
+    "เคยเห็นในโฆษณา","ใส่ชุดสีเหลือง","ใส่ชุดสีเขียว","ใส่ชุดสีดำ","ผมสีบลอนด์หรือสีทอง",
+    "หัวล้านหรือไม่มีผม","ใส่หน้ากากหรือปิดหน้า","ใส่ผ้าคลุมหรือเสื้อคลุม","ใช้เวทมนตร์ได้","เป็นเจ้าหญิงหรือเจ้าชาย",
+    "อยู่ในวงหรือทีม","แต่งงานแล้วหรือมีคู่","เป็นพ่อหรือแม่","เคยได้รางวัลหรือเหรียญ","เกี่ยวกับทะเลหรือใต้น้ำ",
+    "ชอบผจญภัย","เป็นหุ่นยนต์หรือใช้เทคโนโลยีเก่ง","อายุเกิน 50 ปี","ยังเป็นเด็ก","มีคนติดตามในโซเชียลเยอะมาก",
+    "เคยเป็นข่าวดังทั่วประเทศ","มีท่าหรือสัญลักษณ์ประจำตัว","มาจากเกม","ร้องไห้ง่าย","มีลูกน้องหรือผู้ติดตาม",
+    "ขับรถหรือบังคับยานพาหนะเก่ง","หัวเราะเสียงดัง","ช่วยเหลือคนอื่นเสมอ","มีศัตรูคู่ปรับ","อยากเป็นหนึ่ง",
+    "ชอบนอน","กลัวอะไรบางอย่างมาก","มีภาพยนตร์หรือซีรีส์ของตัวเอง","มีของเล่นหรือตุ๊กตาขายทั่วไป","เป็นสัญลักษณ์ของวัยเด็ก"
   ];
-  var KEY = "trait-bingo-v1", MAX = 5;
+  // คลังชื่อดังที่คนทั่วไปรู้จัก (คนไทย ดาราต่างประเทศ ตัวการ์ตูน ตัวละคร) ใช้สุ่มลงตารางและพิมพ์การ์ด
+  var NAME_POOL = [
+    "ไอรอนแมน","สไปเดอร์แมน","แบทแมน","ซูเปอร์แมน","วันเดอร์วูแมน","กัปตันอเมริกา","ธอร์","ฮัลค์","ธานอส","โจ๊กเกอร์",
+    "แฮร์รี่ พอตเตอร์","เฮอร์ไมโอนี่","โวลเดอมอร์ต","ดาร์ธ เวเดอร์","โยดา","แจ็ค สแปร์โรว์","เจมส์ บอนด์","เชอร์ล็อก โฮมส์","มิสเตอร์บีน","เชร็ค",
+    "มิกกี้ เมาส์","โดนัลด์ ดั๊ก","วินนี่ เดอะ พูห์","เอลซ่า","โอลาฟ","ซินเดอเรลล่า","สโนว์ไวท์","แอเรียล","ราพันเซล","มู่หลาน",
+    "ซิมบ้า","สติทช์","บัซ ไลท์เยียร์","วู้ดดี้","นีโม่","มินเนี่ยน","พิคาชู","โดราเอมอน","โนบิตะ","ชินจัง",
+    "โคนัน","ลูฟี่","นารูโตะ","โงกุน","ทันจิโร่","อุลตร้าแมน","ฮัลโหล คิตตี้","สพันจ์บ็อบ","ทอม (ทอมแอนด์เจอร์รี่)","เจอร์รี่",
+    "สนูปปี้","การ์ฟิลด์","มาริโอ","โซนิค","ปังปอนด์","หนูหิ่น","ก้านกล้วย","ศรีธนญชัย","หนุมาน","ทศกัณฐ์",
+    "หมูเด้ง","อีลอน มัสก์","มาร์ก ซักเคอร์เบิร์ก","บิล เกตส์","สตีฟ จ็อบส์","อัลเบิร์ต ไอน์สไตน์","เทย์เลอร์ สวิฟต์","จัสติน บีเบอร์","บรูโน มาร์ส","เอ็ด ชีแรน",
+    "บียอนเซ่","ไมเคิล แจ็กสัน","คริสเตียโน โรนัลโด","ลิโอเนล เมสซี","ไมเคิล จอร์แดน","แจ็กกี้ ชาน","เดอะร็อก","ทอม ครูซ","คีอานู รีฟส์","ลีโอนาร์โด ดิคาพริโอ",
+    "ลิซ่า BLACKPINK","เจนนี่ BLACKPINK","โรเซ่ BLACKPINK","จีซู BLACKPINK","จองกุก BTS","ไอยู","ตูน บอดี้สแลม","โน้ส อุดม","หม่ำ จ๊กมก","เท่ง เถิดเทิง",
+    "ณเดชน์","ญาญ่า","ใหม่ ดาวิกา","เบลล่า ราณี","มาริโอ้ เมาเร่อ","ป๋อมแป๋ม","บัวขาว","เมย์ รัชนก","วิว กุลวุฒิ","เทนนิส พาณิภัค",
+    "ชนาธิป สรงกระสินธ์","ลำไย ไหทองคำ","ต่าย อรทัย","ไผ่ พงศธร","ก้อง ห้วยไร่","เป๊ก ผลิตโชค","บิวกิ้น","พีพี กฤษฏ์","ไบร์ท วชิรวิชญ์","วิน เมธวิน",
+    "พิมรี่พาย","แจ๊ส ชวนชื่น","อิงฟ้า วราหะ","แอนโทเนีย","เจ้าขุนทอง","ซุนหงอคง","โกดซิลล่า","คิงคอง","ไดโนเสาร์ ที-เร็กซ์"
+  ];
+  var KEY = "trait-bingo-v2", MAX = 5;
   var $ = function(id){ return document.getElementById(id); };
   var board = $("board"), hintEl = $("hint"), statusEl = $("status"), live = $("live");
   var ticket = $("ticket"), roundEl = $("round"), traitEl = $("trait"), remainEl = $("remain");
@@ -530,6 +577,67 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
   armed($("clearBtn"), "กดอีกครั้งเพื่อล้าง",
     function(){ return inUse().some(function(i){ return state.names[i]; }); },
     function(){ inUse().forEach(function(i){ state.names[i] = ""; }); hint(""); renderBoard(); save(); });
+  /* สุ่มชื่อดังลงทุกช่องของตาราง (ไม่ซ้ำกัน) */
+  function pickNames(n){ return shuffle(NAME_POOL.slice()).slice(0, n); }
+  armed($("randomBtn"), "กดอีกครั้ง ชื่อเดิมจะถูกแทน",
+    function(){ return inUse().some(function(i){ return state.names[i]; }); },
+    function(){ var cells = inUse(), names = pickNames(cells.length); cells.forEach(function(i, k){ state.names[i] = names[k]; }); hint(""); renderBoard(); save(); });
+
+  /* พิมพ์การ์ด: A4 แผ่นละ 4 ใบ (2×2) เปิดหน้าต่างใหม่แล้วสั่งพิมพ์ */
+  function escHtml(t){ return String(t).replace(/[&<>"]/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]; }); }
+  function printCards(sheets, size, withTraits){
+    var win = window.open("", "_blank");
+    if (!win) { $("printErr").textContent = "เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป"; return false; }
+    var base = { 3: 15, 4: 11.5, 5: 9 }[size];
+    var pages = [], no = 0;
+    for (var p = 0; p < sheets; p++) {
+      var cards = [];
+      for (var c = 0; c < 4; c++) {
+        no++;
+        var cells = pickNames(size * size).map(function(name){
+          var len = lenClass(name), fs = len === "s" ? base : len === "m" ? base * 0.85 : base * 0.72;
+          return '<div class="cell" style="font-size:' + fs.toFixed(1) + 'pt">' + escHtml(name) + "</div>";
+        }).join("");
+        cards.push('<div class="card"><div class="head"><b>บิงโกลักษณะ</b><span>ใบที่ ' + no + '</span></div>'
+          + '<div class="grid" style="grid-template-columns:repeat(' + size + ',1fr);grid-template-rows:repeat(' + size + ',1fr)">' + cells + "</div>"
+          + '<div class="foot">ชื่อผู้เล่น ..............................................</div></div>');
+      }
+      pages.push('<section class="sheet">' + cards.join("") + "</section>");
+    }
+    if (withTraits) {
+      var items = state.traits.map(function(t, i){ return "<li>" + escHtml(t) + "</li>"; }).join("");
+      pages.push('<section class="traits"><h1>รายการลักษณะ (สำหรับผู้ดำเนินเกม)</h1><p>สุ่มหรืออ่านทีละข้อ ใครมีชื่อที่ตรงกับลักษณะก็กาช่องนั้น ครบแถวแนวนอน แนวตั้ง หรือแนวทแยง ได้บิงโก</p><ol>' + items + "</ol></section>");
+    }
+    win.document.write('<!doctype html><html lang="th"><head><meta charset="utf-8"><title>การ์ดบิงโกลักษณะ</title>'
+      + '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@600&family=Mitr:wght@400;500&display=swap">'
+      + "<style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+      + "body{margin:0;font-family:Mitr,'Leelawadee UI',Tahoma,sans-serif;color:#1E1B4B;background:#e5e7eb}"
+      + ".sheet{width:194mm;height:280mm;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6mm;break-after:page;page-break-after:always;background:#fff}"
+      + ".card{border:0.6mm dashed #9aa0c8;border-radius:4mm;padding:4mm;display:flex;flex-direction:column;gap:2.5mm;min-height:0}"
+      + ".head{display:flex;justify-content:space-between;align-items:baseline}.head b{font-size:15pt;font-weight:500}.head span{font-size:10pt;color:#57568C}"
+      + ".grid{flex:1;display:grid;border:0.7mm solid #1E1B4B;border-radius:2.5mm;overflow:hidden;gap:0.35mm;background:#1E1B4B;min-height:0}"
+      + ".cell{background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:1mm;font-family:Mali,Mitr,sans-serif;font-weight:600;line-height:1.2;overflow-wrap:anywhere;overflow:hidden}"
+      + ".foot{font-size:10pt;color:#57568C}"
+      + ".traits{width:194mm;margin:0 auto;background:#fff;padding:2mm}.traits h1{font-size:16pt;margin:0 0 2mm;font-weight:500}.traits p{margin:0 0 4mm;font-size:10.5pt;color:#57568C}"
+      + ".traits ol{columns:3;column-gap:8mm;margin:0;padding-left:7mm;font-size:10.5pt;line-height:1.55}"
+      + "@media screen{body{padding:8mm 0}.sheet,.traits{margin-bottom:8mm;padding:8mm;width:210mm;height:297mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}.traits{height:auto}}"
+      + "</style></head><body>" + pages.join("")
+      + "<script>(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print()},300)});<\/script></body></html>");
+    win.document.close();
+    return true;
+  }
+  $("printBtn").addEventListener("click", function(){
+    $("printSize").value = String(state.size); $("printErr").textContent = "";
+    if ($("printDlg").showModal) $("printDlg").showModal(); else $("printDlg").setAttribute("open", "");
+  });
+  function closePrint(){ var d = $("printDlg"); if (d.close) d.close(); else d.removeAttribute("open"); }
+  $("cancelPrint").addEventListener("click", closePrint);
+  $("doPrint").addEventListener("click", function(){
+    var sheets = Math.round(+$("printSheets").value), size = +$("printSize").value;
+    if (!(sheets >= 1 && sheets <= 100)) { $("printErr").textContent = "จำนวนแผ่นต้องอยู่ระหว่าง 1-100"; return; }
+    if (printCards(sheets, size, $("printTraits").checked)) closePrint();
+  });
+
   $("startBtn").addEventListener("click", start);
   drawBtn.addEventListener("click", draw);
   armed($("newBtn"), "กดอีกครั้งเพื่อเริ่มใหม่",

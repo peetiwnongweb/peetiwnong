@@ -1926,7 +1926,7 @@ function exportScoreTableToExcel() {
 
     // ใส่สูตรจริงแทนค่าคำนวณสำเร็จรูป (% แต่ละวิชา / คะแนนรวม / ผลการประเมิน) ให้แก้คะแนนดิบใน Excel แล้วตัวเลขอื่นไหลตามอัตโนมัติเหมือนหน้าเว็บ
     const dataRows = currentRoster.map((participant, rowIdx) => {
-        const excelRow = rowIdx + 4; // แถวข้อมูลเริ่มที่ 4 (เว้น 3 แถวหัวตารางด้านบน)
+        const excelRow = rowIdx + 6; // แถวข้อมูลเริ่มที่ 6 (2 แถวบอกคอร์ส/วันเวลาที่นำออก + 3 แถวหัวตาราง)
         const row = [participant.code, participant.fullName];
         const subjectPartFormulas = [];
 
@@ -1958,15 +1958,24 @@ function exportScoreTableToExcel() {
         return row;
     });
 
-    // ขึ้นต้นด้วย BOM (﻿) กัน Excel เข้าใจไฟล์ผิดเป็นอักขระอื่นแทน UTF-8 จนภาษาไทยเพี้ยน (ปัญหารู้จักกันดีของ Excel + CSV UTF-8)
-    const csvContent = '﻿' + [headerRow1, headerRow2, headerRow3, ...dataRows].map((row) => row.map(csvEscapeCell).join(',')).join('\r\n');
-
+    // 2 แถวบนสุดบอกคอร์สและวันเวลาที่นำออก (ต้องตรงกับ offset ของ excelRow ด้านบน)
     const courseName = courseFormats.find((c) => c.id === selectedScoreCourseId)?.name || 'ตารางคะแนน';
+    const now = new Date();
+    const timeText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const infoRows = [
+        [`ตารางคะแนน คอร์ส${courseName}`],
+        [`นำออกเมื่อ วันที่ ${formatThaiDateBE(now)} เวลา ${timeText} น.`],
+    ];
+
+    // ขึ้นต้นด้วย BOM (﻿) กัน Excel เข้าใจไฟล์ผิดเป็นอักขระอื่นแทน UTF-8 จนภาษาไทยเพี้ยน (ปัญหารู้จักกันดีของ Excel + CSV UTF-8)
+    const csvContent = '﻿' + [...infoRows, headerRow1, headerRow2, headerRow3, ...dataRows].map((row) => row.map(csvEscapeCell).join(',')).join('\r\n');
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `ตารางคะแนน-${courseName}.csv`;
+    const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_${timeText.replace(':', '')}`;
+    link.download = `ตารางคะแนน-${courseName}-${stamp}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -1,29 +1,54 @@
-// ส่งออกรายชื่อน้องค่าย (ชื่อเล่น ชื่อ-นามสกุล ชั้น คอร์ส): พิมพ์ทีละหน้า A4 หรือดาวน์โหลด CSV
+// ส่งออกรายชื่อน้องค่าย (ชื่อเล่น ชื่อ-นามสกุล ชั้น คอร์ส เดือนเกิด): พิมพ์ทีละหน้า A4 หรือดาวน์โหลด CSV
 (function () {
     const ROWS_PER_PAGE = 25;
     const GRADE_ORDER = ['ม.1', 'ม.2', 'ม.3', 'ม.4', 'ม.5', 'ม.6'];
+    const MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+    const SORT_LABELS = { course: 'คอร์ส', birthMonth: 'เดือนเกิด', grade: 'ชั้น', name: 'ชื่อ', nickname: 'ชื่อเล่น' };
 
     function escapeText(value) {
         return String(value ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     }
 
-    function toRows(items) {
+    // วันเกิดเป็น { month: 0-11, day } หรือ null ถ้าไม่มีข้อมูล
+    function birthParts(item) {
+        if (!item.birthDate) return null;
+        const d = new Date(item.birthDate);
+        return Number.isNaN(d.getTime()) ? null : { month: d.getMonth(), day: d.getDate() };
+    }
+
+    function toRows(items, sortBy) {
         const gradeIndex = (g) => {
             const i = GRADE_ORDER.indexOf(g);
             return i === -1 ? 99 : i;
         };
-        return [...items]
-            .sort((a, b) =>
-                String(a.courseFormat?.name || '').localeCompare(String(b.courseFormat?.name || ''), 'th')
-                || gradeIndex(a.gradeLevel) - gradeIndex(b.gradeLevel)
-                || String(a.firstName || '').localeCompare(String(b.firstName || ''), 'th'))
-            .map((item, i) => ({
+        const text = (a, b) => String(a || '').localeCompare(String(b || ''), 'th');
+        const byCourse = (a, b) => text(a.courseFormat?.name, b.courseFormat?.name);
+        const byGrade = (a, b) => gradeIndex(a.gradeLevel) - gradeIndex(b.gradeLevel);
+        const byName = (a, b) => text(a.firstName, b.firstName) || text(a.lastName, b.lastName);
+        const byBirth = (a, b) => {
+            const x = birthParts(a), y = birthParts(b);
+            const kx = x ? x.month * 100 + x.day : 9999, ky = y ? y.month * 100 + y.day : 9999;
+            return kx - ky;
+        };
+        const compare = {
+            course: (a, b) => byCourse(a, b) || byGrade(a, b) || byName(a, b),
+            birthMonth: (a, b) => byBirth(a, b) || byName(a, b),
+            grade: (a, b) => byGrade(a, b) || byCourse(a, b) || byName(a, b),
+            name: byName,
+            nickname: (a, b) => text(a.nickname, b.nickname) || byName(a, b),
+        }[sortBy] || ((a, b) => byCourse(a, b) || byGrade(a, b) || byName(a, b));
+        return [...items].sort(compare).map((item, i) => {
+            const birth = birthParts(item);
+            return {
                 no: i + 1,
                 nickname: item.nickname || '-',
                 fullName: [item.prefix, item.firstName, item.lastName].filter(Boolean).join(' ') || '-',
                 grade: item.gradeLevel || '-',
                 course: item.courseFormat?.name || '-',
-            }));
+                birthMonth: birth ? MONTHS[birth.month] : '-',
+                birthDay: birth ? `${birth.day} ${MONTHS[birth.month]}` : '-',
+            };
+        });
     }
 
     function warnEmpty(items) {
@@ -32,9 +57,9 @@
         return true;
     }
 
-    function printParticipants(items) {
+    function printParticipants(items, sortBy) {
         if (warnEmpty(items)) return;
-        const rows = toRows(items);
+        const rows = toRows(items, sortBy);
         const win = window.open('', '_blank');
         if (!win) {
             if (typeof showToast === 'function') showToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป', true);
@@ -45,15 +70,15 @@
         const pages = [];
         for (let p = 0; p < totalPages; p++) {
             const body = rows.slice(p * ROWS_PER_PAGE, (p + 1) * ROWS_PER_PAGE).map((r) => `
-                <tr><td class="c">${r.no}</td><td>${escapeText(r.nickname)}</td><td>${escapeText(r.fullName)}</td><td class="c">${escapeText(r.grade)}</td><td>${escapeText(r.course)}</td></tr>`).join('');
+                <tr><td class="c">${r.no}</td><td>${escapeText(r.nickname)}</td><td>${escapeText(r.fullName)}</td><td class="c">${escapeText(r.grade)}</td><td>${escapeText(r.course)}</td><td>${escapeText(r.birthDay)}</td></tr>`).join('');
             pages.push(`
             <section class="page">
                 <header>
-                    <div><h1>รายชื่อน้องค่าย</h1><p>ค่ายพี่ติวน้อง · ทั้งหมด ${rows.length} คน</p></div>
+                    <div><h1>รายชื่อน้องค่าย</h1><p>ค่ายพี่ติวน้อง · ทั้งหมด ${rows.length} คน · เรียงตาม${SORT_LABELS[sortBy] || SORT_LABELS.course}</p></div>
                     <p>พิมพ์เมื่อ ${dateText}</p>
                 </header>
                 <table>
-                    <thead><tr><th class="c" style="width:12mm">ลำดับ</th><th style="width:28mm">ชื่อเล่น</th><th>ชื่อ-นามสกุล</th><th class="c" style="width:16mm">ชั้น</th><th style="width:42mm">คอร์ส</th></tr></thead>
+                    <thead><tr><th class="c" style="width:11mm">ลำดับ</th><th style="width:22mm">ชื่อเล่น</th><th>ชื่อ-นามสกุล</th><th class="c" style="width:12mm">ชั้น</th><th style="width:34mm">คอร์ส</th><th style="width:28mm">วันเกิด</th></tr></thead>
                     <tbody>${body}</tbody>
                 </table>
                 <footer>หน้า ${p + 1} / ${totalPages}</footer>
@@ -70,7 +95,7 @@
   header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #26324a; padding-bottom: 6px; margin-bottom: 10px; }
   header p { margin: 0; font-size: 12px; color: #555; }
   h1 { margin: 0; font-family: 'Prompt', sans-serif; font-size: 20px; color: #26324a; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { background: #26324a; color: #fff; font-weight: 600; text-align: left; padding: 6px 8px; }
   td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
   tbody tr:nth-child(even) td { background: #f6f7fb; }
@@ -84,11 +109,11 @@
         win.document.close();
     }
 
-    function downloadParticipantsCsv(items) {
+    function downloadParticipantsCsv(items, sortBy) {
         if (warnEmpty(items)) return;
         const quote = (v) => `"${String(v).replace(/"/g, '""')}"`;
-        const lines = [['ลำดับ', 'ชื่อเล่น', 'ชื่อ-นามสกุล', 'ชั้น', 'คอร์ส'].map(quote).join(',')]
-            .concat(toRows(items).map((r) => [r.no, r.nickname, r.fullName, r.grade, r.course].map(quote).join(',')));
+        const lines = [['ลำดับ', 'ชื่อเล่น', 'ชื่อ-นามสกุล', 'ชั้น', 'คอร์ส', 'เดือนเกิด', 'วันเกิด'].map(quote).join(',')]
+            .concat(toRows(items, sortBy).map((r) => [r.no, r.nickname, r.fullName, r.grade, r.course, r.birthMonth, r.birthDay].map(quote).join(',')));
         // ใส่ BOM เพื่อให้ Excel อ่านภาษาไทยถูก
         const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
         const now = new Date();

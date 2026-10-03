@@ -3046,9 +3046,10 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(() => Loader.hideFullPageLoader());
 });
 
-// ส่งออกรายชื่อน้องค่ายที่อนุมัติแล้ว (ตามคำค้นหาปัจจุบัน): พิมพ์ หรือ CSV
+// ส่งออกรายชื่อน้องค่ายที่อนุมัติแล้ว (ตามคำค้นหาปัจจุบัน): พิมพ์ หรือ CSV เรียงตามที่เลือก
 function exportParticipantList(type) {
     const items = getFilteredUserItems('PARTICIPANT').filter((item) => item.approvalStatus === 'APPROVED');
-    if (type === 'csv') downloadParticipantsCsv(items);
-    else printParticipants(items);
+    const sortBy = document.getElementById('participant-export-sort')?.value || 'course';
+    if (type === 'csv') downloadParticipantsCsv(items, sortBy);
+    else printParticipants(items, sortBy);
 }

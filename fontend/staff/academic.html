@@ -33,7 +33,7 @@
     <script src="../js/layout/time-select.js?v=20261002-1"></script>
     <script src="../js/layout/auth.js?v=20261002-1"></script>
     <script src="../js/layout/nav.js?v=20261002-1"></script>
-    <script src="../js/pages/staff-academic.js?v=20261002-1"></script>
+    <script src="../js/pages/staff-academic.js?v=20261003-4"></script>
 </head>
 
 <body>
@@ -291,21 +291,6 @@
 
                 <div class="scores-settings-row" data-tier="manager">
                     <div class="activity-card">
-                        <p class="profile-section-title">สัดส่วนคะแนน</p>
-                        <form id="score-weight-form" class="score-weight-row">
-                            <label class="score-weight-field" for="score-weight-explanation-input">
-                                <span class="form-label">สัดส่วนคะแนนอธิบาย (%)</span>
-                                <input type="number" min="0" max="100" step="1" id="score-weight-explanation-input" class="form-input" value="70">
-                            </label>
-                            <label class="score-weight-field" for="score-weight-achievement-input">
-                                <span class="form-label">สัดส่วนคะแนนสอบ (%) <span class="required-mark">*</span></span>
-                                <input type="number" min="1" max="100" step="1" id="score-weight-achievement-input" class="form-input" value="30">
-                            </label>
-                            <button type="submit" class="btn-primary">บันทึก</button>
-                        </form>
-
-                        <div class="card-section-divider"></div>
-
                         <p class="profile-section-title">ตั้งค่าเกณฑ์การประเมิน</p>
                         <form id="grade-band-form">
                             <div id="grade-band-rows" class="grade-band-rows"></div>
@@ -399,21 +384,12 @@
                             </label>
                         </div>
                         <div id="subject-scoring-fields">
-                            <div class="form-grid mb-6">
-                                <div class="form-group">
-                                    <label for="subject-explanation-max-input" class="form-label">คะแนนเต็ม (อธิบาย)</label>
-                                    <input type="number" min="1" step="1" id="subject-explanation-max-input" class="form-input" value="100">
-                                </div>
-                                <div class="form-group">
-                                    <label for="subject-achievement-max-input" class="form-label">คะแนนเต็ม (คะแนนสอบ)</label>
-                                    <input type="number" min="1" step="1" id="subject-achievement-max-input" class="form-input" value="100">
-                                </div>
-                            </div>
+                            <div id="subject-create-scoring-fields"></div>
                             <div class="form-group mb-6" style="max-width: 4.5rem;">
                                 <label for="subject-credits-input" class="form-label">หน่วยกิต</label>
                                 <input type="number" min="0.5" step="0.5" id="subject-credits-input" class="form-input" value="1">
                             </div>
-                            <p class="profile-section-desc" style="margin: -0.5rem 0 1.5rem;">คะแนนเต็มคือคะแนนดิบที่กรอกได้สูงสุดของแต่ละวิชา (แต่ละวิชากำหนดไม่เท่ากันได้ เช่น สอบเต็ม 50 อธิบายเต็ม 100) ระบบจะแปลงเป็นสัดส่วนให้เอง ส่วนสัดส่วนคะแนนอธิบาย:คะแนนสอบโดยรวมตั้งค่าครั้งเดียวได้ที่แท็บ "จัดการคะแนน" แล้วแบ่งเฉลี่ยตามหน่วยกิตของทุกวิชาที่ต้องเก็บคะแนน</p>
+                            <p class="profile-section-desc" style="margin: -0.5rem 0 1.5rem;">คะแนนเต็มคือคะแนนดิบที่กรอกได้สูงสุดของแต่ละวิชา (แต่ละวิชากำหนดไม่เท่ากันได้ เช่น สอบเต็ม 50 อธิบายเต็ม 100) ระบบจะแปลงเป็นสัดส่วนให้เอง สัดส่วนอธิบาย:สอบตั้งแยกแต่ละวิชา (ผู้สอนแก้เองได้ที่ "รายวิชาของฉัน") ถ้าไม่สอบอธิบายจะคิดจากคะแนนสอบ 100% แล้วคะแนนแต่ละวิชาถูกถ่วงด้วยหน่วยกิตเป็นคะแนนรวม</p>
                         </div>
                         <div class="form-actions">
                             <span></span>

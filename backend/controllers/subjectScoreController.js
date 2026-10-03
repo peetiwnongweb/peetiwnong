@@ -2,7 +2,7 @@ const { getPrisma } = require('../lib/prisma');
 const { logActivity } = require('../lib/activityLog');
 const { isAcademicManager } = require('../middleware/requireAuth');
 const { ensureGradeBands, resolveGrade } = require('../lib/gradeBands');
-const { ensureScoreWeightSetting } = require('../lib/scoreWeightSetting');
+const { subjectPercent } = require('../lib/subjectScoring');
 const { buildParticipantCode } = require('../lib/camp');
 const { resolveParticipantWhere } = require('../lib/participantSimulation');
 
@@ -16,28 +16,22 @@ function toFullName(profile) {
   return [prefixedFirstName, profile.lastName].filter(Boolean).join(' ') || '-';
 }
 
-// คะแนนภาพรวม (0-100) = ผลรวมคะแนนที่แต่ละวิชาที่เก็บคะแนน "แบ่ง" มาจากสัดส่วนกลาง
-// สัดส่วนคะแนนอธิบาย:คะแนนสอบ (เช่น 70:30) เป็นค่ากลางไม่ได้ตั้งแยกรายวิชา (globalWeights มาจาก ScoreWeightSetting)
-// วิชาที่เก็บคะแนนแต่ละวิชาได้ "ส่วนแบ่ง" ของสัดส่วนกลางตาม credits เทียบกับผลรวม credits ของวิชาที่เก็บคะแนนทั้งหมด
-// เช่น อธิบาย 70% หาร 5 วิชาหน่วยกิตเท่ากัน = 14% ต่อวิชา, ถ้าหน่วยกิตไม่เท่ากันวิชาหน่วยกิตเยอะได้ส่วนแบ่งมากกว่า
-// คะแนนดิบที่กรอก (เช่น สอบได้ 38 จากเต็ม 50) แปลงเป็นสัดส่วนด้วยคะแนนเต็มของวิชานั้น (explanationMaxScore/achievementMaxScore) ก่อนคูณส่วนแบ่งข้างต้น
+// คะแนนภาพรวม (0-100) = ผลรวมคะแนนของแต่ละวิชาที่เก็บคะแนน ถ่วงด้วยหน่วยกิต
+// แต่ละวิชาคิดเป็น 0-100 ก่อนด้วยสัดส่วนอธิบาย:สอบของวิชานั้นเอง (ผู้สอนกำหนด) ถ้าวิชาไม่สอบอธิบายคิดคะแนนสอบ 100% (ดู lib/subjectScoring.js)
+// แล้วคูณส่วนแบ่งหน่วยกิต (credits / ผลรวม credits ของวิชาที่เก็บคะแนนทั้งหมด) - subjectScore ที่คืนไปคือคะแนนที่วิชานี้ "แบ่ง" มาในคะแนนรวม
+// คะแนนดิบที่กรอก (เช่น สอบได้ 38 จากเต็ม 50) แปลงเป็นสัดส่วนด้วยคะแนนเต็มของวิชานั้น (explanationMaxScore/achievementMaxScore)
 // subjects ที่ส่งเข้ามาต้องกรองเหลือเฉพาะ requiresScoring แล้ว (ดู SCORED_SUBJECT_WHERE) ฟังก์ชันนี้ไม่กรองซ้ำ
 // bands มาจาก GradeBand ปรับได้ที่แท็บ "จัดการคะแนน" - ช่วงคะแนนที่กำหนดเองได้ ครอบคลุม 0-100 ครบเสมอ (colorKey ติดมากับแต่ละช่วงอยู่แล้ว)
 // ใช้ร่วมกันทั้งฝั่ง roster (พี่ค่ายดูทั้งคอร์ส) และฝั่ง me (น้องค่ายดูของตัวเอง) กันสูตรเพี้ยนไม่ตรงกัน
-function computeSubjectScoreSummary(subjects, scoreBySubjectId, bands, globalWeights) {
+function computeSubjectScoreSummary(subjects, scoreBySubjectId, bands) {
   const totalCredits = subjects.reduce((sum, s) => sum + s.credits, 0);
 
   const perSubject = subjects.map((s) => {
     const score = scoreBySubjectId.get(s.id);
-    const explanationScore = score?.explanationScore ?? 0;
-    const achievementScore = score?.achievementScore ?? 0;
     const creditShare = totalCredits ? s.credits / totalCredits : 0;
-    const explanationQuota = globalWeights.explanationWeight * creditShare;
-    const achievementQuota = globalWeights.achievementWeight * creditShare;
-    const explanationPart = (explanationScore / s.explanationMaxScore) * explanationQuota;
-    const achievementPart = (achievementScore / s.achievementMaxScore) * achievementQuota;
-    const subjectScore = Math.round((explanationPart + achievementPart) * 100) / 100;
-    return { subjectId: s.id, subjectScore };
+    const percent = subjectPercent(s, score?.explanationScore, score?.achievementScore);
+    const subjectScore = Math.round(percent * creditShare * 100) / 100;
+    return { subjectId: s.id, subjectScore, subjectPercent: Math.round(percent * 100) / 100 };
   });
 
   const grandTotal = Math.round(perSubject.reduce((sum, p) => sum + p.subjectScore, 0) * 100) / 100;
@@ -59,7 +53,7 @@ async function getRoster(req, res) {
 
   const prisma = await getPrisma();
   const manager = isAcademicManager(req.session.user);
-  const [profiles, allSubjects, bands, globalWeights, courseFormat, myAssignments] = await Promise.all([
+  const [profiles, allSubjects, bands, courseFormat, myAssignments] = await Promise.all([
     prisma.participantProfile.findMany({
       where: { courseFormatId },
       select: {
@@ -71,7 +65,6 @@ async function getRoster(req, res) {
     // courseFormatId: null บนวิชา = "ทั้งคู่" (ใช้ร่วมกันทุกคอร์ส) ต้องรวมมาด้วยเสมอไม่ว่าจะดูคอร์สไหนอยู่
     prisma.subject.findMany({ where: { ...SCORED_SUBJECT_WHERE, OR: [{ courseFormatId }, { courseFormatId: null }] }, orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] }),
     ensureGradeBands(prisma),
-    ensureScoreWeightSetting(prisma),
     prisma.courseFormat.findUnique({ where: { id: courseFormatId }, select: { name: true } }),
     manager ? Promise.resolve([]) : prisma.subjectInstructor.findMany({ where: { userId: req.session.user.id }, select: { subject: { select: { id: true, courseFormatId: true } } } }),
   ]);
@@ -90,7 +83,7 @@ async function getRoster(req, res) {
   const roster = profiles.map((p) => {
     const scoreBySubjectId = new Map(p.subjectScores.map((s) => [s.subjectId, s]));
     // grandTotal/grade คำนวณจาก allSubjects เสมอ (สะท้อนคะแนนรวมจริงทั้งคอร์ส) แม้จะโชว์คอลัมน์วิชาบางส่วนก็ตาม
-    const summary = computeSubjectScoreSummary(allSubjects, scoreBySubjectId, bands, globalWeights);
+    const summary = computeSubjectScoreSummary(allSubjects, scoreBySubjectId, bands);
     return {
       id: p.id,
       // ใช้ campGenerationNo ที่ประทับไว้ ณ ตอนคนนี้ลงทะเบียนจริง (ไม่ใช่ค่ายรุ่นปัจจุบันที่อาจเปลี่ยนไปแล้ว) กันรหัสขยับเองถ้ามีการเปิดค่ายรุ่นถัดไป
@@ -151,7 +144,8 @@ async function saveParticipantScores(req, res) {
     const achievementScore = entry.achievementScore === null || entry.achievementScore === undefined || entry.achievementScore === ''
       ? null : Number(entry.achievementScore);
 
-    if (explanationScore !== null && (!Number.isInteger(explanationScore) || explanationScore < 0 || explanationScore > subject.explanationMaxScore)) {
+    // วิชาที่ไม่สอบอธิบายไม่รับคะแนนอธิบาย (ไม่ตรวจและไม่บันทึกทับค่าเดิม)
+    if (subject.hasExplanation && explanationScore !== null && (!Number.isInteger(explanationScore) || explanationScore < 0 || explanationScore > subject.explanationMaxScore)) {
       return res.status(400).json({ error: `คะแนนอธิบายวิชา "${subject.name}" ต้องอยู่ระหว่าง 0-${subject.explanationMaxScore}` });
     }
     if (achievementScore !== null && (!Number.isInteger(achievementScore) || achievementScore < 0 || achievementScore > subject.achievementMaxScore)) {
@@ -165,11 +159,12 @@ async function saveParticipantScores(req, res) {
       ? null : Number(entry.explanationScore);
     const achievementScore = entry.achievementScore === null || entry.achievementScore === undefined || entry.achievementScore === ''
       ? null : Number(entry.achievementScore);
+    const data = subjectById.get(subjectId).hasExplanation ? { explanationScore, achievementScore } : { achievementScore };
 
     return prisma.participantSubjectScore.upsert({
       where: { participantProfileId_subjectId: { participantProfileId, subjectId } },
-      create: { participantProfileId, subjectId, explanationScore, achievementScore },
-      update: { explanationScore, achievementScore },
+      create: { participantProfileId, subjectId, ...data },
+      update: data,
     });
   }));
 
@@ -196,18 +191,20 @@ async function getMyScores(req, res) {
     },
   });
 
-  const [subjects, bands, globalWeights] = await Promise.all([
+  const [subjects, bands] = await Promise.all([
     // courseFormatId: null บนวิชา = "ทั้งคู่" ต้องรวมมาด้วยเสมอเหมือน getRoster
     prisma.subject.findMany({ where: { ...SCORED_SUBJECT_WHERE, OR: [{ courseFormatId: profile?.courseFormatId }, { courseFormatId: null }] }, orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }] }),
     ensureGradeBands(prisma),
-    ensureScoreWeightSetting(prisma),
   ]);
 
   const scoreBySubjectId = new Map((profile?.subjectScores || []).map((s) => [s.subjectId, s]));
-  const summary = computeSubjectScoreSummary(subjects, scoreBySubjectId, bands, globalWeights);
+  const summary = computeSubjectScoreSummary(subjects, scoreBySubjectId, bands);
   const subjectScores = subjects.map((s) => ({
     subjectId: s.id,
     subjectName: s.name,
+    hasExplanation: s.hasExplanation,
+    explanationWeight: s.hasExplanation ? s.explanationWeight : 0,
+    achievementWeight: s.hasExplanation ? s.achievementWeight : 100,
     explanationScore: scoreBySubjectId.get(s.id)?.explanationScore ?? null,
     explanationMaxScore: s.explanationMaxScore,
     achievementScore: scoreBySubjectId.get(s.id)?.achievementScore ?? null,

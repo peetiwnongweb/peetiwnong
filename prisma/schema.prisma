@@ -251,7 +251,7 @@ model CourseFormat {
 // รายวิชา (ฝ่ายวิชาการจัดการได้)
 // requiresScoring = false สำหรับวิชาที่ไม่ต้องเก็บ/คิดคะแนน (ไม่มีช่องกรอกคะแนนในตารางคะแนน ไม่ถูกนำไปคิดคะแนนรวม)
 // explanationMaxScore/achievementMaxScore = คะแนนเต็มของแต่ละวิชา (แต่ละวิชากำหนดเองได้ไม่เท่ากัน เช่น สอบเต็ม 50 อธิบายเต็ม 100) ใช้แปลงคะแนนดิบที่กรอกเป็นสัดส่วน % - ใช้เฉพาะวิชาที่ requiresScoring เท่านั้น
-// สัดส่วนคะแนนอธิบาย:คะแนนสอบ (เช่น 70:30) ไม่ได้ตั้งแยกรายวิชาอีกต่อไป ย้ายไปเป็นค่ากลางที่ ScoreWeightSetting (ตั้งที่แท็บ "จัดการคะแนน") แล้วแบ่งเฉลี่ยตาม credits ของวิชาที่ requiresScoring ทั้งหมด (ดูสูตรที่ subjectScoreController.js)
+// สัดส่วนคะแนนอธิบาย:คะแนนสอบตั้งแยกรายวิชา (explanationWeight/achievementWeight) แต่ละวิชาคิดเป็นคะแนน 0-100 แล้วถ่วงด้วย credits เป็นคะแนนรวม (ดูสูตรที่ subjectScoreController.js)
 // credits = น้ำหนักของวิชานี้เทียบกับวิชาที่ requiresScoring วิชาอื่น ตอนแบ่งสัดส่วนคะแนนกลางและตอนรวมเป็นคะแนนภาพรวม (วิชาหน่วยกิตเยอะได้สัดส่วน/มีผลต่อคะแนนรวมมากกว่า)
 model Subject {
   id                  Int                       @id @default(autoincrement())
@@ -259,6 +259,11 @@ model Subject {
   requiresScoring     Boolean                   @default(true) @map("requires_scoring")
   explanationMaxScore Int                       @default(100) @map("explanation_max_score")
   achievementMaxScore Int                       @default(100) @map("achievement_max_score")
+  // hasExplanation = false: วิชานี้ไม่สอบอธิบาย คิดคะแนนสอบ 100% (ไม่ใช้ explanationWeight/achievementWeight)
+  hasExplanation      Boolean                   @default(true) @map("has_explanation")
+  // สัดส่วนคะแนนอธิบาย:คะแนนสอบของวิชานี้ (ผู้สอนกำหนดเอง รวมกันต้องเท่ากับ 100)
+  explanationWeight   Int                       @default(70) @map("explanation_weight")
+  achievementWeight   Int                       @default(30) @map("achievement_weight")
   credits             Float                     @default(1) @map("credits")
   sortOrder           Int                       @default(0) @map("sort_order")
   // null = "ทั้งคู่" (ใช้ร่วมกันทุกคอร์ส) ไม่ใช่วิชาที่ยังไม่กำหนดคอร์ส

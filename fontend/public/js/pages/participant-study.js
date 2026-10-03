@@ -128,12 +128,13 @@ function loadMyScores() {
                     <div class="subject-score-breakdown-header-row">
                         <span class="subject-score-breakdown-name">${s.subjectName}</span>
                         <div class="subject-score-breakdown-scores">
+                            ${s.hasExplanation === false ? '' : `
                             <div class="subject-score-breakdown-item subject-score-breakdown-item--explanation">
-                                <span class="subject-score-breakdown-item-label">คะแนนอธิบาย</span>
+                                <span class="subject-score-breakdown-item-label">คะแนนอธิบาย (${s.explanationWeight}%)</span>
                                 <span class="subject-score-breakdown-item-value">${s.explanationScore ?? 0}<span class="subject-score-breakdown-item-max">/${s.explanationMaxScore}</span></span>
-                            </div>
+                            </div>`}
                             <div class="subject-score-breakdown-item subject-score-breakdown-item--achievement">
-                                <span class="subject-score-breakdown-item-label">คะแนนสอบ</span>
+                                <span class="subject-score-breakdown-item-label">คะแนนสอบ${s.achievementWeight !== undefined ? ` (${s.achievementWeight}%)` : ''}</span>
                                 <span class="subject-score-breakdown-item-value">${s.achievementScore ?? 0}<span class="subject-score-breakdown-item-max">/${s.achievementMaxScore}</span></span>
                             </div>
                         </div>

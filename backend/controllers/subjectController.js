@@ -121,7 +121,7 @@ async function updateSubject(req, res) {
   const id = Number(req.params.id);
   let { name } = req.body;
   let requiresScoring = req.body.requiresScoring !== undefined ? Boolean(req.body.requiresScoring) : undefined;
-  const explanationMaxScore = req.body.explanationMaxScore !== undefined ? Number(req.body.explanationMaxScore) : undefined;
+  let explanationMaxScore = req.body.explanationMaxScore !== undefined ? Number(req.body.explanationMaxScore) : undefined;
   const achievementMaxScore = req.body.achievementMaxScore !== undefined ? Number(req.body.achievementMaxScore) : undefined;
   let credits = req.body.credits !== undefined ? Number(req.body.credits) : undefined;
   // สัดส่วนคะแนนและการสอบอธิบาย แก้ได้เฉพาะหัวหน้าฝ่ายวิชาการ/ผู้บริหารค่าย (manager) - ผู้สอนแก้เองไม่ได้
@@ -153,6 +153,7 @@ async function updateSubject(req, res) {
     return res.status(403).json({ error: 'ไม่มีสิทธิ์แก้ไขรายวิชานี้ (แก้ได้เฉพาะวิชาที่ตัวเองเป็นผู้สอน)' });
   }
   if (!manager) {
+    explanationMaxScore = undefined;
     hasExplanation = undefined;
     explanationWeight = undefined;
     achievementWeight = undefined;
@@ -161,7 +162,7 @@ async function updateSubject(req, res) {
     validationError = validateSubjectWeights(explanationWeight ?? existing.explanationWeight, achievementWeight ?? existing.achievementWeight);
     if (validationError) return res.status(400).json({ error: validationError });
   }
-  // หน่วยกิต/ชื่อวิชา/ต้องเก็บคะแนน เป็นข้อมูลเชิงโครงสร้างที่กระทบทั้งคอร์ส (หน่วยกิตกระทบสูตรคะแนนรวม, ชื่อวิชาต้องผ่านหัวหน้าฝ่ายวิชาการกันตั้งชื่อมั่ว, ปิด/เปิดเก็บคะแนนกระทบว่าวิชานี้จะโผล่ในตารางคะแนน/สอบอธิบายไหม) - ผู้สอนที่ไม่ใช่ manager แก้ได้แค่คะแนนเต็มของวิชาตัวเอง (สัดส่วนคะแนน/การสอบอธิบายให้หัวหน้าฝ่ายตั้ง)
+  // หน่วยกิต/ชื่อวิชา/ต้องเก็บคะแนน เป็นข้อมูลเชิงโครงสร้างที่กระทบทั้งคอร์ส (หน่วยกิตกระทบสูตรคะแนนรวม, ชื่อวิชาต้องผ่านหัวหน้าฝ่ายวิชาการกันตั้งชื่อมั่ว, ปิด/เปิดเก็บคะแนนกระทบว่าวิชานี้จะโผล่ในตารางคะแนน/สอบอธิบายไหม) - ผู้สอนที่ไม่ใช่ manager แก้ได้แค่คะแนนเต็มของคะแนนสอบในวิชาตัวเอง (คะแนนเต็มอธิบาย/สัดส่วนคะแนน/การสอบอธิบายให้หัวหน้าฝ่ายตั้ง)
   // ค่าที่ส่งมาแต่แก้ไม่ได้จะถูกเพิกเฉยเงียบ ๆ เหมือน pattern เดียวกับ subjectScoreController.js (ไม่ error เพราะช่องถูก disable ไว้ฝั่ง frontend อยู่แล้ว)
   if (!manager) {
     credits = undefined;

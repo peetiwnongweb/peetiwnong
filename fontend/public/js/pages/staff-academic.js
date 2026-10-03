@@ -585,26 +585,29 @@ function subjectScoringSummary(subject) {
     return `อธิบาย:สอบ ${w.explanationWeight}:${w.achievementWeight} &nbsp;|&nbsp; คะแนนเต็มอธิบาย ${subject.explanationMaxScore} / คะแนนสอบ ${subject.achievementMaxScore}`;
 }
 
-function buildSubjectScoringFieldsHtml(prefix, subject = {}) {
+// lockWeights = true: สวิตช์สอบอธิบาย/สัดส่วนแสดงอย่างเดียว (ผู้สอนแก้ไม่ได้ ให้หัวหน้าฝ่ายวิชาการตั้ง) แก้ได้แค่คะแนนเต็ม
+function buildSubjectScoringFieldsHtml(prefix, subject = {}, { lockWeights = false } = {}) {
     const hasExplanation = subject.hasExplanation !== false;
+    const lockAttr = lockWeights ? 'disabled title="แก้ไขได้เฉพาะหัวหน้าฝ่ายวิชาการ"' : '';
+    const lockInputClass = lockWeights ? ' form-input-readonly' : '';
     const w = subject.hasExplanation === false
         ? { explanationWeight: subject.explanationWeight ?? 70, achievementWeight: subject.achievementWeight ?? 30 }
         : subjectWeights(subject);
     return `
         <div class="form-group mb-6">
-            <label class="toggle-switch-label">
-                <input type="checkbox" id="${prefix}-has-explanation" class="toggle-switch" ${hasExplanation ? 'checked' : ''}>
+            <label class="toggle-switch-label${lockWeights ? ' toggle-switch-label--readonly' : ''}">
+                <input type="checkbox" id="${prefix}-has-explanation" class="toggle-switch" ${hasExplanation ? 'checked' : ''} ${lockAttr}>
                 มีสอบอธิบาย (ปิด = คิดจากคะแนนสอบ 100%)
             </label>
         </div>
         <div id="${prefix}-weight-fields" class="form-grid mb-6 ${hasExplanation ? '' : 'hidden'}">
             <div class="form-group">
                 <label class="form-label">สัดส่วนคะแนนอธิบาย (%)</label>
-                <input type="number" min="0" max="100" step="1" class="form-input" id="${prefix}-explanation-weight" value="${w.explanationWeight}">
+                <input type="number" min="0" max="100" step="1" class="form-input${lockInputClass}" id="${prefix}-explanation-weight" value="${w.explanationWeight}" ${lockAttr}>
             </div>
             <div class="form-group">
                 <label class="form-label">สัดส่วนคะแนนสอบ (%)</label>
-                <input type="number" min="0" max="100" step="1" class="form-input" id="${prefix}-achievement-weight" value="${w.achievementWeight}">
+                <input type="number" min="0" max="100" step="1" class="form-input${lockInputClass}" id="${prefix}-achievement-weight" value="${w.achievementWeight}" ${lockAttr}>
             </div>
         </div>
         <div class="form-grid mb-6">
@@ -2272,7 +2275,7 @@ function openMySubjectEditForm(itemEl, subject) {
                 </label>
             </div>
             <div id="my-subject-edit-scoring-fields" class="${subject.requiresScoring ? '' : 'hidden'}">
-                ${buildSubjectScoringFieldsHtml('my-subject-edit', subject)}
+                ${buildSubjectScoringFieldsHtml('my-subject-edit', subject, { lockWeights: true })}
                 <div class="form-group mb-6" style="max-width: 12rem;">
                     <label class="form-label">หน่วยกิต</label>
                     <input type="number" class="form-input form-input-readonly" value="${subject.credits}" disabled title="แก้ไขได้เฉพาะหัวหน้าฝ่ายวิชาการ">
@@ -2289,8 +2292,11 @@ function openMySubjectEditForm(itemEl, subject) {
     itemEl.querySelector('.activity-edit-form').addEventListener('submit', (event) => {
         event.preventDefault();
         if (!subject.requiresScoring) return renderMySubjectList();
-        const payload = readSubjectScoringFields(itemEl, 'my-subject-edit');
-        if (!payload) return;
+        // ผู้สอนแก้ได้แค่คะแนนเต็ม (สัดส่วน/การสอบอธิบายให้หัวหน้าฝ่ายวิชาการตั้ง - backend ก็ไม่รับค่าเหล่านี้จากผู้สอน)
+        const payload = { achievementMaxScore: Number(itemEl.querySelector('#my-subject-edit-achievement-max').value) || 100 };
+        if (subject.hasExplanation !== false) {
+            payload.explanationMaxScore = Number(itemEl.querySelector('#my-subject-edit-explanation-max').value) || 100;
+        }
         fetch(`/api/subjects/${subject.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

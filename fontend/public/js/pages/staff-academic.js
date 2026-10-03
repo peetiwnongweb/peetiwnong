@@ -1644,10 +1644,21 @@ function loadSchedule() {
             renderTimetableGrid(wrap, entries, { editable: academicTier === 'manager', onDelete: deleteScheduleEntry, onEdit: startScheduleEdit });
             renderScheduleFullscreenIfOpen();
             scheduleActivitySuggestions = [...new Set(entries.map((e) => e.activityName).filter(Boolean))];
+            loadSharedActivitySuggestions();
         })
         .catch((error) => {
             console.error('โหลดตารางเรียนไม่สำเร็จ:', error);
             showActivitiesToast('โหลดตารางเรียนไม่สำเร็จ', false);
+        });
+}
+
+// กิจกรรมในตารางแยกกันคนละคอร์ส แต่รายชื่อกิจกรรมที่แนะนำตอนพิมพ์ลิงก์กันทั้ง 2 คอร์ส (รวมชื่อจากทุกคอร์ส) - เพิ่มกิจกรรมเดียวกันในอีกคอร์สได้ง่าย
+function loadSharedActivitySuggestions() {
+    const otherCourses = courseFormats.filter((c) => c.id !== selectedScheduleCourseId);
+    Promise.all(otherCourses.map((c) => fetch(`/api/class-schedules?courseFormatId=${c.id}`).then((res) => (res.ok ? res.json() : [])).catch(() => [])))
+        .then((lists) => {
+            const names = lists.flat().map((e) => e.activityName).filter(Boolean);
+            scheduleActivitySuggestions = [...new Set([...scheduleActivitySuggestions, ...names])];
         });
 }
 

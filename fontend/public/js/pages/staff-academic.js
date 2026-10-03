@@ -2929,6 +2929,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const courseName = courseFormats.find((c) => c.id === selectedScheduleCourseId)?.name || '';
         document.getElementById('schedule-print-title').textContent = `ตารางเรียนค่ายวิชาการพี่ติวน้อง ครั้งที่ ${currentGenerationNo}`;
         document.getElementById('schedule-print-subtitle').textContent = `คอร์ส${courseName}`;
+        // วันเวลาที่พิมพ์ (ปี พ.ศ.) ใต้ชื่อคอร์สบนหัวกระดาษ
+        const printedAt = new Date();
+        document.getElementById('schedule-print-date').textContent = `พิมพ์เมื่อ วันที่ ${printedAt.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })} เวลา ${String(printedAt.getHours()).padStart(2, '0')}:${String(printedAt.getMinutes()).padStart(2, '0')} น.`;
 
         // ตารางกว้าง/สูงกว่าพื้นที่กระดาษ (ruler ล้นได้ถึงหลักพันพิกเซล ยิ่งมีหลายวันยิ่งสูง) ถ้าไม่ทำอะไรเลยจะโดนตัดขอบขวาหาย หรือแถวท้าย ๆ ล้นไปหน้าถัดไปทิ้งช่องว่างเปล่าไว้หน้าแรก
         // เลยต้องคำนวณตัวคูณย่อทั้งก้อน (zoom) สด ๆ จากขนาดจริงทั้งกว้าง-สูง เอาด้านที่ตึงกว่า (เลขน้อยกว่า) ให้พอดีหน้ากระดาษเดียวเสมอ โดยไม่แตะโครงสร้าง/สัดส่วนภายในตารางเลย (แค่เล็กลงทั้งก้อนเท่า ๆ กัน)

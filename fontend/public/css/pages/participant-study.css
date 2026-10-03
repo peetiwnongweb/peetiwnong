@@ -826,3 +826,9 @@
   margin-top: 1.5rem;
 }
 
+/* วันเวลาที่พิมพ์ใต้ชื่อคอร์สบนหัวกระดาษตารางเรียน */
+.print-report-header .schedule-print-date {
+  font-size: 12px;
+  color: #555;
+  margin-top: 0.15rem;
+}

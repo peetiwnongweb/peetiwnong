@@ -761,6 +761,9 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadCurrentGeneration();
         document.getElementById('timetable-print-title').textContent = `ตารางเรียนค่ายวิชาการพี่ติวน้อง ครั้งที่ ${currentGenerationNo}`;
         document.getElementById('timetable-print-subtitle').textContent = `คอร์ส${myCourseFormatName}`;
+        // วันเวลาที่พิมพ์ (ปี พ.ศ.) ใต้ชื่อคอร์สบนหัวกระดาษ
+        const printedAt = new Date();
+        document.getElementById('timetable-print-date').textContent = `พิมพ์เมื่อ วันที่ ${printedAt.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })} เวลา ${String(printedAt.getHours()).padStart(2, '0')}:${String(printedAt.getMinutes()).padStart(2, '0')} น.`;
 
         // ย่อทั้งตารางให้พอดีหน้ากระดาษเดียวเสมอ (คำนวณสด ๆ จากขนาดจริง) - ตรรกะ/ค่าคงที่เดียวกับฝั่งพี่ค่ายเป๊ะ (ดูคอมเมนต์อธิบายละเอียดที่ schedule-print-btn ใน staff-academic.js)
         const PRINT_TARGET_WIDTH_PX = 1046;

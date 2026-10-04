@@ -704,6 +704,15 @@
                                     </svg>
                                     รีเฟรช
                                 </button>
+                                <select id="staff-export-sort" class="form-input" style="width:auto;min-width:0;padding-top:0.45rem;padding-bottom:0.45rem" title="เรียงลำดับรายชื่อที่นำออก">
+                                    <option value="position">เรียงตามตำแหน่ง</option>
+                                    <option value="department">เรียงตามฝ่าย</option>
+                                    <option value="birthMonth">เรียงตามเดือนเกิด</option>
+                                    <option value="name">เรียงตามชื่อ</option>
+                                    <option value="nickname">เรียงตามชื่อเล่น</option>
+                                </select>
+                                <button type="button" class="btn-outline" onclick="exportStaffList('print')">พิมพ์รายชื่อ</button>
+                                <button type="button" class="btn-outline" onclick="exportStaffList('csv')">ดาวน์โหลด CSV</button>
                                 <button class="btn-primary" onclick="openUserForm(null, 'STAFF')">เพิ่ม</button>
                                 <button type="button" class="admin-bulk-delete-btn" id="user-bulk-delete-btn-STAFF" onclick="bulkDeleteUsers('STAFF')" disabled>ลบ</button>
                             </div>
@@ -1584,8 +1593,8 @@
     <script src="../js/layout/otp-input.js?v=20261002-1"></script>
     <script src="../js/layout/loader.js?v=20261002-1"></script>
     <script src="../js/layout/date-select.js?v=20261002-1"></script>
-    <script src="../js/layout/participant-export.js?v=20261003-3"></script>
-    <script src="js/admin.js?v=20261002-1"></script>
+    <script src="../js/layout/participant-export.js?v=20261005-1"></script>
+    <script src="js/admin.js?v=20261005-1"></script>
     <script src="js/admin-dashboard.js?v=20261003-4"></script>
 </body>
 

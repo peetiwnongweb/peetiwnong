@@ -3053,3 +3053,11 @@ function exportParticipantList(type) {
     if (type === 'csv') downloadParticipantsCsv(items, sortBy);
     else printParticipants(items, sortBy);
 }
+
+// ส่งออกรายชื่อพี่ค่ายที่อนุมัติแล้ว (ตามคำค้นหาปัจจุบัน): พิมพ์ หรือ CSV เรียงตามที่เลือก
+function exportStaffList(type) {
+    const items = getFilteredUserItems('STAFF').filter((item) => item.approvalStatus === 'APPROVED');
+    const sortBy = document.getElementById('staff-export-sort')?.value || 'position';
+    if (type === 'csv') downloadStaffCsv(items, sortBy);
+    else printStaff(items, sortBy);
+}

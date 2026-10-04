@@ -119,6 +119,8 @@ button.cell{cursor:pointer}
 .ticket.idle .trait{font-size:1.15rem;font-weight:400}
 .ticket.land .trait{animation:land .25s ease-out}
 @keyframes land{from{transform:scale(1.18)}to{transform:scale(1)}}
+.rules .steps{margin-bottom:0}
+.rules b{color:var(--pink)}
 .remain{margin:10px 0 0;color:var(--muted);font-size:.95rem;text-align:center}
 
 /* extras */
@@ -184,8 +186,11 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
         <h2>วิธีเล่น</h2>
         <ol class="steps">
           <li>พิมพ์การ์ดแจกผู้เล่น หรือเขียนชื่อคน ตัวการ์ตูน ตัวละครลงตารางเอง</li>
-          <li>กดสุ่มลักษณะ ช่องไหนตรงกับลักษณะนั้น แตะเพื่อกา</li>
-          <li>กาครบหนึ่งแถว แนวนอน แนวตั้ง หรือแนวทแยง ได้บิงโก</li>
+          <li>กดสุ่มลักษณะ ช่องไหนตรงกับลักษณะนั้นให้กา</li>
+          <li>แต่ละรอบกาได้แค่ <b>1 ช่อง</b> ที่ตรงกับลักษณะที่สุ่มได้</li>
+          <li>ใครสงสัยว่าช่องที่เพื่อนกาไม่ตรงลักษณะ <b>ชาเลนจ์</b>ได้ทันที</li>
+          <li>ชาเลนจ์แล้ว <b>กรรมการ 3 คน</b>ตัดสิน ใช้เสียงข้างมาก (2 ใน 3) ถ้าไม่ผ่านต้องลบรอยกาช่องนั้น</li>
+          <li>กาครบแถว แนวนอน แนวตั้ง หรือแนวทแยง ตะโกน <b>"บิงโก!"</b> แล้วให้กรรมการตรวจการ์ด</li>
         </ol>
         <button type="button" class="btn primary" id="startBtn">เริ่มเกม</button>
       </div>
@@ -200,6 +205,15 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
     </section>
 
     <section class="extras">
+      <div class="play-only rules">
+        <h2>กติกา</h2>
+        <ol class="steps">
+          <li>แต่ละรอบกาได้แค่ <b>1 ช่อง</b> ที่ตรงกับลักษณะที่สุ่มได้</li>
+          <li>ใครสงสัยว่าช่องที่เพื่อนกาไม่ตรงลักษณะ <b>ชาเลนจ์</b>ได้ทันที</li>
+          <li>ชาเลนจ์แล้ว <b>กรรมการ 3 คน</b>ตัดสิน ใช้เสียงข้างมาก (2 ใน 3) ถ้าไม่ผ่านต้องลบรอยกาช่องนั้น</li>
+          <li>กาครบแถว แนวนอน แนวตั้ง หรือแนวทแยง ตะโกน <b>"บิงโก!"</b> แล้วให้กรรมการตรวจการ์ด</li>
+        </ol>
+      </div>
       <div class="play-only" id="historyWrap" hidden>
         <h2>ลักษณะที่ออกแล้ว</h2>
         <ol class="history" id="history"></ol>
@@ -597,13 +611,13 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
         }).join("");
         cards.push('<div class="card"><div class="head"><b>บิงโกลักษณะ</b><span>ใบที่ ' + no + '</span></div>'
           + '<div class="grid" style="grid-template-columns:repeat(' + size + ',1fr);grid-template-rows:repeat(' + size + ',1fr)">' + cells + "</div>"
-          + '<div class="foot">ชื่อผู้เล่น ..............................................</div></div>');
+          + '<div class="foot">ชื่อผู้เล่น ..............................................</div><div class="rule">กาได้รอบละ 1 ช่อง · ชาเลนจ์ได้ กรรมการ 3 คนตัดสิน</div></div>');
       }
       pages.push('<section class="sheet">' + cards.join("") + "</section>");
     }
     if (withTraits) {
       var items = state.traits.map(function(t, i){ return "<li>" + escHtml(t) + "</li>"; }).join("");
-      pages.push('<section class="traits"><h1>รายการลักษณะ (สำหรับผู้ดำเนินเกม)</h1><p>สุ่มหรืออ่านทีละข้อ ใครมีชื่อที่ตรงกับลักษณะก็กาช่องนั้น ครบแถวแนวนอน แนวตั้ง หรือแนวทแยง ได้บิงโก</p><ol>' + items + "</ol></section>");
+      pages.push('<section class="traits"><h1>รายการลักษณะ (สำหรับผู้ดำเนินเกม)</h1><p>สุ่มหรืออ่านทีละข้อ แต่ละรอบกาได้แค่ 1 ช่องที่ตรงกับลักษณะ ใครสงสัยชาเลนจ์ได้ กรรมการ 3 คนตัดสิน (เสียงข้างมาก) ถ้าไม่ผ่านต้องลบรอยกา ครบแถวแนวนอน แนวตั้ง หรือแนวทแยง ได้บิงโก</p><ol>' + items + "</ol></section>");
     }
     win.document.write('<!doctype html><html lang="th"><head><meta charset="utf-8"><title>การ์ดบิงโกลักษณะ</title>'
       + '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@600&family=Mitr:wght@400;500&display=swap">'
@@ -614,7 +628,7 @@ dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
       + ".head{display:flex;justify-content:space-between;align-items:baseline}.head b{font-size:15pt;font-weight:500}.head span{font-size:10pt;color:#57568C}"
       + ".grid{flex:1;display:grid;border:0.7mm solid #1E1B4B;border-radius:2.5mm;overflow:hidden;gap:0.35mm;background:#1E1B4B;min-height:0}"
       + ".cell{background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:1mm;font-family:Mali,Mitr,sans-serif;font-weight:600;line-height:1.2;overflow-wrap:anywhere;overflow:hidden}"
-      + ".foot{font-size:10pt;color:#57568C}"
+      + ".foot{font-size:10pt;color:#57568C}.rule{font-size:8.5pt;color:#D81B66;margin-top:-1.5mm}"
       + ".traits{width:194mm;margin:0 auto;background:#fff;padding:2mm}.traits h1{font-size:16pt;margin:0 0 2mm;font-weight:500}.traits p{margin:0 0 4mm;font-size:10.5pt;color:#57568C}"
       + ".traits ol{columns:3;column-gap:8mm;margin:0;padding-left:7mm;font-size:10.5pt;line-height:1.55}"
       + "@media screen{body{padding:8mm 0}.sheet,.traits{margin-bottom:8mm;padding:8mm;width:210mm;height:297mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}.traits{height:auto}}"

@@ -433,6 +433,62 @@ function loadGroups() {
         });
 }
 
+// พิมพ์รายชื่อสมาชิกทุกกลุ่ม (A4) - เลือกได้ว่าจะขึ้นหน้าใหม่ทุกกลุ่ม (แจกหัวหน้ากลุ่ม) หรือพิมพ์ต่อกันประหยัดกระดาษ
+function escapeGroupPrintText(value) {
+    return String(value ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+function printGroupLists() {
+    if (!groups.length) {
+        showActivitiesToast('ยังไม่มีกลุ่มให้พิมพ์', false);
+        return;
+    }
+    const pageBreak = document.getElementById('group-print-page-break')?.checked !== false;
+    const win = window.open('', '_blank');
+    if (!win) {
+        showActivitiesToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป', false);
+        return;
+    }
+    const now = new Date();
+    const printedAt = `${now.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })} เวลา ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} น.`;
+    const total = groups.reduce((sum, g) => sum + g.members.length, 0);
+    const sections = groups.map((g) => {
+        const rows = g.members.length
+            ? g.members.map((m, i) => `<tr><td class="c">${i + 1}</td><td>${escapeGroupPrintText(m.nickname || '-')}</td><td>${escapeGroupPrintText(m.fullName)}</td><td class="c">${escapeGroupPrintText(m.gradeLevel || '-')}</td><td>${escapeGroupPrintText(m.course || '-')}</td></tr>`).join('')
+            : '<tr><td colspan="5" class="c muted">ยังไม่มีสมาชิก</td></tr>';
+        return `<section class="group${pageBreak ? ' break' : ''}">
+            <div class="group-head"><h2>${escapeGroupPrintText(g.name)}</h2><span>${g.members.length} คน</span></div>
+            <table><thead><tr><th class="c" style="width:12mm">ลำดับ</th><th style="width:28mm">ชื่อเล่น</th><th>ชื่อ-นามสกุล</th><th class="c" style="width:16mm">ชั้น</th><th style="width:36mm">คอร์ส</th></tr></thead><tbody>${rows}</tbody></table>
+        </section>`;
+    }).join('');
+    win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายชื่อกลุ่มน้องค่าย</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;600&display=swap">
+<style>
+  @page { size: A4 portrait; margin: 14mm; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: 'Sarabun', sans-serif; color: #111; }
+  .doc-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #26324a; padding-bottom: 6px; margin-bottom: 12px; }
+  .doc-head h1 { margin: 0; font-family: 'Prompt', sans-serif; font-size: 20px; color: #26324a; }
+  .doc-head p { margin: 0; font-size: 12px; color: #555; }
+  .group { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
+  .group.break { break-after: page; page-break-after: always; }
+  .group.break:last-child { break-after: auto; page-break-after: auto; }
+  .group-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .group-head h2 { margin: 0; font-family: 'Prompt', sans-serif; font-size: 17px; color: #26324a; }
+  .group-head span { font-size: 13px; color: #555; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { background: #26324a; color: #fff; font-weight: 600; text-align: left; padding: 6px 8px; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+  tbody tr:nth-child(even) td { background: #f6f7fb; }
+  .c { text-align: center; } .muted { color: #888; }
+</style></head><body>
+<div class="doc-head"><div><h1>รายชื่อกลุ่มน้องค่าย</h1><p>ค่ายพี่ติวน้อง · ${groups.length} กลุ่ม · สมาชิกรวม ${total} คน</p></div><p>พิมพ์เมื่อ วันที่ ${printedAt}</p></div>
+${sections}
+<script>(document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { window.print(); }, 200); });</script>
+</body></html>`);
+    win.document.close();
+}
+
 function renderGroupList() {
     const list = document.getElementById('group-list');
     const empty = document.getElementById('group-list-empty');
@@ -653,6 +709,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('activity-list-pagination-prev')?.addEventListener('click', () => goToActivityListPage(activityListCurrentPage - 1));
     document.getElementById('activity-list-pagination-next')?.addEventListener('click', () => goToActivityListPage(activityListCurrentPage + 1));
     document.getElementById('group-create-form')?.addEventListener('submit', handleGroupCreateSubmit);
+    document.getElementById('group-print-btn')?.addEventListener('click', printGroupLists);
     document.getElementById('score-activity-select')?.addEventListener('change', handleScoreActivityChange);
 
     // เช็คสถานะค่ายก่อนทุกอย่าง: ยังไม่มีค่ายที่กำลังดำเนินการ = ระบบกิจกรรมล็อก (API ทุกเส้นตอบ 409 อยู่แล้ว) โชว์แผงอธิบายแทนแล้วจบ ไม่โหลดข้อมูลอื่นให้เจอ toast error รัว ๆ

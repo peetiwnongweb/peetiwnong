@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="../css/layout/scroll-top.css">
     <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/form.css?v=20261002-1">
-    <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20261002-1">
+    <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20261004-1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
     <script src="../js/layout/loader.js?v=20261002-1"></script>
     <script src="../js/layout/auth.js?v=20261002-1"></script>
     <script src="../js/layout/nav.js?v=20261002-1"></script>
-    <script src="../js/pages/staff-activities.js?v=20261002-1"></script>
+    <script src="../js/pages/staff-activities.js?v=20261004-1"></script>
 </head>
 
 <body>
@@ -348,6 +348,10 @@
                     </form>
                 </div>
 
+                <div class="group-print-bar" style="max-width: 760px; margin: 0 auto 1rem;">
+                    <label class="group-print-option"><input type="checkbox" id="group-print-page-break" checked> ขึ้นหน้าใหม่ทุกกลุ่ม</label>
+                    <button type="button" class="btn-outline" id="group-print-btn">พิมพ์รายชื่อกลุ่ม</button>
+                </div>
                 <div class="group-list" id="group-list" style="max-width: 760px; margin: 0 auto;"></div>
                 <p class="activities-empty hidden" id="group-list-empty">ยังไม่มีกลุ่มที่สร้างไว้</p>
             </div>

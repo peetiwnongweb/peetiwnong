@@ -1,7 +1,7 @@
 const { getPrisma } = require('../lib/prisma');
 const { logActivity } = require('../lib/activityLog');
 
-const PARTICIPANT_SELECT = { id: true, prefix: true, firstName: true, lastName: true, nickname: true };
+const PARTICIPANT_SELECT = { id: true, prefix: true, firstName: true, lastName: true, nickname: true, gradeLevel: true, courseFormat: { select: { name: true } } };
 
 function toFullName(profile) {
   const prefixedFirstName = `${profile.prefix || ''}${profile.firstName || ''}`;
@@ -17,6 +17,9 @@ function serializeGroup(group) {
       id: p.id,
       fullName: toFullName(p),
       nickname: p.nickname,
+      // ระดับชั้น/คอร์ส ใช้ตอนพิมพ์รายชื่อกลุ่ม (ไม่ใช่ข้อมูลอ่อนไหว)
+      gradeLevel: p.gradeLevel || null,
+      course: p.courseFormat?.name || null,
     })),
   };
 }

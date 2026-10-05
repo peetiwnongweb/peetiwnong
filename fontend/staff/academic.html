@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/form.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20261002-1">
-    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20261005-1">
+    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20261005-4">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
     <script src="../js/layout/time-select.js?v=20261002-1"></script>
     <script src="../js/layout/auth.js?v=20261002-1"></script>
     <script src="../js/layout/nav.js?v=20261002-1"></script>
-    <script src="../js/pages/staff-academic.js?v=20261005-3"></script>
+    <script src="../js/pages/staff-academic.js?v=20261005-4"></script>
 </head>
 
 <body>
@@ -713,12 +713,15 @@
                         <label class="form-label" for="manual-exam-date-input">วันที่สอบ (ตามกระดาษ)</label>
                         <input type="date" id="manual-exam-date-input" class="form-input">
                     </div>
+                    <div class="manual-exam-print-row mb-4">
+                        <button type="button" class="btn-outline" id="manual-exam-print-btn" disabled>พิมพ์เอกสารการสอบอธิบาย (รายคน)</button>
+                        <button type="button" class="btn-outline" id="manual-exam-print-blank-btn" disabled>พิมพ์ใบเปล่า</button>
+                    </div>
                     <div id="manual-exam-roster-wrap" class="hidden">
                         <input type="text" id="manual-exam-search-input" class="form-input mb-4" placeholder="ค้นหาชื่อ ชื่อเล่น หรือรหัส..." autocomplete="off">
                         <div id="manual-exam-roster" class="manual-exam-roster"></div>
                         <div class="form-actions">
                             <span class="manual-exam-summary" id="manual-exam-summary"></span>
-                            <button type="button" class="btn-outline" id="manual-exam-print-btn">พิมพ์ใบบันทึกผล</button>
                             <button type="button" class="btn-primary" id="manual-exam-save-btn" disabled>บันทึกผล</button>
                         </div>
                     </div>

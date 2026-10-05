@@ -2398,6 +2398,10 @@ function renderManualExamSelects() {
     if (courseFormats.some((c) => String(c.id) === prevCourse)) courseSelect.value = prevCourse;
 
     const courseId = Number(courseSelect.value) || null;
+    ['manual-exam-print-btn', 'manual-exam-print-blank-btn'].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !courseId;
+    });
     const prevSubject = subjectSelect.value;
     const options = courseId
         ? subjects.filter((s) => s.requiresScoring && s.hasExplanation !== false && (s.courseFormatId === courseId || s.courseFormatId === null))
@@ -2488,70 +2492,90 @@ function updateManualExamSummary() {
     document.getElementById('manual-exam-save-btn').disabled = values.length === 0;
 }
 
-// พิมพ์ใบบันทึกผลสอบอธิบายเปล่า (แจกกรรมการติ๊กตอนสอบจริง แล้วค่อยนำมากรอกในระบบ) - เฉพาะคนที่ยังไม่ผ่านวิชานี้
-function printManualExamSheet() {
+// พิมพ์ "เอกสารการสอบอธิบาย" รายคน (แบบฟอร์มเดียวกับกระดาษของค่าย) A4 หน้าละ 2 ใบ ตัดครึ่ง
+// แต่ละใบ: ชื่อ-นามสกุล คอร์ส และตารางรายวิชา (เฉพาะวิชาที่สอบอธิบายของคอร์สนั้น) x ครั้งที่สอบ พร้อม % ตามตารางคะแนนสอบอธิบาย ให้ผู้ประเมินลงผลแต่ละครั้ง
+// blank = true: พิมพ์ใบเปล่า 2 ใบ (ไม่ใส่ชื่อ ไม่ติ๊กคอร์ส) ไว้ใช้กับคนที่ไม่มีใบหรือใบหาย
+async function printOralExamStudentSheets(blank) {
     const courseId = Number(document.getElementById('manual-exam-course-select').value);
-    const subjectId = Number(document.getElementById('manual-exam-subject-select').value);
-    const people = manualExamRoster.filter((p) => !p.passed);
-    if (!people.length) {
-        showActivitiesToast('ไม่มีรายชื่อที่ยังไม่ผ่านให้พิมพ์', false);
+    if (!courseId) {
+        showActivitiesToast('กรุณาเลือกคอร์สก่อน', false);
         return;
+    }
+    const examSubjects = subjects.filter((s) => s.requiresScoring && s.hasExplanation !== false && (s.courseFormatId === courseId || s.courseFormatId === null));
+    if (!examSubjects.length) {
+        showActivitiesToast('คอร์สนี้ยังไม่มีวิชาที่สอบอธิบาย', false);
+        return;
+    }
+    let people = [null, null];
+    if (!blank) {
+        try {
+            const res = await fetch(`/api/subject-scores/roster?courseFormatId=${courseId}&scope=full`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            people = (await res.json()).roster;
+        } catch (error) {
+            console.error(error);
+            showActivitiesToast('โหลดรายชื่อน้องค่ายไม่สำเร็จ', false);
+            return;
+        }
+        if (!people.length) {
+            showActivitiesToast('ไม่มีน้องค่ายในคอร์สนี้', false);
+            return;
+        }
     }
     const win = window.open('', '_blank');
     if (!win) {
         showActivitiesToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป', false);
         return;
     }
-    const subjectName = subjects.find((s) => s.id === subjectId)?.name || '';
-    const courseName = courseFormats.find((c) => c.id === courseId)?.name || '';
     const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const ROWS = 22;
-    const totalPages = Math.ceil(people.length / ROWS);
-    const pages = [];
-    for (let p = 0; p < totalPages; p++) {
-        const rows = people.slice(p * ROWS, (p + 1) * ROWS).map((x, i) => `
-            <tr><td class="c">${p * ROWS + i + 1}</td><td>${esc(x.code)}</td><td>${esc(x.fullName)}</td><td>${esc(x.nickname || '-')}</td><td class="c">${x.evaluatedCount + 1}</td><td class="box"></td><td class="box"></td><td></td></tr>`).join('');
-        pages.push(`<section class="page">
-            <header>
-                <h1>ใบบันทึกผลการสอบด้วยการอธิบาย</h1>
-                <p>วิชา <b>${esc(subjectName)}</b> · คอร์ส<b>${esc(courseName)}</b></p>
-                <p class="fill">วันที่สอบ ........................................ รอบที่ .......... เวลา ........................</p>
-            </header>
+    const bands = oralExamScoreBands.length ? oralExamScoreBands : [{ attemptNumber: 1, scorePercent: 100 }];
+    const courseBoxes = () => courseFormats.map((c) => `<span class="course-opt">${!blank && c.id === courseId ? '☑' : '☐'} ${esc(c.name)}</span>`).join('');
+    const sheet = (person) => {
+        const nameParts = person ? person.fullName.split(' ') : [];
+        return `
+        <div class="sheet">
+            <h1>เอกสารการสอบอธิบาย</h1>
+            <div class="line"><span>ชื่อ</span><span class="fill">${esc(nameParts[0] || '')}</span><span>นามสกุล</span><span class="fill">${esc(nameParts.slice(1).join(' '))}</span></div>
+            ${person ? `<div class="meta">รหัส ${esc(person.code)}${person.nickname ? ` · ชื่อเล่น ${esc(person.nickname)}` : ''}</div>` : ''}
+            <div class="courses">คอร์ส ${courseBoxes()}</div>
             <table>
-                <thead><tr><th class="c" style="width:10mm">ลำดับ</th><th style="width:24mm">รหัส</th><th>ชื่อ-นามสกุล</th><th style="width:20mm">ชื่อเล่น</th><th class="c" style="width:13mm">ครั้งที่</th><th class="c" style="width:13mm">ผ่าน</th><th class="c" style="width:13mm">ไม่ผ่าน</th><th style="width:26mm">หมายเหตุ</th></tr></thead>
-                <tbody>${rows}</tbody>
+                <thead>
+                    <tr><th rowspan="2" class="subj">รายวิชา</th><th colspan="${bands.length}">ครั้งที่สอบ</th></tr>
+                    <tr>${bands.map((b) => `<th>ครั้งที่ ${b.attemptNumber}<br><span>(${b.scorePercent}%)</span></th>`).join('')}</tr>
+                </thead>
+                <tbody>${examSubjects.map((s) => `<tr><td class="subj">${esc(s.name)}</td>${bands.map(() => '<td></td>').join('')}</tr>`).join('')}</tbody>
             </table>
-            <footer>
-                <div class="note">ทำเครื่องหมาย ✓ ในช่องผ่านหรือไม่ผ่าน เฉพาะคนที่เข้าสอบ · "ครั้งที่" คือครั้งที่จะได้ถ้าสอบรอบนี้ (ณ วันที่พิมพ์)</div>
-                <div class="sign">ลงชื่อ ........................................ ผู้ประเมิน</div>
-                <div class="page-no">หน้า ${p + 1} / ${totalPages}</div>
-            </footer>
-        </section>`);
+            <div class="sign">ลงชื่อ ...................................................... (หัวหน้าฝ่ายวิชาการ)</div>
+        </div>`;
+    };
+    const pages = [];
+    for (let i = 0; i < people.length; i += 2) {
+        pages.push(`<section class="page">${sheet(people[i])}<div class="cut"></div>${i + 1 < people.length ? sheet(people[i + 1]) : '<div class="sheet"></div>'}</section>`);
     }
-    win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>ใบบันทึกผลสอบอธิบาย ${esc(subjectName)}</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@600&family=Sarabun:wght@400;600&display=swap">
+    win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>เอกสารการสอบอธิบาย</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
 <style>
-  @page { size: A4 portrait; margin: 12mm 12mm; }
+  @page { size: A4 portrait; margin: 10mm 14mm; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { margin: 0; font-family: 'Sarabun', sans-serif; color: #111; background: #e5e7eb; }
-  .page { background: #fff; width: 186mm; height: 272mm; margin: 0 auto; display: flex; flex-direction: column; break-after: page; page-break-after: always; overflow: hidden; }
+  .page { background: #fff; width: 182mm; height: 276mm; margin: 0 auto; display: flex; flex-direction: column; break-after: page; page-break-after: always; overflow: hidden; }
   .page:last-child { break-after: auto; page-break-after: auto; }
-  header { text-align: center; border-bottom: 2px solid #26324a; padding-bottom: 6px; margin-bottom: 10px; }
-  h1 { margin: 0 0 4px; font-family: 'Prompt', sans-serif; font-size: 19px; color: #26324a; }
-  header p { margin: 2px 0; font-size: 14px; }
-  header .fill { margin-top: 8px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th { background: #26324a; color: #fff; font-weight: 600; text-align: left; padding: 6px 6px; border: 1px solid #26324a; }
-  td { padding: 0 6px; height: 9.2mm; border: 1px solid #9ca3af; }
-  td.box { background: #fff; }
-  .c { text-align: center; }
-  footer { margin-top: auto; font-size: 12px; color: #444; }
-  footer .note { margin-bottom: 10px; }
-  footer .sign { text-align: right; font-size: 14px; margin-bottom: 6px; }
-  footer .page-no { text-align: right; color: #777; font-size: 11px; }
-  @media screen { body { padding: 12mm 0; } .page { padding: 12mm; width: 210mm; height: 297mm; margin-bottom: 8mm; box-shadow: 0 2px 10px rgba(0,0,0,.15); } }
+  .sheet { flex: 1; display: flex; flex-direction: column; padding: 4mm 2mm; min-height: 0; }
+  .cut { border-top: 1.5px dashed #888; margin: 2mm 0; }
+  h1 { text-align: center; font-size: 20px; margin: 0 0 4mm; font-weight: 700; }
+  .line { display: flex; gap: 2mm; align-items: flex-end; font-size: 15px; margin-bottom: 1.5mm; }
+  .line .fill { flex: 1; border-bottom: 1px dotted #333; min-height: 6mm; padding: 0 2mm; font-weight: 600; }
+  .meta { font-size: 12px; color: #555; margin-bottom: 2mm; }
+  .courses { text-align: center; font-size: 15px; margin-bottom: 3mm; }
+  .course-opt { margin-left: 5mm; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border: 1px solid #333; text-align: center; padding: 1.2mm; }
+  th { font-weight: 600; } th span { font-weight: 400; font-size: 12px; }
+  td { height: 9mm; } .subj { text-align: center; width: 30mm; }
+  .sign { margin-top: auto; text-align: right; font-size: 14px; padding-top: 4mm; }
+  @media screen { body { padding: 10mm 0; } .page { padding: 10mm 14mm; width: 210mm; height: 297mm; margin-bottom: 8mm; box-shadow: 0 2px 10px rgba(0,0,0,.15); } }
 </style></head><body>${pages.join('')}
-<script>(document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { window.print(); }, 200); });</script>
+<script>(document.fonts ? document.fonts.ready : Promise.resolve()).then(function () { setTimeout(function () { window.print(); }, 200); });<\/script>
 </body></html>`);
     win.document.close();
 }
@@ -3118,7 +3142,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('manual-exam-subject-select')?.addEventListener('change', loadManualExamRoster);
     document.getElementById('manual-exam-search-input')?.addEventListener('input', renderManualExamRoster);
     document.getElementById('manual-exam-save-btn')?.addEventListener('click', saveManualExamResults);
-    document.getElementById('manual-exam-print-btn')?.addEventListener('click', printManualExamSheet);
+    document.getElementById('manual-exam-print-btn')?.addEventListener('click', () => printOralExamStudentSheets(false));
+    document.getElementById('manual-exam-print-blank-btn')?.addEventListener('click', () => printOralExamStudentSheets(true));
     document.getElementById('oral-exam-max-participants-input')?.addEventListener('input', updateOralExamOpenButtonState);
     document.getElementById('oral-exam-open-btn')?.addEventListener('click', handleOralExamOpenClick);
     document.getElementById('oral-exam-close-btn')?.addEventListener('click', handleOralExamCloseClick);

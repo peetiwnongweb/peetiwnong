@@ -2182,3 +2182,9 @@
   font-size: 0.9rem;
   color: #475569;
 }
+
+.manual-exam-print-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

@@ -2188,3 +2188,106 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* บันทึกผลจากใบรายคน */
+.manual-exam-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.5rem;
+  max-height: 18rem;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.manual-exam-person-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.manual-exam-person-btn:hover { border-color: #93c5fd; }
+.manual-exam-person-btn.is-active { border-color: #2563eb; background: #eff6ff; }
+.manual-exam-progress { color: #b45309; font-weight: 600; }
+
+.manual-exam-sheet {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.manual-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.manual-sheet-head p { margin: 0; }
+
+.manual-sheet-table-wrap { overflow-x: auto; }
+
+.manual-sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.manual-sheet-table th,
+.manual-sheet-table td {
+  border: 1px solid #cbd5e1;
+  text-align: center;
+  padding: 0.35rem;
+}
+
+.manual-sheet-table th { background: #f1f5f9; font-weight: 600; white-space: nowrap; }
+.manual-sheet-table th span { font-weight: 400; font-size: 0.75rem; color: #64748b; }
+.manual-sheet-subj { text-align: left !important; white-space: nowrap; }
+
+.manual-sheet-cell { width: 3.6rem; height: 2.6rem; font-size: 1.1rem; font-weight: 700; }
+.manual-sheet-cell small { display: block; font-size: 0.65rem; font-weight: 400; color: #64748b; }
+.manual-sheet-cell.is-off { background: #f8fafc; }
+.manual-sheet-cell.is-saved { background: #f1f5f9; }
+.manual-sheet-cell.pass { color: #059669; }
+.manual-sheet-cell.fail { color: #dc2626; }
+.manual-sheet-cell.pending { color: #b45309; }
+.manual-sheet-cell.is-input { padding: 0; }
+.manual-sheet-cell.is-input button {
+  width: 100%;
+  height: 100%;
+  min-height: 2.6rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.manual-sheet-cell.is-input button:hover { background: #eff6ff; }
+.manual-sheet-cell.is-draft.pass { background: #ecfdf5; }
+.manual-sheet-cell.is-draft.fail { background: #fef2f2; }
+
+.manual-sheet-score { white-space: nowrap; }
+.manual-sheet-preview { color: #2563eb; font-weight: 600; }
+
+.manual-sheet-clear {
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.manual-sheet-legend {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.5rem 0 1rem;
+}

@@ -556,6 +556,212 @@ async function recordManualResults(req, res) {
   res.status(201).json({ sessionId: session.id, recorded: toRecord.length, passed: passedCount, failed: toRecord.length - passedCount, skipped });
 }
 
+// ==========================================
+// บันทึกผลจาก "เอกสารการสอบอธิบาย" รายคน (กระดาษที่แจกน้องไว้ ตาราง วิชา x ครั้งที่) - เฉพาะ isAcademicManager
+// ทีมจัดการคะแนนเปิดใบของน้องทีละคน แล้วกรอกผลแต่ละวิชาต่อจากครั้งที่มีในระบบแล้ว (ไม่ผ่าน... แล้วผ่านเป็นครั้งสุดท้าย)
+// แต่ละครั้งที่ต้องอยู่ในรอบสอบ (attempt ผูก session และ 1 คนมีได้ 1 แถวต่อรอบ) จึงใช้รอบกลางร่วมกัน 1 รอบต่อ วิชา+คอร์ส+ครั้งที่
+// ระบุรอบด้วย token "sheet-<วิชา>-<คอร์ส>-<ครั้งที่>" (รอบปิดแล้ว สแกน QR เข้าไม่ได้) ประวัติจะไม่รกเป็นรอบละคน
+// ==========================================
+const SHEET_TOKEN_PREFIX = 'sheet-';
+const sheetToken = (subjectId, courseFormatId, attemptNumber) => SHEET_TOKEN_PREFIX + subjectId + '-' + courseFormatId + '-' + attemptNumber;
+const MAX_SHEET_ATTEMPTS = 10;
+
+function requireManager(req, res) {
+  if (isAcademicManager(req.session.user)) return true;
+  res.status(403).json({ error: 'บันทึกผลจากกระดาษได้เฉพาะหัวหน้าฝ่ายวิชาการหรือผู้บริหารค่าย' });
+  return false;
+}
+
+// วิชาที่มีสอบอธิบายของคอร์สนี้ (เรียงเหมือนในระบบ)
+function sheetSubjects(prisma, courseFormatId) {
+  return prisma.subject.findMany({
+    where: { requiresScoring: true, hasExplanation: true, OR: [{ courseFormatId }, { courseFormatId: null }] },
+    orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+    select: { id: true, name: true, explanationMaxScore: true },
+  });
+}
+
+// รายชื่อน้องค่ายในคอร์ส พร้อมความคืบหน้า (ผ่านแล้วกี่วิชา) ให้เลือกเปิดใบทีละคน
+async function listSheetParticipants(req, res) {
+  if (!requireManager(req, res)) return;
+  const courseFormatId = Number(req.query.courseFormatId);
+  if (!courseFormatId) return res.status(400).json({ error: 'ต้องระบุคอร์ส' });
+  const prisma = await getPrisma();
+  const [subjects, profiles] = await Promise.all([
+    sheetSubjects(prisma, courseFormatId),
+    prisma.participantProfile.findMany({
+      where: { courseFormatId, user: { approvalStatus: 'APPROVED' } },
+      orderBy: { firstName: 'asc' },
+      select: {
+        id: true, prefix: true, firstName: true, lastName: true, nickname: true, campGenerationNo: true,
+        courseFormat: { select: { name: true } },
+        oralExamAttempts: { select: { subjectId: true, status: true } },
+      },
+    }),
+  ]);
+  const subjectIds = new Set(subjects.map((s) => s.id));
+  res.json({
+    subjectCount: subjects.length,
+    participants: profiles.map((p) => ({
+      id: p.id,
+      code: buildParticipantCode(p.campGenerationNo ?? 1, p.courseFormat?.name, p.id),
+      fullName: toFullName(p),
+      nickname: p.nickname,
+      passedSubjects: new Set(p.oralExamAttempts.filter((a) => a.status === 'PASSED' && subjectIds.has(a.subjectId)).map((a) => a.subjectId)).size,
+      attemptCount: p.oralExamAttempts.filter((a) => a.status !== 'PENDING' && subjectIds.has(a.subjectId)).length,
+    })),
+  });
+}
+
+async function buildSheet(prisma, participantProfileId) {
+  const profile = await prisma.participantProfile.findUnique({
+    where: { id: participantProfileId },
+    select: {
+      id: true, prefix: true, firstName: true, lastName: true, nickname: true, campGenerationNo: true, courseFormatId: true,
+      courseFormat: { select: { name: true } },
+      oralExamAttempts: { orderBy: { attemptNumber: 'asc' }, select: { subjectId: true, attemptNumber: true, status: true, awardedScore: true, session: { select: { token: true, isManual: true } } } },
+    },
+  });
+  if (!profile || !profile.courseFormatId) return null;
+  const subjects = await sheetSubjects(prisma, profile.courseFormatId);
+  return {
+    profile,
+    sheet: {
+      id: profile.id,
+      code: buildParticipantCode(profile.campGenerationNo ?? 1, profile.courseFormat?.name, profile.id),
+      fullName: toFullName(profile),
+      nickname: profile.nickname,
+      course: profile.courseFormat?.name || null,
+      subjects: subjects.map((s) => ({
+        id: s.id,
+        name: s.name,
+        explanationMaxScore: s.explanationMaxScore,
+        attempts: profile.oralExamAttempts.filter((a) => a.subjectId === s.id).map((a) => ({
+          attemptNumber: a.attemptNumber,
+          status: a.status,
+          awardedScore: a.awardedScore,
+          source: a.session.token.startsWith(SHEET_TOKEN_PREFIX) ? 'sheet' : (a.session.isManual ? 'paper' : 'qr'),
+        })),
+      })),
+    },
+  };
+}
+
+async function getParticipantSheet(req, res) {
+  if (!requireManager(req, res)) return;
+  const prisma = await getPrisma();
+  const built = await buildSheet(prisma, Number(req.params.participantProfileId));
+  if (!built) return res.status(404).json({ error: 'ไม่พบน้องค่ายหรือยังไม่มีคอร์ส' });
+  res.json(built.sheet);
+}
+
+// body: { entries: [{ subjectId, results: ['FAILED', ..., 'PASSED'?] }] } - ผลของครั้งใหม่ต่อจากที่มีในระบบแล้ว
+// ต้องเป็นไม่ผ่านเรียงกันแล้วจบด้วยผ่านได้แค่ครั้งสุดท้าย วิชาที่ผ่านแล้วหรือมีคิว QR ค้างบันทึกเพิ่มไม่ได้
+async function saveParticipantSheet(req, res) {
+  if (!requireManager(req, res)) return;
+  const participantProfileId = Number(req.params.participantProfileId);
+  const entries = (Array.isArray(req.body.entries) ? req.body.entries : [])
+    .map((e) => ({ subjectId: Number(e.subjectId), results: Array.isArray(e.results) ? e.results : [] }))
+    .filter((e) => e.subjectId && e.results.length);
+  if (!entries.length) return res.status(400).json({ error: 'ยังไม่ได้กรอกผลวิชาไหนเลย' });
+
+  const prisma = await getPrisma();
+  const built = await buildSheet(prisma, participantProfileId);
+  if (!built) return res.status(404).json({ error: 'ไม่พบน้องค่ายหรือยังไม่มีคอร์ส' });
+  const { profile, sheet } = built;
+  const subjectById = new Map(sheet.subjects.map((s) => [s.id, s]));
+
+  const plan = [];
+  for (const entry of entries) {
+    const subject = subjectById.get(entry.subjectId);
+    if (!subject) return res.status(400).json({ error: 'มีวิชาที่ไม่ได้สอบอธิบายในคอร์สนี้' });
+    const valid = entry.results.every((r, i) => (i === entry.results.length - 1 ? ['PASSED', 'FAILED'].includes(r) : r === 'FAILED'));
+    if (!valid) return res.status(400).json({ error: 'วิชา "' + subject.name + '": ผลต้องเป็นไม่ผ่านเรียงกัน และผ่านได้แค่ครั้งสุดท้าย' });
+    if (subject.attempts.some((a) => a.status === 'PASSED')) return res.status(409).json({ error: 'วิชา "' + subject.name + '" สอบผ่านไปแล้ว' });
+    if (subject.attempts.some((a) => a.status === 'PENDING')) return res.status(409).json({ error: 'วิชา "' + subject.name + '" มีคิวรอประเมินค้างในระบบ QR' });
+    const start = subject.attempts.length + 1;
+    if (start - 1 + entry.results.length > MAX_SHEET_ATTEMPTS) return res.status(400).json({ error: 'วิชา "' + subject.name + '" เกิน ' + MAX_SHEET_ATTEMPTS + ' ครั้ง' });
+    plan.push({ subject, results: entry.results, start });
+  }
+
+  const bands = await ensureOralExamScoreBands(prisma);
+  const now = new Date();
+  const userId = req.session.user.id;
+  const courseFormatId = profile.courseFormatId;
+  await prisma.$transaction(async (tx) => {
+    for (const { subject, results, start } of plan) {
+      for (let i = 0; i < results.length; i++) {
+        const attemptNumber = start + i;
+        const token = sheetToken(subject.id, courseFormatId, attemptNumber);
+        const session = await tx.oralExamSession.upsert({
+          where: { token },
+          update: {},
+          create: { subjectId: subject.id, courseFormatId, openedByUserId: userId, token, status: 'CLOSED', isManual: true, openedAt: now, startedAt: now, closedAt: now },
+        });
+        const passed = results[i] === 'PASSED';
+        const awardedScore = passed ? Math.round((resolveAttemptScorePercent(attemptNumber, bands) / 100) * subject.explanationMaxScore) : null;
+        await tx.oralExamAttempt.create({
+          data: { sessionId: session.id, participantProfileId, subjectId: subject.id, attemptNumber, status: results[i], checkedInAt: now, evaluatedAt: now, evaluatedByUserId: userId, awardedScore },
+        });
+        if (passed) {
+          await tx.participantSubjectScore.upsert({
+            where: { participantProfileId_subjectId: { participantProfileId, subjectId: subject.id } },
+            create: { participantProfileId, subjectId: subject.id, explanationScore: awardedScore },
+            update: { explanationScore: awardedScore },
+          });
+        }
+      }
+    }
+  });
+
+  await logActivity({
+    actorEmail: req.session.user.email,
+    actorRole: req.session.user.role,
+    action: 'CREATE',
+    entityType: 'ORAL_EXAM_ATTEMPT',
+    entityId: participantProfileId,
+    summary: 'บันทึกผลสอบอธิบายจากใบรายคนของ "' + sheet.fullName + '": ' + plan.map((p) => p.subject.name + ' ' + (p.results[p.results.length - 1] === 'PASSED' ? 'ผ่านครั้งที่ ' + (p.start + p.results.length - 1) : 'ไม่ผ่าน ' + p.results.length + ' ครั้ง')).join(', '),
+  });
+
+  const after = await buildSheet(prisma, participantProfileId);
+  res.json(after.sheet);
+}
+
+// ล้างผลที่บันทึกจากใบรายคนของวิชานี้ (แก้กรอกผิด) - ลบเฉพาะครั้งที่มาจากใบ ถ้าหลังจากนั้นมีสอบผ่านระบบ QR ต่อแล้วจะล้างไม่ได้ (เลขครั้งจะขาดช่วง)
+async function clearParticipantSheetSubject(req, res) {
+  if (!requireManager(req, res)) return;
+  const participantProfileId = Number(req.params.participantProfileId);
+  const subjectId = Number(req.params.subjectId);
+  const prisma = await getPrisma();
+  const built = await buildSheet(prisma, participantProfileId);
+  if (!built) return res.status(404).json({ error: 'ไม่พบน้องค่าย' });
+  const subject = built.sheet.subjects.find((s) => s.id === subjectId);
+  if (!subject) return res.status(404).json({ error: 'ไม่พบวิชานี้ในใบ' });
+  const sheetAttempts = subject.attempts.filter((a) => a.source === 'sheet');
+  if (!sheetAttempts.length) return res.status(400).json({ error: 'วิชานี้ไม่มีผลที่บันทึกจากใบ' });
+  const firstSheet = Math.min(...sheetAttempts.map((a) => a.attemptNumber));
+  if (subject.attempts.some((a) => a.source !== 'sheet' && a.attemptNumber > firstSheet)) {
+    return res.status(409).json({ error: 'ล้างไม่ได้ เพราะมีการสอบผ่านระบบหลังจากครั้งที่บันทึกจากใบแล้ว' });
+  }
+  const hadPass = sheetAttempts.some((a) => a.status === 'PASSED');
+  await prisma.$transaction(async (tx) => {
+    await tx.oralExamAttempt.deleteMany({ where: { participantProfileId, subjectId, session: { token: { startsWith: SHEET_TOKEN_PREFIX } } } });
+    if (hadPass) {
+      await tx.participantSubjectScore.updateMany({ where: { participantProfileId, subjectId }, data: { explanationScore: null } });
+    }
+  });
+  await logActivity({
+    actorEmail: req.session.user.email,
+    actorRole: req.session.user.role,
+    action: 'DELETE',
+    entityType: 'ORAL_EXAM_ATTEMPT',
+    entityId: participantProfileId,
+    summary: 'ล้างผลสอบอธิบายที่บันทึกจากใบ วิชา "' + subject.name + '" ของ "' + built.sheet.fullName + '" (' + sheetAttempts.length + ' ครั้ง)',
+  });
+  const after = await buildSheet(prisma, participantProfileId);
+  res.json(after.sheet);
+}
+
 async function getSessionHistory(req, res) {
   const subjectId = Number(req.query.subjectId);
   if (!subjectId) return res.status(400).json({ error: 'ต้องระบุวิชา' });
@@ -593,6 +799,8 @@ async function getSessionHistory(req, res) {
       closedAt: session.closedAt,
       maxParticipants: session.maxParticipants,
       isManual: session.isManual,
+      // รอบกลางของใบรายคน (token "sheet-...") บอกครั้งที่ไว้แสดงในประวัติ
+      sheetAttemptNumber: session.token.startsWith(SHEET_TOKEN_PREFIX) ? Number(session.token.split('-').pop()) : null,
       attempts: session.attempts.map((a) => ({
         id: a.id,
         participantProfileId: a.participantProfileId,
@@ -626,6 +834,10 @@ async function deleteSession(req, res) {
   }
   if (session.status !== 'CLOSED') {
     return res.status(400).json({ error: 'ลบได้เฉพาะรอบสอบที่ปิดแล้ว กรุณากด "ยกเลิกรอบสอบ" ก่อน' });
+  }
+  // รอบกลางของใบรายคนมีผลของน้องหลายคนรวมกัน ลบทั้งรอบไม่ได้ ให้ล้างรายคนที่การ์ดบันทึกจากใบแทน
+  if (session.token.startsWith(SHEET_TOKEN_PREFIX)) {
+    return res.status(400).json({ error: 'รอบนี้เป็นผลที่บันทึกจากใบรายคน ลบทั้งรอบไม่ได้ ให้ล้างผลรายคนที่การ์ด "บันทึกผลจากใบรายคน" แทน' });
   }
 
   await prisma.$transaction(async (tx) => {
@@ -739,6 +951,10 @@ async function removeAttempt(req, res) {
 }
 
 module.exports = {
+  listSheetParticipants,
+  getParticipantSheet,
+  saveParticipantSheet,
+  clearParticipantSheetSubject,
   getManualRoster,
   recordManualResults,
   openSession,

@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/form.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20261002-1">
-    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20261003-9">
+    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20261005-1">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
     <script src="../js/layout/time-select.js?v=20261002-1"></script>
     <script src="../js/layout/auth.js?v=20261002-1"></script>
     <script src="../js/layout/nav.js?v=20261002-1"></script>
-    <script src="../js/pages/staff-academic.js?v=20261003-9"></script>
+    <script src="../js/pages/staff-academic.js?v=20261005-1"></script>
 </head>
 
 <body>
@@ -52,7 +52,7 @@
             <!-- เมนูนำทาง (Desktop) -->
             <nav class="desktop-nav">
                 <button onclick="goToScoreTab('mysubject')" class="nav-btn" id="nav-mysubject" data-tier="instructor">รายวิชาของฉัน</button>
-                <button onclick="switchTab('examstub')" class="nav-btn" id="nav-examstub" data-tier="instructor">การสอบอธิบาย</button>
+                <button onclick="switchTab('examstub')" class="nav-btn" id="nav-examstub" data-tier="manager-instructor">การสอบอธิบาย</button>
                 <button onclick="goToScoreTab('scores')" class="nav-btn active-nav-btn" id="nav-scores">จัดการคะแนน</button>
                 <button onclick="switchTab('subjects')" class="nav-btn" id="nav-subjects" data-tier="manager">จัดการรายวิชา</button>
                 <button onclick="switchTab('schedule')" class="nav-btn" id="nav-schedule">จัดการตารางเรียน</button>
@@ -170,7 +170,7 @@
                     </svg>
                     รายวิชาของฉัน
                 </button>
-                <button onclick="switchTab('examstub')" class="mobile-nav-btn" id="m-nav-examstub" data-tier="instructor">
+                <button onclick="switchTab('examstub')" class="mobile-nav-btn" id="m-nav-examstub" data-tier="manager-instructor">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                     </svg>
@@ -579,7 +579,7 @@
 
 
         <!-- ================= PAGE: การสอบอธิบาย (เปิด QR ให้น้องค่ายสแกนเข้าคิว แล้วประเมินผ่าน/ไม่ผ่าน) ================= -->
-        <div id="page-examstub" class="tab-content" data-tier="instructor">
+        <div id="page-examstub" class="tab-content" data-tier="manager-instructor">
             <div class="max-w-7xl page-padding">
                 <div class="section-header center mb-lg">
                     <h1 class="page-title">การสอบอธิบาย</h1>
@@ -695,6 +695,35 @@
                     </div>
                 </div>
 
+                <!-- บันทึกผลสอบอธิบายจากกระดาษ (กรณีระบบ QR ใช้งานไม่ได้) - เฉพาะหัวหน้าฝ่ายวิชาการ/ผู้บริหารค่าย -->
+                <div class="activity-card" id="manual-exam-card" data-tier="manager" style="max-width: 640px; margin: 0 auto 1.5rem;">
+                    <p class="profile-section-title">บันทึกผลจากกระดาษ</p>
+                    <p class="profile-section-desc">ใช้กรณีระบบสแกน QR ใช้งานไม่ได้ ให้แจกกระดาษสอบตามปกติ แล้วมากรอกผลรายวันที่นี่ ระบบจะนับครั้งที่สอบและให้คะแนนตามตารางคะแนนสอบอธิบายเหมือนสอบผ่าน QR</p>
+                    <div class="form-grid mb-4">
+                        <div class="form-group">
+                            <label class="form-label" for="manual-exam-course-select">คอร์ส</label>
+                            <select id="manual-exam-course-select" class="form-input"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="manual-exam-subject-select">วิชา</label>
+                            <select id="manual-exam-subject-select" class="form-input" disabled><option value="">-- เลือกคอร์สก่อน --</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group mb-4" style="max-width: 14rem;">
+                        <label class="form-label" for="manual-exam-date-input">วันที่สอบ (ตามกระดาษ)</label>
+                        <input type="date" id="manual-exam-date-input" class="form-input">
+                    </div>
+                    <div id="manual-exam-roster-wrap" class="hidden">
+                        <input type="text" id="manual-exam-search-input" class="form-input mb-4" placeholder="ค้นหาชื่อ ชื่อเล่น หรือรหัส..." autocomplete="off">
+                        <div id="manual-exam-roster" class="manual-exam-roster"></div>
+                        <div class="form-actions">
+                            <span class="manual-exam-summary" id="manual-exam-summary"></span>
+                            <button type="button" class="btn-primary" id="manual-exam-save-btn" disabled>บันทึกผล</button>
+                        </div>
+                    </div>
+                    <p class="activities-empty hidden" id="manual-exam-empty"></p>
+                </div>
+
                 <!-- ประวัติรอบสอบที่ปิดไปแล้วของวิชาที่เลือก ลบทิ้งได้ (ลบแล้วเลขครั้งที่สอบครั้งหลัง ๆ ของคนในรอบนั้นเลื่อนลง 1 ให้เรียงต่อกันเหมือนเดิม) -->
                 <div class="activity-card hidden" id="oral-exam-history-card" style="max-width: 640px; margin: 0 auto 1.5rem;">
                     <div class="oral-exam-session-header-row">
@@ -736,7 +765,7 @@
                     <div class="footer-link-grid">
                         <span onclick="window.location.href='/'" class="footer-link">หน้าแรก</span>
                         <span onclick="goToScoreTab('mysubject')" class="footer-link" data-tier="instructor">รายวิชาของฉัน</span>
-                        <span onclick="switchTab('examstub')" class="footer-link" data-tier="instructor">การสอบอธิบาย</span>
+                        <span onclick="switchTab('examstub')" class="footer-link" data-tier="manager-instructor">การสอบอธิบาย</span>
                         <span onclick="goToScoreTab('scores')" class="footer-link" id="footer-nav-scores">จัดการคะแนน</span>
                         <span onclick="switchTab('subjects')" class="footer-link" data-tier="manager">จัดการรายวิชา</span>
                         <span onclick="switchTab('schedule')" class="footer-link" id="footer-nav-schedule">จัดการตารางเรียน</span>

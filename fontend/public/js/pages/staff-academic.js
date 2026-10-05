@@ -2360,6 +2360,7 @@ function renderOralExamCourseSelect() {
 // manager เห็นทุกวิชาที่เก็บคะแนน (เปิด/ประเมินได้ทุกวิชาอยู่แล้วฝั่ง backend) ส่วนผู้สอนเห็นเฉพาะวิชาที่ตัวเองรับผิดชอบ
 // กรองเฉพาะวิชาของคอร์สที่เลือกไว้ (selectedOralExamCourseId) รวมวิชา "ทั้งคู่" (courseFormatId: null) ด้วยเสมอ เหมือนแท็บ "จัดการตารางเรียน" (ดู renderScheduleSubjectSelect) - ต้องเลือกคอร์สก่อนถึงจะเห็นตัวเลือกวิชา
 function renderOralExamSubjectSelect() {
+    renderManualExamSelects();
     const select = document.getElementById('oral-exam-subject-select');
     if (!select) return;
     const pool = (academicTier === 'manager' ? subjects : mySubjects).filter((s) => s.requiresScoring && s.hasExplanation !== false);
@@ -2371,6 +2372,164 @@ function renderOralExamSubjectSelect() {
     select.innerHTML = (selectedOralExamCourseId ? '<option value="">-- เลือกวิชา --</option>' : '<option value="">-- เลือกคอร์สก่อน --</option>') +
         options.map((s) => `<option value="${s.id}">${s.name}</option>`).join('');
     if (options.some((s) => String(s.id) === previousValue)) select.value = previousValue;
+}
+
+// ==========================================
+// บันทึกผลสอบอธิบายจากกระดาษ (กรณีระบบ QR ใช้งานไม่ได้) - เฉพาะ manager
+// เลือกคอร์ส วิชา วันที่ แล้วติ๊กผลรายคน (ผ่าน/ไม่ผ่าน) ส่งครั้งเดียว = 1 รอบสอบ (ดู recordManualResults ฝั่ง backend)
+// ==========================================
+let manualExamRoster = [];
+const manualExamResults = new Map(); // participantProfileId -> 'PASSED' | 'FAILED'
+
+function todayDateInputValue() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function renderManualExamSelects() {
+    const courseSelect = document.getElementById('manual-exam-course-select');
+    const subjectSelect = document.getElementById('manual-exam-subject-select');
+    if (!courseSelect || !subjectSelect || academicTier !== 'manager') return;
+    const dateInput = document.getElementById('manual-exam-date-input');
+    if (dateInput && !dateInput.value) dateInput.value = todayDateInputValue();
+
+    const prevCourse = courseSelect.value;
+    courseSelect.innerHTML = '<option value="">-- เลือกคอร์ส --</option>' + courseFormats.map((c) => `<option value="${c.id}">${c.name}</option>`).join('');
+    if (courseFormats.some((c) => String(c.id) === prevCourse)) courseSelect.value = prevCourse;
+
+    const courseId = Number(courseSelect.value) || null;
+    const prevSubject = subjectSelect.value;
+    const options = courseId
+        ? subjects.filter((s) => s.requiresScoring && s.hasExplanation !== false && (s.courseFormatId === courseId || s.courseFormatId === null))
+        : [];
+    subjectSelect.disabled = !courseId;
+    subjectSelect.innerHTML = (courseId ? '<option value="">-- เลือกวิชา --</option>' : '<option value="">-- เลือกคอร์สก่อน --</option>') +
+        options.map((s) => `<option value="${s.id}">${s.name}</option>`).join('');
+    if (options.some((s) => String(s.id) === prevSubject)) subjectSelect.value = prevSubject;
+}
+
+function loadManualExamRoster() {
+    const courseId = Number(document.getElementById('manual-exam-course-select').value);
+    const subjectId = Number(document.getElementById('manual-exam-subject-select').value);
+    const wrap = document.getElementById('manual-exam-roster-wrap');
+    const empty = document.getElementById('manual-exam-empty');
+    manualExamResults.clear();
+    manualExamRoster = [];
+    wrap.classList.add('hidden');
+    empty.classList.add('hidden');
+    if (!courseId || !subjectId) return;
+
+    fetch(`/api/oral-exam-sessions/manual/roster?subjectId=${subjectId}&courseFormatId=${courseId}`)
+        .then(async (res) => {
+            if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+            return res.json();
+        })
+        .then((data) => {
+            manualExamRoster = data.participants;
+            if (!manualExamRoster.length) {
+                empty.textContent = 'ไม่มีน้องค่ายในคอร์สนี้';
+                empty.classList.remove('hidden');
+                return;
+            }
+            wrap.classList.remove('hidden');
+            renderManualExamRoster();
+        })
+        .catch((error) => {
+            console.error(error);
+            showActivitiesToast(error.message || 'โหลดรายชื่อไม่สำเร็จ', false);
+        });
+}
+
+function renderManualExamRoster() {
+    const list = document.getElementById('manual-exam-roster');
+    const query = (document.getElementById('manual-exam-search-input').value || '').trim().toLowerCase();
+    const rows = manualExamRoster.filter((p) => !query || `${p.code} ${p.fullName} ${p.nickname || ''}`.toLowerCase().includes(query));
+    list.innerHTML = rows.map((p) => {
+        const chosen = manualExamResults.get(p.id) || '';
+        const locked = p.passed || p.pending;
+        const status = p.passed ? '<span class="manual-exam-tag manual-exam-tag--passed">ผ่านแล้ว</span>'
+            : p.pending ? '<span class="manual-exam-tag">รอประเมินในระบบ QR</span>'
+            : `<span class="manual-exam-attempt">ครั้งที่ ${p.evaluatedCount + 1}</span>`;
+        const choice = (value, label) => `<label class="manual-exam-choice manual-exam-choice--${value.toLowerCase()}"><input type="radio" name="manual-exam-${p.id}" value="${value}" ${chosen === value ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${label}</span></label>`;
+        return `
+            <div class="manual-exam-row${locked ? ' is-locked' : ''}" data-id="${p.id}">
+                <div class="manual-exam-person">
+                    <span class="manual-exam-name">${p.fullName}${p.nickname ? ` (${p.nickname})` : ''}</span>
+                    <span class="manual-exam-code">${p.code} · ${status}</span>
+                </div>
+                <div class="manual-exam-choices">
+                    ${choice('NONE', 'ไม่ได้สอบ')}${choice('PASSED', 'ผ่าน')}${choice('FAILED', 'ไม่ผ่าน')}
+                </div>
+            </div>`;
+    }).join('') || '<p class="activities-empty">ไม่พบรายชื่อที่ค้นหา</p>';
+    // ยังไม่ได้เลือกผล = ไม่ได้สอบ
+    list.querySelectorAll('.manual-exam-row').forEach((row) => {
+        const id = Number(row.dataset.id);
+        if (!manualExamResults.has(id)) {
+            const none = row.querySelector('input[value="NONE"]');
+            if (none && !none.disabled) none.checked = true;
+        }
+        row.querySelectorAll('input[type="radio"]').forEach((input) => {
+            input.addEventListener('change', () => {
+                if (input.value === 'NONE') manualExamResults.delete(id);
+                else manualExamResults.set(id, input.value);
+                updateManualExamSummary();
+            });
+        });
+    });
+    updateManualExamSummary();
+}
+
+function updateManualExamSummary() {
+    const values = [...manualExamResults.values()];
+    const passed = values.filter((v) => v === 'PASSED').length;
+    const failed = values.length - passed;
+    document.getElementById('manual-exam-summary').textContent = values.length ? `ผ่าน ${passed} คน · ไม่ผ่าน ${failed} คน` : 'ยังไม่ได้เลือกผลของใคร';
+    document.getElementById('manual-exam-save-btn').disabled = values.length === 0;
+}
+
+async function saveManualExamResults() {
+    const courseId = Number(document.getElementById('manual-exam-course-select').value);
+    const subjectId = Number(document.getElementById('manual-exam-subject-select').value);
+    const examDate = document.getElementById('manual-exam-date-input').value;
+    if (!examDate) {
+        showActivitiesToast('กรุณาเลือกวันที่สอบ', false);
+        return;
+    }
+    const results = [...manualExamResults.entries()].map(([participantProfileId, result]) => ({ participantProfileId, result }));
+    if (!results.length) return;
+    const subjectName = subjects.find((s) => s.id === subjectId)?.name || '';
+    const passed = results.filter((r) => r.result === 'PASSED').length;
+    const dateLabel = new Date(`${examDate}T12:00:00`).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+    const confirmed = await showConfirm(
+        `บันทึกผลสอบอธิบายวิชา "${subjectName}" วันที่ ${dateLabel}: ผ่าน ${passed} คน ไม่ผ่าน ${results.length - passed} คน ใช่หรือไม่? คนที่ผ่านจะได้คะแนนอธิบายตามครั้งที่สอบทันที`,
+        { title: 'ยืนยันบันทึกผลจากกระดาษ', confirmText: 'บันทึก' }
+    );
+    if (!confirmed) return;
+
+    const btn = document.getElementById('manual-exam-save-btn');
+    Loader.setButtonLoading(btn, 'กำลังบันทึก...');
+    fetch('/api/oral-exam-sessions/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subjectId, courseFormatId: courseId, examDate, results }),
+    })
+        .then(async (res) => {
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        })
+        .then((data) => {
+            const skippedNote = data.skipped?.length ? ` (ข้าม ${data.skipped.length} คน: ${data.skipped.map((s) => `${s.fullName || ''} ${s.reason}`).join(', ')})` : '';
+            showActivitiesToast(`บันทึกแล้ว ผ่าน ${data.passed} คน ไม่ผ่าน ${data.failed} คน${skippedNote}`, true);
+            loadManualExamRoster();
+            if (currentOralExamSubjectId === subjectId) loadOralExamHistory(subjectId);
+        })
+        .catch((error) => {
+            console.error(error);
+            showActivitiesToast(error.message || 'บันทึกผลไม่สำเร็จ', false);
+        })
+        .finally(() => Loader.clearButtonLoading(btn));
 }
 
 // เปลี่ยนคอร์ส - วิชาที่เคยเลือกไว้ (ถ้ามี) ไม่ตรงคอร์สใหม่แน่นอน ต้องเริ่มเลือกวิชาใหม่เสมอเหมือนยังไม่ได้เลือกวิชาเลย (รีใช้ handleOralExamSubjectChange เดิมที่ซ่อนการ์ด/เคลียร์ค่าครบอยู่แล้ว)
@@ -2832,7 +2991,9 @@ function renderOralExamHistory(subjectId, history) {
         return `
         <div class="oral-exam-history-item" data-session-id="${session.id}">
             <div class="oral-exam-history-item-header">
-                <span class="oral-exam-history-item-date">เปิด ${openedDate}${closedDate ? ` - ปิด ${closedDate}` : ''}</span>
+                <span class="oral-exam-history-item-date">${session.isManual
+                    ? `บันทึกจากกระดาษ · สอบวันที่ ${new Date(session.openedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                    : `เปิด ${openedDate}${closedDate ? ` - ปิด ${closedDate}` : ''}`}</span>
                 <span class="oral-exam-history-item-count">${session.attempts.length} คน</span>
                 <button type="button" class="activity-icon-btn delete oral-exam-history-delete-btn" data-session-id="${session.id}" title="ลบประวัติรอบนี้">${TRASH_ICON}</button>
             </div>
@@ -2885,6 +3046,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('oral-exam-band-add-btn')?.addEventListener('click', handleOralExamBandAddClick);
     document.getElementById('oral-exam-course-select')?.addEventListener('change', handleOralExamCourseChange);
     document.getElementById('oral-exam-subject-select')?.addEventListener('change', handleOralExamSubjectChange);
+    document.getElementById('manual-exam-course-select')?.addEventListener('change', () => { renderManualExamSelects(); loadManualExamRoster(); });
+    document.getElementById('manual-exam-subject-select')?.addEventListener('change', loadManualExamRoster);
+    document.getElementById('manual-exam-search-input')?.addEventListener('input', renderManualExamRoster);
+    document.getElementById('manual-exam-save-btn')?.addEventListener('click', saveManualExamResults);
     document.getElementById('oral-exam-max-participants-input')?.addEventListener('input', updateOralExamOpenButtonState);
     document.getElementById('oral-exam-open-btn')?.addEventListener('click', handleOralExamOpenClick);
     document.getElementById('oral-exam-close-btn')?.addEventListener('click', handleOralExamCloseClick);

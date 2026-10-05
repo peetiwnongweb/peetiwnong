@@ -10,6 +10,8 @@ const {
   checkIn,
   getMyExamHistory,
   removeAttempt,
+  getManualRoster,
+  recordManualResults,
 } = require('../controllers/oralExamSessionController');
 const { requireRole, requireDepartmentStaff } = require('../middleware/requireAuth');
 
@@ -24,6 +26,9 @@ const requireParticipantOrSimulateAccess = requireRole('PARTICIPANT', 'SUPERADMI
 router.get('/active', requireStaffAccess, getActiveSession);
 router.get('/history', requireStaffAccess, getSessionHistory);
 router.post('/check-in', requireParticipantAccess, checkIn);
+// บันทึกผลจากกระดาษ (กรณีระบบ QR ใช้งานไม่ได้) - เช็ค isAcademicManager ในคอนโทรลเลอร์
+router.get('/manual/roster', requireStaffAccess, getManualRoster);
+router.post('/manual', requireStaffAccess, recordManualResults);
 router.get('/me/history', requireParticipantOrSimulateAccess, getMyExamHistory);
 
 router.post('/', requireStaffAccess, openSession); // เช็คสิทธิ์รายวิชาในคอนโทรลเลอร์ (isAcademicManager หรือผู้สอนวิชานั้น)

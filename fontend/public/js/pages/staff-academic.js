@@ -2458,21 +2458,21 @@ function renderManualExamRoster() {
                     <span class="manual-exam-code">${p.code} · ${status}</span>
                 </div>
                 <div class="manual-exam-choices">
-                    ${choice('NONE', 'ไม่ได้สอบ')}${choice('PASSED', 'ผ่าน')}${choice('FAILED', 'ไม่ผ่าน')}
+                    ${choice('PASSED', 'ผ่าน')}${choice('FAILED', 'ไม่ผ่าน')}
                 </div>
             </div>`;
     }).join('') || '<p class="activities-empty">ไม่พบรายชื่อที่ค้นหา</p>';
-    // ยังไม่ได้เลือกผล = ไม่ได้สอบ
+    // ไม่เลือกอะไร = ไม่ได้สอบ (ไม่ถูกบันทึก) - กดผลเดิมซ้ำเพื่อยกเลิกการเลือก
     list.querySelectorAll('.manual-exam-row').forEach((row) => {
         const id = Number(row.dataset.id);
-        if (!manualExamResults.has(id)) {
-            const none = row.querySelector('input[value="NONE"]');
-            if (none && !none.disabled) none.checked = true;
-        }
         row.querySelectorAll('input[type="radio"]').forEach((input) => {
-            input.addEventListener('change', () => {
-                if (input.value === 'NONE') manualExamResults.delete(id);
-                else manualExamResults.set(id, input.value);
+            input.addEventListener('click', () => {
+                if (manualExamResults.get(id) === input.value) {
+                    input.checked = false;
+                    manualExamResults.delete(id);
+                } else {
+                    manualExamResults.set(id, input.value);
+                }
                 updateManualExamSummary();
             });
         });

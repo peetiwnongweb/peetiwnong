@@ -2068,3 +2068,117 @@
   color: #555;
   margin-top: 0.15rem;
 }
+
+/* ==========================================
+   บันทึกผลสอบอธิบายจากกระดาษ (การ์ดในแท็บการสอบอธิบาย)
+   ========================================== */
+.manual-exam-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 28rem;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.manual-exam-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.manual-exam-row.is-locked {
+  opacity: 0.6;
+  background: #f8fafc;
+}
+
+.manual-exam-person {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.manual-exam-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.manual-exam-code {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.manual-exam-attempt {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.manual-exam-tag {
+  font-weight: 600;
+  color: #b45309;
+}
+
+.manual-exam-tag--passed {
+  color: #059669;
+}
+
+.manual-exam-choices {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.manual-exam-choice {
+  position: relative;
+  cursor: pointer;
+}
+
+.manual-exam-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.manual-exam-choice span {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #475569;
+  background: #fff;
+}
+
+.manual-exam-choice input:checked + span {
+  color: #fff;
+  border-color: transparent;
+  background: #64748b;
+}
+
+.manual-exam-choice--passed input:checked + span {
+  background: #059669;
+}
+
+.manual-exam-choice--failed input:checked + span {
+  background: #dc2626;
+}
+
+.manual-exam-choice input:disabled + span {
+  cursor: not-allowed;
+}
+
+.manual-exam-choice input:focus-visible + span {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.manual-exam-summary {
+  margin-right: auto;
+  font-size: 0.9rem;
+  color: #475569;
+}

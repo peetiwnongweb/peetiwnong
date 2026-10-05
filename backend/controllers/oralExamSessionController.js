@@ -413,6 +413,149 @@ async function checkIn(req, res) {
 }
 
 // ประวัติรอบสอบที่ปิดไปแล้วของวิชานี้ (ฝั่งพี่ค่าย) - รอบที่ยังเปิด/กำลังประเมินอยู่ดูที่ getActiveSession ไม่ปนกัน
+// ==========================================
+// บันทึกผลสอบอธิบายจากกระดาษ (กรณีระบบ QR ใช้งานไม่ได้) - เฉพาะหัวหน้าฝ่ายวิชาการ/ผู้บริหารค่าย (isAcademicManager)
+// แจกกระดาษสอบตามปกติ แล้วมากรอกผลรายวัน: แต่ละครั้งที่บันทึก = 1 รอบสอบ (isManual) ของวิชา+คอร์ส+วันที่ที่เลือก
+// "ครั้งที่" และคะแนนคิดแบบเดียวกับการประเมินผ่าน QR ทุกอย่าง (นับจากจำนวนครั้งที่ประเมินแล้ว + ตารางคะแนนตามครั้ง)
+// ==========================================
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+async function findManualSubject(prisma, subjectId) {
+  const subject = await prisma.subject.findUnique({ where: { id: subjectId } });
+  if (!subject) return { error: [404, 'ไม่พบวิชานี้'] };
+  if (!subject.requiresScoring) return { error: [400, 'วิชานี้ไม่ต้องเก็บคะแนน'] };
+  if (!subject.hasExplanation) return { error: [400, 'วิชานี้ตั้งค่าไม่สอบอธิบาย'] };
+  return { subject };
+}
+
+// รายชื่อน้องค่ายในคอร์สที่เลือก พร้อมสถานะสอบอธิบายวิชานี้ (สอบไปแล้วกี่ครั้ง ผ่านหรือยัง) ใช้แสดงในฟอร์มบันทึกจากกระดาษ
+async function getManualRoster(req, res) {
+  if (!isAcademicManager(req.session.user)) return res.status(403).json({ error: 'บันทึกผลจากกระดาษได้เฉพาะหัวหน้าฝ่ายวิชาการหรือผู้บริหารค่าย' });
+  const subjectId = Number(req.query.subjectId);
+  const courseFormatId = Number(req.query.courseFormatId);
+  if (!subjectId || !courseFormatId) return res.status(400).json({ error: 'ต้องระบุวิชาและคอร์ส' });
+
+  const prisma = await getPrisma();
+  const { subject, error } = await findManualSubject(prisma, subjectId);
+  if (error) return res.status(error[0]).json({ error: error[1] });
+  if (subject.courseFormatId !== null && subject.courseFormatId !== courseFormatId) {
+    return res.status(400).json({ error: 'วิชานี้ไม่ได้อยู่ในคอร์สที่เลือก' });
+  }
+
+  const profiles = await prisma.participantProfile.findMany({
+    where: { courseFormatId, user: { approvalStatus: 'APPROVED' } },
+    orderBy: { firstName: 'asc' },
+    select: {
+      id: true, prefix: true, firstName: true, lastName: true, nickname: true, campGenerationNo: true,
+      courseFormat: { select: { name: true } },
+      oralExamAttempts: { where: { subjectId }, select: { status: true } },
+    },
+  });
+
+  res.json({
+    subject: { id: subject.id, name: subject.name, explanationMaxScore: subject.explanationMaxScore },
+    participants: profiles.map((p) => ({
+      id: p.id,
+      code: buildParticipantCode(p.campGenerationNo ?? 1, p.courseFormat?.name, p.id),
+      fullName: toFullName(p),
+      nickname: p.nickname,
+      evaluatedCount: p.oralExamAttempts.filter((a) => a.status !== 'PENDING').length,
+      passed: p.oralExamAttempts.some((a) => a.status === 'PASSED'),
+      pending: p.oralExamAttempts.some((a) => a.status === 'PENDING'),
+    })),
+  });
+}
+
+// body: { subjectId, courseFormatId, examDate: 'YYYY-MM-DD', results: [{ participantProfileId, result: 'PASSED' | 'FAILED' }] }
+// คนที่สอบผ่านวิชานี้ไปแล้ว / มีคิวรอประเมินค้างในระบบ QR / อยู่คนละคอร์ส ถูกข้าม (แจ้งกลับใน skipped) ไม่ error ทั้งก้อน
+async function recordManualResults(req, res) {
+  if (!isAcademicManager(req.session.user)) return res.status(403).json({ error: 'บันทึกผลจากกระดาษได้เฉพาะหัวหน้าฝ่ายวิชาการหรือผู้บริหารค่าย' });
+  const subjectId = Number(req.body.subjectId);
+  const courseFormatId = Number(req.body.courseFormatId);
+  const examDate = String(req.body.examDate || '');
+  const results = Array.isArray(req.body.results) ? req.body.results : [];
+  if (!subjectId || !courseFormatId) return res.status(400).json({ error: 'ต้องระบุวิชาและคอร์ส' });
+  if (!DATE_ONLY.test(examDate)) return res.status(400).json({ error: 'วันที่สอบไม่ถูกต้อง' });
+  const cleaned = results
+    .map((r) => ({ participantProfileId: Number(r.participantProfileId), result: r.result }))
+    .filter((r) => Number.isInteger(r.participantProfileId) && ['PASSED', 'FAILED'].includes(r.result));
+  if (cleaned.length === 0) return res.status(400).json({ error: 'ยังไม่ได้เลือกผลสอบของใครเลย' });
+  if (new Set(cleaned.map((r) => r.participantProfileId)).size !== cleaned.length) {
+    return res.status(400).json({ error: 'มีรายชื่อซ้ำในการบันทึกครั้งนี้' });
+  }
+
+  const prisma = await getPrisma();
+  const { subject, error } = await findManualSubject(prisma, subjectId);
+  if (error) return res.status(error[0]).json({ error: error[1] });
+  if (subject.courseFormatId !== null && subject.courseFormatId !== courseFormatId) {
+    return res.status(400).json({ error: 'วิชานี้ไม่ได้อยู่ในคอร์สที่เลือก' });
+  }
+
+  const profiles = await prisma.participantProfile.findMany({
+    where: { id: { in: cleaned.map((r) => r.participantProfileId) } },
+    select: { id: true, prefix: true, firstName: true, lastName: true, courseFormatId: true, oralExamAttempts: { where: { subjectId }, select: { status: true } } },
+  });
+  const profileById = new Map(profiles.map((p) => [p.id, p]));
+  const skipped = [];
+  const toRecord = [];
+  for (const r of cleaned) {
+    const p = profileById.get(r.participantProfileId);
+    if (!p || p.courseFormatId !== courseFormatId) { skipped.push({ participantProfileId: r.participantProfileId, reason: 'ไม่พบหรืออยู่คนละคอร์ส' }); continue; }
+    if (p.oralExamAttempts.some((a) => a.status === 'PASSED')) { skipped.push({ participantProfileId: p.id, fullName: toFullName(p), reason: 'สอบผ่านวิชานี้ไปแล้ว' }); continue; }
+    if (p.oralExamAttempts.some((a) => a.status === 'PENDING')) { skipped.push({ participantProfileId: p.id, fullName: toFullName(p), reason: 'มีคิวรอประเมินค้างในระบบ QR' }); continue; }
+    toRecord.push({ ...r, profile: p, attemptNumber: p.oralExamAttempts.length + 1 });
+  }
+  if (toRecord.length === 0) return res.status(409).json({ error: 'ไม่มีรายชื่อที่บันทึกได้', skipped });
+
+  const bands = await ensureOralExamScoreBands(prisma);
+  // วันที่สอบตามกระดาษ (เที่ยงวันเวลาไทย กันวันเลื่อนตามเขตเวลา) ใช้เป็นเวลาเปิด/เริ่ม/ปิดรอบ และเวลาเช็คอิน
+  const examAt = new Date(examDate + "T12:00:00+07:00");
+  const now = new Date();
+  const evaluatedByUserId = req.session.user.id;
+
+  const session = await prisma.$transaction(async (tx) => {
+    const created = await tx.oralExamSession.create({
+      data: {
+        subjectId, courseFormatId, openedByUserId: evaluatedByUserId, token: generateSessionToken(),
+        status: 'CLOSED', isManual: true, openedAt: examAt, startedAt: examAt, closedAt: examAt,
+      },
+    });
+    for (const r of toRecord) {
+      const passed = r.result === 'PASSED';
+      const awardedScore = passed
+        ? Math.round((resolveAttemptScorePercent(r.attemptNumber, bands) / 100) * subject.explanationMaxScore)
+        : null;
+      await tx.oralExamAttempt.create({
+        data: {
+          sessionId: created.id, participantProfileId: r.participantProfileId, subjectId,
+          attemptNumber: r.attemptNumber, status: r.result, checkedInAt: examAt,
+          evaluatedAt: now, evaluatedByUserId, awardedScore,
+        },
+      });
+      if (passed) {
+        await tx.participantSubjectScore.upsert({
+          where: { participantProfileId_subjectId: { participantProfileId: r.participantProfileId, subjectId } },
+          create: { participantProfileId: r.participantProfileId, subjectId, explanationScore: awardedScore },
+          update: { explanationScore: awardedScore },
+        });
+      }
+    }
+    return created;
+  });
+
+  const passedCount = toRecord.filter((r) => r.result === 'PASSED').length;
+  await logActivity({
+    actorEmail: req.session.user.email,
+    actorRole: req.session.user.role,
+    action: 'CREATE',
+    entityType: 'ORAL_EXAM_ATTEMPT',
+    entityId: session.id,
+    summary: `บันทึกผลสอบอธิบายจากกระดาษ วิชา "${subject.name}" วันที่ ${examDate} ผ่าน ${passedCount} คน ไม่ผ่าน ${toRecord.length - passedCount} คน`,
+  });
+
+  res.status(201).json({ sessionId: session.id, recorded: toRecord.length, passed: passedCount, failed: toRecord.length - passedCount, skipped });
+}
+
 async function getSessionHistory(req, res) {
   const subjectId = Number(req.query.subjectId);
   if (!subjectId) return res.status(400).json({ error: 'ต้องระบุวิชา' });
@@ -449,6 +592,7 @@ async function getSessionHistory(req, res) {
       openedAt: session.openedAt,
       closedAt: session.closedAt,
       maxParticipants: session.maxParticipants,
+      isManual: session.isManual,
       attempts: session.attempts.map((a) => ({
         id: a.id,
         participantProfileId: a.participantProfileId,
@@ -595,6 +739,8 @@ async function removeAttempt(req, res) {
 }
 
 module.exports = {
+  getManualRoster,
+  recordManualResults,
   openSession,
   getActiveSession,
   getSessionHistory,

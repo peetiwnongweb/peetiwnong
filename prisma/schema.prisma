@@ -369,6 +369,8 @@ model OralExamSession {
   // เวลาที่กด "เริ่มการสอบอธิบาย" ครั้งแรก (OPEN -> STARTED) - null แปลว่ายังไม่เคยกดเริ่มเลย (เปิดรอบไว้เฉย ๆ แล้วปิดทิ้งโดยไม่มีใครสอบจริง) ใช้กรองประวัติไม่ให้ปนรอบที่ไม่ได้ใช้งานจริงเข้ามา (ดู getSessionHistory)
   startedAt       DateTime?             @map("started_at")
   closedAt        DateTime?             @map("closed_at")
+  // true = รอบที่บันทึกผลจากกระดาษย้อนหลัง (กรณีระบบ QR ใช้งานไม่ได้) ไม่ได้เปิดให้สแกนจริง
+  isManual        Boolean               @default(false) @map("is_manual")
   attempts        OralExamAttempt[]
 
   @@index([subjectId, status])

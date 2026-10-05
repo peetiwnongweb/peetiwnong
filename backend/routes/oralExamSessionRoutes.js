@@ -12,6 +12,10 @@ const {
   removeAttempt,
   getManualRoster,
   recordManualResults,
+  listSheetParticipants,
+  getParticipantSheet,
+  saveParticipantSheet,
+  clearParticipantSheetSubject,
 } = require('../controllers/oralExamSessionController');
 const { requireRole, requireDepartmentStaff } = require('../middleware/requireAuth');
 
@@ -29,6 +33,11 @@ router.post('/check-in', requireParticipantAccess, checkIn);
 // บันทึกผลจากกระดาษ (กรณีระบบ QR ใช้งานไม่ได้) - เช็ค isAcademicManager ในคอนโทรลเลอร์
 router.get('/manual/roster', requireStaffAccess, getManualRoster);
 router.post('/manual', requireStaffAccess, recordManualResults);
+// บันทึกตามเอกสารการสอบอธิบายรายคน (ใบที่แจกน้อง) - เช็ค isAcademicManager ในคอนโทรลเลอร์
+router.get('/sheet/participants', requireStaffAccess, listSheetParticipants);
+router.get('/sheet/:participantProfileId', requireStaffAccess, getParticipantSheet);
+router.post('/sheet/:participantProfileId', requireStaffAccess, saveParticipantSheet);
+router.delete('/sheet/:participantProfileId/subjects/:subjectId', requireStaffAccess, clearParticipantSheetSubject);
 router.get('/me/history', requireParticipantOrSimulateAccess, getMyExamHistory);
 
 router.post('/', requireStaffAccess, openSession); // เช็คสิทธิ์รายวิชาในคอนโทรลเลอร์ (isAcademicManager หรือผู้สอนวิชานั้น)

@@ -2366,3 +2366,6 @@
 .ach-stat-dist { grid-column: 1 / -1; display: flex; gap: 0.3rem; color: #64748b; }
 .ach-stat-dist i { font-style: normal; }
 .ach-stat-dist i.k { font-weight: 800; color: #166534; }
+
+/* ป้ายฟีเจอร์ช่วงทดสอบ */
+.beta-badge { display: inline-block; margin-left: 0.25rem; padding: 0.05rem 0.4rem; border-radius: 999px; background: #f59e0b; color: #fff; font-size: 0.65em; font-weight: 700; vertical-align: middle; line-height: 1.4; }

@@ -146,13 +146,13 @@ function toggleMobileRegisterMenu() {
     }
 }
 
-// SuperAdmin เห็นเมนู "งาน" เฉพาะตอนอยู่ในโซนพี่ค่าย (/staff/...) เท่านั้น - "จำลองพี่ค่าย" ตอนกดเข้าไปดู ไม่ใช่โชว์ปนอยู่ตลอดเวลาที่หน้าแรกสาธารณะ
+// SuperAdmin เห็นเมนู "งาน" (ระบบวิชาการ/กิจกรรม) ทุกหน้า รวมหน้าแรก - เข้าไปดู/ทดสอบระบบได้จากเมนูบัญชีโดยตรง
 function applyStaffTaskMenuVisibility(user) {
     const wraps = document.querySelectorAll('.nav-tasks-wrap');
     if (!wraps.length) return;
 
-    const isSuperAdminInStaffArea = !!(user && user.role === 'SUPERADMIN') && window.location.pathname.startsWith('/staff/');
-    const isLeadership = isSuperAdminInStaffArea || !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
+    const isSuperAdmin = !!(user && user.role === 'SUPERADMIN');
+    const isLeadership = isSuperAdmin || !!(user && user.position && LEADERSHIP_POSITIONS.includes(user.position.name));
     const departmentNames = ((user && user.departments) || []).map((d) => d.name);
     // ไม่มีค่ายที่กำลังดำเนินการ = ระบบวิชาการ/กิจกรรมล็อกทั้งหมด ซ่อนเมนูไปเลยไม่ว่าจะตำแหน่งอะไร (ตำแหน่งที่ค้างจากการตั้งมือก็ใช้อะไรไม่ได้อยู่ดี)
     const campActive = isCampActive();
@@ -165,7 +165,7 @@ function applyStaffTaskMenuVisibility(user) {
             item.classList.toggle('hidden', !show);
             if (show) visibleCount += 1;
         });
-        wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isSuperAdminInStaffArea)) || visibleCount === 0);
+        wrap.classList.toggle('hidden', !(user && (user.role === 'STAFF' || isSuperAdmin)) || visibleCount === 0);
     });
 }
 

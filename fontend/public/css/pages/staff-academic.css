@@ -2339,8 +2339,8 @@
 .ach-inline input { width: 5rem; }
 .ach-file-btn { cursor: pointer; }
 .ach-scan-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
-.ach-camera { position: relative; max-width: 520px; margin: 0 auto 1rem; border-radius: 0.75rem; overflow: hidden; background: #000; }
-.ach-camera video { display: block; width: 100%; }
+.ach-camera { position: relative; width: min(100%, 420px); aspect-ratio: 3 / 4; margin: 0 auto 1rem; border-radius: 0.75rem; overflow: hidden; background: #000; }
+.ach-camera video { display: block; width: 100%; height: 100%; object-fit: cover; }
 .ach-camera canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .ach-camera-hint { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 0.4rem; text-align: center; color: #fff; background: rgba(0,0,0,.55); font-size: 0.9rem; }
 .ach-result { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; }

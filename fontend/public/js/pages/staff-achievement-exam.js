@@ -512,6 +512,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         video.srcObject = state.stream;
         await video.play().catch(() => {});
         $('ach-camera').classList.remove('hidden');
+        drawOverlay(null, 1, 1);
         $('ach-cam-start').classList.add('hidden');
         $('ach-cam-stop').classList.remove('hidden');
         $('ach-scan-result').innerHTML = '';
@@ -547,17 +548,30 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         return PTNOmr.toGray(ctx.getImageData(0, 0, w, h).data, w, h);
     }
 
+    // กรอบกล้องแสดงเป็นแนวตั้ง (object-fit: cover ครอปภาพกล้องแนวนอนให้พอดี) - แปลงพิกัดภาพกล้องจริงเป็นพิกัดบนจอด้วยสเกล/ระยะครอปเดียวกัน
+    // ไม่เจอกระดาษ: วาดกรอบนำสัดส่วน A4 + สี่เหลี่ยม 4 มุม ให้วางกระดาษให้ตรงกรอบ
     function drawOverlay(corners, w, h, color) {
         const canvas = $('ach-overlay');
-        const video = $('ach-video');
-        canvas.width = video.clientWidth; canvas.height = video.clientHeight;
+        const box = $('ach-camera');
+        canvas.width = box.clientWidth; canvas.height = box.clientHeight;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (!corners) return;
-        const sx = canvas.width / w, sy = canvas.height / h;
+        if (!corners) {
+            const gh = canvas.height * 0.86, gw = gh * 210 / 297;
+            const gx = (canvas.width - gw) / 2, gy = (canvas.height - gh) / 2 - canvas.height * 0.02;
+            ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2; ctx.setLineDash([10, 8]);
+            ctx.strokeRect(gx, gy, gw, gh);
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            const m = gw * 15 / 210, s = gw * 10 / 210;
+            [[gx + m, gy + m], [gx + gw - m, gy + m], [gx + gw - m, gy + gh - m], [gx + m, gy + gh - m]].forEach(([cx, cy]) => ctx.fillRect(cx - s / 2, cy - s / 2, s, s));
+            return;
+        }
+        const scale = Math.max(canvas.width / w, canvas.height / h);
+        const ox = (canvas.width - w * scale) / 2, oy = (canvas.height - h * scale) / 2;
         ctx.strokeStyle = color; ctx.lineWidth = 4;
         ctx.beginPath();
-        corners.forEach((p, i) => (i ? ctx.lineTo(p.x * sx, p.y * sy) : ctx.moveTo(p.x * sx, p.y * sy)));
+        corners.forEach((p, i) => (i ? ctx.lineTo(ox + p.x * scale, oy + p.y * scale) : ctx.moveTo(ox + p.x * scale, oy + p.y * scale)));
         ctx.closePath(); ctx.stroke();
     }
 

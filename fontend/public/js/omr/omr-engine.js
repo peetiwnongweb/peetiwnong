@@ -209,36 +209,90 @@
         return Math.sqrt(maxD2) / Math.sqrt(c.area);
     }
 
-    // หาสี่เหลี่ยมดำ 4 มุม: ก้อนดำที่เกือบเป็นสี่เหลี่ยมจัตุรัสทึบ แล้วเลือกตัวที่อยู่ริมสุดแต่ละมุม
-    function findFiducials(gray) {
+    // หาสี่เหลี่ยมดำ 4 มุม: หาก้อนดำที่เป็นสี่เหลี่ยมจัตุรัสทึบทั้งหมด แล้วเลือก "4 ก้อนที่เรียงกันเป็นรูปกระดาษ" ได้ดีที่สุด
+    // (สัดส่วนกว้าง:ยาวใกล้ 180:267, ขนาดก้อนพอ ๆ กันและสัมพันธ์กับขนาดกระดาษ) - ของสีเข้มทรงเหลี่ยมในฉากหลัง/นิ้วที่จับกระดาษจะไม่ถูกเลือก
+    // debug (ไม่บังคับ): ใส่ object มาเพื่อรับจำนวนสี่เหลี่ยมที่เห็น (debug.candidates) ไว้บอกผู้ใช้
+    function findFiducialCandidates(gray, debug) {
         const { img: small, scale } = downscale(gray, 700);
         const bin = adaptiveBinary(small);
         const { comps, labels } = components(bin, small.width, small.height);
         const minSide = Math.min(small.width, small.height);
-        const candidates = comps.filter((c) => {
+        let candidates = comps.filter((c) => {
             const bw = c.maxX - c.minX + 1, bh = c.maxY - c.minY + 1;
-            if (bw < minSide * 0.018 || bw > minSide * 0.14) return false;
+            if (bw < Math.max(5, minSide * 0.012) || bw > minSide * 0.16) return false;
             const aspect = bw / bh;
-            if (aspect < 0.7 || aspect > 1.43) return false;
-            // ทึบพอ (สี่เหลี่ยมเอียง 45° ยังได้ ~0.5) และรูปทรงเป็นสี่เหลี่ยม ไม่ใช่วงกลม/ตัวอักษร
-            if (c.area / (bw * bh) < 0.45) return false;
+            if (aspect < 0.6 || aspect > 1.67) return false;
+            // ทึบพอ (สี่เหลี่ยมเอียง 45° ยังได้ ~0.5) และรูปทรงเป็นสี่เหลี่ยม ไม่ใช่วงกลม/ตัวอักษร (ภาพเบลอทำให้มุมมนลง จึงเผื่อช่วงไว้กว้าง)
+            if (c.area / (bw * bh) < 0.42) return false;
             const sq = squareness(c, labels, small.width);
-            return sq > 0.64 && sq < 0.8;
+            c.sq = sq;
+            return sq > 0.62 && sq < 0.82;
         });
-        if (candidates.length < 4) return null;
-        const pick = (score) => candidates.reduce((best, c) => (score(c) > score(best) ? c : best));
-        const tl = pick((c) => -(c.cx + c.cy));
-        const tr = pick((c) => c.cx - c.cy);
-        const br = pick((c) => c.cx + c.cy);
-        const bl = pick((c) => c.cy - c.cx);
-        const set = [tl, tr, br, bl];
-        if (new Set(set).size !== 4) return null;
-        const sizes = set.map((c) => c.maxX - c.minX + 1);
-        if (Math.max(...sizes) > Math.min(...sizes) * 2.2) return null;
-        // ต้องเป็นสี่เหลี่ยมที่มีพื้นที่พอสมควร (กันจับได้ 4 จุดเล็ก ๆ ในกระดาษส่วนเดียว)
-        const area = Math.abs((tr.cx - tl.cx) * (bl.cy - tl.cy) - (bl.cx - tl.cx) * (tr.cy - tl.cy));
-        if (area < small.width * small.height * 0.12) return null;
-        return set.map((c) => refineCenter(gray, c.cx * scale, c.cy * scale, (c.maxX - c.minX + 1) * scale));
+        if (debug) debug.candidates = candidates.length;
+        if (candidates.length < 4) return [];
+        // จำกัดจำนวนก้อนที่จะลองจับคู่ (เลือกที่เหลี่ยมใกล้อุดมคติที่สุด) กันช้าเวลาภาพรก
+        candidates = candidates.sort((a, b) => Math.abs(a.sq - 0.707) - Math.abs(b.sq - 0.707)).slice(0, 22);
+        const size = (c) => Math.sqrt(c.area);
+        const dist = (a, b) => Math.hypot(a.cx - b.cx, a.cy - b.cy);
+        const minArea = small.width * small.height * 0.05;
+        const found = [];
+        const n = candidates.length;
+        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) for (let k = j + 1; k < n; k++) for (let l = k + 1; l < n; l++) {
+            const quad = [candidates[i], candidates[j], candidates[k], candidates[l]];
+            const sizes = quad.map(size);
+            const sMin = Math.min(...sizes), sMax = Math.max(...sizes);
+            if (sMax > sMin * 1.8) continue;
+            // เรียงตามมุมรอบจุดศูนย์กลาง (ตามเข็ม) เริ่มจากซ้ายบน
+            const mx = quad.reduce((t, c) => t + c.cx, 0) / 4, my = quad.reduce((t, c) => t + c.cy, 0) / 4;
+            quad.sort((a, b) => Math.atan2(a.cy - my, a.cx - mx) - Math.atan2(b.cy - my, b.cx - mx));
+            let startIdx = 0;
+            quad.forEach((c, idx) => { if (c.cx + c.cy < quad[startIdx].cx + quad[startIdx].cy) startIdx = idx; });
+            const q = [0, 1, 2, 3].map((t) => quad[(startIdx + t) % 4]);
+            // ต้องเป็นรูปสี่เหลี่ยมนูน
+            let sign = 0, convex = true;
+            for (let t = 0; t < 4; t++) {
+                const a = q[t], b = q[(t + 1) % 4], c = q[(t + 2) % 4];
+                const cross = (b.cx - a.cx) * (c.cy - b.cy) - (b.cy - a.cy) * (c.cx - b.cx);
+                if (sign === 0) sign = Math.sign(cross); else if (Math.sign(cross) !== sign) { convex = false; break; }
+            }
+            if (!convex) continue;
+            const e = [dist(q[0], q[1]), dist(q[1], q[2]), dist(q[2], q[3]), dist(q[3], q[0])];
+            // ด้านตรงข้ามยาวใกล้กัน (เผื่อมุมมองเอียง)
+            if (Math.max(e[0], e[2]) > Math.min(e[0], e[2]) * 2 || Math.max(e[1], e[3]) > Math.min(e[1], e[3]) * 2) continue;
+            const w = (e[0] + e[2]) / 2, h = (e[1] + e[3]) / 2;
+            const ratio = Math.min(w, h) / Math.max(w, h);
+            if (ratio < 0.45 || ratio > 0.92) continue;
+            // ขนาดสี่เหลี่ยมดำเทียบกับด้านสั้นของกระดาษ (10 มม. ต่อ 180 มม. ≈ 0.056)
+            const rel = (sMin + sMax) / 2 / Math.min(w, h);
+            if (rel < 0.025 || rel > 0.12) continue;
+            const area = Math.abs((q[1].cx - q[0].cx) * (q[3].cy - q[0].cy) - (q[3].cx - q[0].cx) * (q[1].cy - q[0].cy));
+            if (area < minArea) continue;
+            const score = Math.abs(ratio - 0.674) * 3 + (sMax / sMin - 1) + Math.abs(rel - 0.056) * 10 - area / (small.width * small.height) * 0.5;
+            found.push({ score, q });
+        }
+        found.sort((a, b) => a.score - b.score);
+        const quads = found.slice(0, 5).map((x) => x.q);
+        // แบบเดิม: ก้อนที่อยู่ริมสุดแต่ละมุม (แม่นเวลาภาพเอียงมาก/ไม่มีของรบกวน)
+        const pick = (score) => candidates.reduce((b, c) => (score(c) > score(b) ? c : b));
+        const extreme = [pick((c) => -(c.cx + c.cy)), pick((c) => c.cx - c.cy), pick((c) => c.cx + c.cy), pick((c) => c.cy - c.cx)];
+        if (new Set(extreme).size === 4) {
+            const sizes = extreme.map(size);
+            const area = Math.abs((extreme[1].cx - extreme[0].cx) * (extreme[3].cy - extreme[0].cy) - (extreme[3].cx - extreme[0].cx) * (extreme[1].cy - extreme[0].cy));
+            if (Math.max(...sizes) <= Math.min(...sizes) * 2.2 && area >= minArea) quads.push(extreme);
+        }
+        const seen = new Set();
+        return quads.filter((q) => {
+            const key = q.map((c) => c.label).sort().join(',');
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        }).map((q) => q.map((c) => refineCenter(gray, c.cx * scale, c.cy * scale, (c.maxX - c.minX + 1) * scale)));
+    }
+
+    // รูปแบบที่น่าจะเป็นที่สุด (ใช้วาดกรอบ/เช็คความนิ่งตอนเปิดกล้อง) - การตรวจจริงใช้ scan() ที่ยืนยันด้วย QR อีกชั้น
+    function findFiducials(gray, debug) {
+        const quads = findFiducialCandidates(gray, debug);
+        return quads && quads.length ? quads[0] : null;
     }
 
     // คำนวณจุดศูนย์กลางใหม่บนภาพความละเอียดเต็ม (แม่นกว่าภาพที่ย่อ)
@@ -386,16 +440,19 @@
     // สแกนเต็มขั้น: หามุม -> ลองทุกทิศ (กระดาษกลับหัว/หมุน) เลือกทิศที่อ่าน QR ได้ -> อ่านคำตอบ
     // คืน { ...scanSheet, qrText } หรือ null ถ้าหามุมไม่เจอ (qrText null = อ่าน QR ไม่ได้ ใช้ทิศปกติ)
     function scan(gray, layout, jsQR) {
-        const found = findFiducials(gray);
-        if (!found) return null;
+        const quads = findFiducialCandidates(gray);
+        if (!quads.length) return null;
         const orders = [[0, 1, 2, 3], [2, 3, 0, 1], [1, 2, 3, 0], [3, 0, 1, 2]];
-        for (const order of orders) {
-            const corners = order.map((i) => found[i]);
-            const map = homography(layout.fiducials.map((f) => [f.x, f.y]), corners.map((p) => [p.x, p.y]));
-            const qrText = readQr(gray, map, layout, jsQR);
-            if (qrText) return { ...scanSheet(gray, layout, corners), qrText };
+        // QR อยู่ตำแหน่งตายตัวเทียบกับ 4 มุม - ถ้าจับมุมผิด (ของในฉากหลัง/รูปสี่เหลี่ยมอื่น) จะอ่าน QR ไม่ได้ จึงใช้ยืนยันว่าเลือกถูก
+        for (const found of quads) {
+            for (const order of orders) {
+                const corners = order.map((i) => found[i]);
+                const map = homography(layout.fiducials.map((f) => [f.x, f.y]), corners.map((p) => [p.x, p.y]));
+                const qrText = readQr(gray, map, layout, jsQR);
+                if (qrText) return { ...scanSheet(gray, layout, corners), qrText };
+            }
         }
-        return { ...scanSheet(gray, layout, found), qrText: null };
+        return { ...scanSheet(gray, layout, quads[0]), qrText: null };
     }
 
     // QR บนกระดาษ: "PTN-EX:<examId>:<participantProfileId>" (0 = ใบเปล่า ใช้รหัสที่ฝน)

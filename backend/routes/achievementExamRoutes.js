@@ -16,7 +16,7 @@ const { requireDepartmentStaff, requireRole } = require('../middleware/requireAu
 const router = express.Router();
 // พี่ค่ายฝ่ายวิชาการ/ผู้บริหารค่าย - สิทธิ์ละเอียด (หัวหน้าฝ่าย vs ผู้สอนวิชาในชุดข้อสอบ) เช็คในคอนโทรลเลอร์
 // ช่วงทดสอบ (Beta) เปิดให้เฉพาะ SuperAdmin - เปิดใช้จริงให้เปลี่ยนกลับเป็น requireDepartmentStaff('ฝ่ายวิชาการ')
-const BETA_SUPERADMIN_ONLY = true;
+const BETA_SUPERADMIN_ONLY = false;
 const requireStaffAccess = BETA_SUPERADMIN_ONLY ? requireRole('SUPERADMIN') : requireDepartmentStaff('ฝ่ายวิชาการ');
 
 router.get('/', requireStaffAccess, listExams);

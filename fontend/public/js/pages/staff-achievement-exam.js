@@ -390,7 +390,7 @@
             </div>
             <p class="ach-note" style="margin-top:1rem">ใบรายคนและรายชื่อเรียงตามรหัสประจำตัว แจกกระดาษตามลำดับรายชื่อได้เลย</p>
             <div class="ach-print-actions">
-                <button type="button" class="btn-outline" id="ach-print-signlist">พิมพ์รายชื่อลงชื่อรับกระดาษคำตอบ</button>
+                <button type="button" class="btn-outline" id="ach-print-signlist">พิมพ์ใบลงชื่อรับกระดาษคำตอบ</button>
             </div>`;
         $('ach-print-roster').addEventListener('click', () => printSheets(false));
         $('ach-print-blank').addEventListener('click', () => printSheets(true));

@@ -485,7 +485,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
                     <button type="button" class="btn-primary" id="ach-cam-start">เปิดกล้องสแกน</button>
                     <button type="button" class="btn-primary hidden" id="ach-cam-shot">ถ่ายเลย</button>
                     <button type="button" class="btn-outline hidden" id="ach-cam-stop">ปิดกล้อง</button>
-                    <label class="btn-outline ach-file-btn">อัปโหลดรูป<input type="file" accept="image/*" id="ach-file-input" hidden></label>
+                    <label class="btn-outline ach-file-btn">อัปโหลดรูป/PDF<input type="file" accept="image/*,application/pdf" id="ach-file-input" multiple hidden></label>
                     <button type="button" class="btn-outline" id="ach-manual-btn">กรอกคำตอบเอง</button>
                 </div>
             </div>
@@ -494,7 +494,8 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
                 <canvas id="ach-overlay"></canvas>
                 <p class="ach-camera-hint" id="ach-camera-hint">จ่อกระดาษให้เห็นสี่เหลี่ยมดำครบ 4 มุม</p>
             </div>
-            <div id="ach-scan-result"></div>`;
+            <div id="ach-scan-result"></div>
+            <div id="ach-batch"></div>`;
         renderScanProgress();
         $('ach-cam-start').addEventListener('click', startCamera);
         $('ach-cam-stop').addEventListener('click', stopCamera);
@@ -505,7 +506,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
             state.waitForClear = false;
             if (!processGray(grabVideoFrame(video), true)) toast('หาสี่เหลี่ยมดำ 4 มุมไม่เจอ ขยับให้เห็นครบทั้ง 4 มุม', false);
         });
-        $('ach-file-input').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) scanFile(f); });
+        $('ach-file-input').addEventListener('change', (e) => { const files = [...e.target.files]; e.target.value = ''; handleFiles(files); });
         $('ach-manual-btn').addEventListener('click', () => showResult({ answers: Array.from({ length: totalQuestions(state.exam) }, () => []), flags: [], participant: null, manual: true }));
     }
 
@@ -642,17 +643,14 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         img.src = url;
     }
 
-    function processGray(gray, force = true) {
+    // วิเคราะห์ภาพ 1 แผ่น -> { status: 'nocorners' | 'noqr' | 'wrongexam' | 'ok', res }
+    function analyzeGray(gray, force) {
         const layout = layoutOf(state.exam);
         const result = PTNOmr.scan(gray, layout, window.jsQR);
-        if (!result) return false;
-        if (!result.qrText && !force) return false;
+        if (!result) return { status: 'nocorners' };
+        if (!result.qrText && !force) return { status: 'noqr' };
         const qr = PTNOmr.parseQr(result.qrText);
-        if (qr && qr.examId !== state.exam.id) {
-            toast('กระดาษนี้เป็นของชุดข้อสอบอื่น', false);
-            state.waitForClear = true;
-            return true;
-        }
+        if (qr && qr.examId !== state.exam.id) return { status: 'wrongexam' };
         let participant = null;
         let idNote = '';
         if (qr && qr.participantProfileId) participant = state.roster.find((p) => p.id === qr.participantProfileId) || null;
@@ -663,13 +661,165 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         if (!participant && !idNote) idNote = qr ? 'ใบเปล่า: ฝนรหัสไม่ครบ/อ่านไม่ได้' : 'อ่าน QR ไม่ได้ และฝนรหัสไม่ครบ';
         // ใบรายคน: ใช้ QR เป็นหลัก ถ้ารหัสที่ฝนสำรองไว้ไม่ตรงกับชื่อในใบ ให้เตือน (อาจหยิบกระดาษเพื่อนมาใช้)
         if (participant && result.studentCode && result.studentCode !== participant.code) idNote = 'รหัสที่ฝน ' + result.studentCode + ' ไม่ตรงกับชื่อบนกระดาษ ตรวจสอบก่อนบันทึก';
-        showResult({
-            answers: result.answers.map((a) => a.selected),
-            flags: result.answers.map((a) => a.flag),
-            participant,
-            idNote,
-        });
+        return { status: 'ok', res: { answers: result.answers.map((a) => a.selected), flags: result.answers.map((a) => a.flag), participant, idNote } };
+    }
+
+    function processGray(gray, force = true) {
+        const a = analyzeGray(gray, force);
+        if (a.status === 'nocorners' || a.status === 'noqr') return false;
+        if (a.status === 'wrongexam') {
+            toast('กระดาษนี้เป็นของชุดข้อสอบอื่น', false);
+            state.waitForClear = true;
+            return true;
+        }
+        showResult(a.res);
         return true;
+    }
+
+    // ---------- สแกนเป็นชุด (เครื่องสแกนเนอร์: รูปหลายไฟล์ / PDF หลายหน้า) ----------
+    let pdfjsLoading = null;
+    function loadPdfJs() {
+        if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+        if (!pdfjsLoading) {
+            pdfjsLoading = new Promise((resolve, reject) => {
+                const sc = document.createElement('script');
+                sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                sc.onload = () => {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve(window.pdfjsLib);
+                };
+                sc.onerror = () => { pdfjsLoading = null; reject(new Error('โหลดตัวอ่าน PDF ไม่สำเร็จ')); };
+                document.head.appendChild(sc);
+            });
+        }
+        return pdfjsLoading;
+    }
+
+    function imageToGray(file) {
+        return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const scale = Math.min(1, 2400 / Math.max(img.width, img.height));
+                resolve(grabFrame(img, Math.round(img.width * scale), Math.round(img.height * scale)));
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('เปิดรูปไม่ได้')); };
+            img.src = url;
+        });
+    }
+
+    // คืนรายการ { label, getGray() } ของทุกแผ่นในไฟล์ (PDF 1 หน้า = 1 แผ่น)
+    async function expandFiles(files) {
+        const pages = [];
+        for (const file of files) {
+            if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+                const pdfjs = await loadPdfJs();
+                const doc = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+                for (let p = 1; p <= doc.numPages; p++) {
+                    pages.push({
+                        label: `${file.name} หน้า ${p}`,
+                        getGray: async () => {
+                            const page = await doc.getPage(p);
+                            const base = page.getViewport({ scale: 1 });
+                            const viewport = page.getViewport({ scale: Math.min(3, 1700 / Math.min(base.width, base.height)) });
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.round(viewport.width); canvas.height = Math.round(viewport.height);
+                            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                            ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            await page.render({ canvasContext: ctx, viewport }).promise;
+                            return PTNOmr.toGray(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+                        },
+                    });
+                }
+            } else {
+                pages.push({ label: file.name, getGray: () => imageToGray(file) });
+            }
+        }
+        return pages;
+    }
+
+    async function handleFiles(files) {
+        if (!files.length) return;
+        stopCamera();
+        // รูปเดียว: แสดงผลให้ตรวจเหมือนเดิม
+        if (files.length === 1 && !/pdf/i.test(files[0].type) && !/\.pdf$/i.test(files[0].name)) {
+            try {
+                if (!processGray(await imageToGray(files[0]))) toast('หาสี่เหลี่ยมดำ 4 มุมในรูปไม่เจอ ถ่ายใหม่ให้เห็นทั้งแผ่น', false);
+            } catch (error) { toast(error.message, false); }
+            return;
+        }
+        runBatch(files);
+    }
+
+    async function runBatch(files) {
+        const box = $('ach-batch');
+        $('ach-scan-result').innerHTML = '';
+        state.scanResult = null;
+        let pages;
+        try {
+            box.innerHTML = '<p class="ach-note">กำลังเปิดไฟล์...</p>';
+            pages = await expandFiles(files);
+        } catch (error) {
+            box.innerHTML = '';
+            return toast(error.message || 'เปิดไฟล์ไม่สำเร็จ', false);
+        }
+        state.batch = { saved: [], review: [], failed: [] };
+        const savedIds = new Set(state.submissions.map((x) => x.participantProfileId));
+        for (let i = 0; i < pages.length; i++) {
+            box.innerHTML = `<p class="ach-note">กำลังตรวจ ${i + 1}/${pages.length} แผ่น...</p>`;
+            await new Promise((r) => setTimeout(r, 0));
+            let a;
+            try { a = analyzeGray(await pages[i].getGray(), true); } catch (error) { a = { status: 'error' }; }
+            if (a.status !== 'ok') {
+                state.batch.failed.push({ label: pages[i].label, reason: a.status === 'wrongexam' ? 'เป็นกระดาษของชุดข้อสอบอื่น' : 'หาสี่เหลี่ยมดำ 4 มุมไม่เจอ' });
+                continue;
+            }
+            const res = a.res;
+            const flagged = res.flags.filter((x) => x === 'multiple' || x === 'faint').length;
+            const dup = res.participant && savedIds.has(res.participant.id);
+            const reason = !res.participant ? (res.idNote || 'ระบุตัวไม่ได้')
+                : res.idNote ? res.idNote
+                : dup ? 'เคยบันทึกแล้ว (บันทึกจะทับ)'
+                : flagged ? `มี ${flagged} ข้อต้องตรวจ` : '';
+            if (reason) { state.batch.review.push({ label: pages[i].label, reason, res }); continue; }
+            try {
+                const saved = await saveAnswers(res.participant, res.answers, 'scan');
+                savedIds.add(res.participant.id);
+                state.batch.saved.push({ label: pages[i].label, name: res.participant.fullName, total: saved.totalPoints });
+            } catch (error) {
+                state.batch.review.push({ label: pages[i].label, reason: 'บันทึกไม่สำเร็จ: ' + error.message, res });
+            }
+        }
+        renderScanProgress();
+        renderBatch();
+    }
+
+    function renderBatch() {
+        const box = $('ach-batch');
+        const b = state.batch;
+        if (!box || !b) return;
+        box.innerHTML = `<div class="ach-result">
+            <p class="ach-result-name">ตรวจเสร็จ: บันทึกแล้ว ${b.saved.length} แผ่น · ต้องตรวจ ${b.review.length} · อ่านไม่ได้ ${b.failed.length}</p>
+            ${b.review.length ? `<p class="profile-section-title" style="margin-top:0.75rem">ต้องตรวจ</p>${b.review.map((x, i) => `<div class="ach-batch-row"><span>${esc(x.label)} · <b>${esc(x.res.participant ? x.res.participant.fullName : 'ไม่ทราบชื่อ')}</b> · <span class="ach-error">${esc(x.reason)}</span></span><button type="button" class="btn-outline" data-review="${i}">ตรวจ</button></div>`).join('')}` : ''}
+            ${b.failed.length ? `<p class="profile-section-title" style="margin-top:0.75rem">อ่านไม่ได้ (สแกนใหม่ หรือกรอกเอง)</p>${b.failed.map((x) => `<div class="ach-batch-row"><span>${esc(x.label)} · <span class="ach-error">${esc(x.reason)}</span></span></div>`).join('')}` : ''}
+            ${b.saved.length ? `<details style="margin-top:0.75rem"><summary class="ach-note">ดูรายการที่บันทึกแล้ว (${b.saved.length})</summary>${b.saved.map((x) => `<div class="ach-batch-row"><span>${esc(x.label)} · ${esc(x.name)}</span><b>${x.total}</b></div>`).join('')}</details>` : ''}
+        </div>`;
+        box.querySelectorAll('[data-review]').forEach((btn) => btn.addEventListener('click', () => {
+            const item = b.review[Number(btn.dataset.review)];
+            showResult({ ...item.res, batchItem: item });
+            $('ach-scan-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }));
+    }
+
+    async function saveAnswers(participant, answers, source) {
+        const saved = await api(`/${state.exam.id}/submissions/${participant.id}`, { method: 'PUT', body: JSON.stringify({ answers, source }) });
+        const idx = state.submissions.findIndex((x) => x.participantProfileId === participant.id);
+        const row = { participantProfileId: participant.id, code: participant.code, fullName: participant.fullName, nickname: participant.nickname, answers, ...saved };
+        if (idx >= 0) state.submissions[idx] = row; else state.submissions.unshift(row);
+        const ex = state.exams.find((e) => e.id === state.exam.id);
+        if (ex) ex.submissionCount = state.submissions.length;
+        return saved;
     }
 
     function showResult(res) {
@@ -680,7 +830,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         const already = res.participant && state.submissions.some((s) => s.participantProfileId === res.participant.id);
         const hasFlags = res.flags.some((f) => f === 'multiple' || f === 'faint');
         // อ่านชัด ระบุตัวได้ และยังไม่เคยสแกน -> บันทึกเลย แล้วสแกนแผ่นต่อไปอัตโนมัติ
-        if (!res.manual && res.participant && !already && !hasFlags && !res.idNote) saveResult(true);
+        if (!res.manual && !res.batchItem && res.participant && !already && !hasFlags && !res.idNote) saveResult(true);
         if (exam && state.stream) $('ach-camera-hint').textContent = 'ตรวจแล้ว ดูผลด้านล่าง';
     }
 
@@ -739,17 +889,14 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         const btn = $('ach-result-save');
         if (btn) Loader.setButtonLoading(btn, 'กำลังบันทึก...');
         try {
-            const saved = await api(`/${state.exam.id}/submissions/${res.participant.id}`, {
-                method: 'PUT',
-                body: JSON.stringify({ answers: res.answers, source: res.manual ? 'manual' : 'scan' }),
-            });
-            const idx = state.submissions.findIndex((s) => s.participantProfileId === res.participant.id);
-            const row = { participantProfileId: res.participant.id, code: res.participant.code, fullName: res.participant.fullName, nickname: res.participant.nickname, answers: res.answers, ...saved };
-            if (idx >= 0) state.submissions[idx] = row; else state.submissions.unshift(row);
+            const saved = await saveAnswers(res.participant, res.answers, res.manual ? 'manual' : 'scan');
             toast(`บันทึก ${res.participant.fullName} ได้ ${saved.totalPoints} คะแนน`, true);
             renderScanProgress();
-            const ex = state.exams.find((e) => e.id === state.exam.id);
-            if (ex) ex.submissionCount = state.submissions.length;
+            if (res.batchItem && state.batch) {
+                state.batch.review = state.batch.review.filter((x) => x !== res.batchItem);
+                state.batch.saved.push({ label: res.batchItem.label, name: res.participant.fullName, total: saved.totalPoints });
+                renderBatch();
+            }
             if (state.stream) {
                 $('ach-scan-result').innerHTML = `<p class="ach-saved">✓ บันทึก ${esc(res.participant.fullName)} ${saved.totalPoints} คะแนนแล้ว · วางแผ่นถัดไปได้เลย</p>`;
                 setTimeout(() => resumeScan(true), auto ? 1200 : 400);

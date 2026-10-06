@@ -51,19 +51,19 @@
 
         // คำชี้แจง
         const notes = p
-            ? ['ใช้ดินสอ 2B ฝนให้เต็มวงและเข้ม', 'ต้องการเปลี่ยนคำตอบให้ลบให้สะอาด', 'ห้ามขีดเขียนหรือพับบริเวณสี่เหลี่ยมดำ 4 มุมและ QR']
+            ? ['ฝนรหัสประจำตัวด้านขวาด้วย (สำรองกรณี QR เสียหาย)', 'ใช้ดินสอ 2B ฝนให้เต็มวงและเข้ม ลบให้สะอาด', 'ห้ามขีดเขียนหรือพับบริเวณสี่เหลี่ยมดำ 4 มุมและ QR']
             : ['ใบนี้ไม่มีชื่อ ต้องเขียนชื่อและฝนรหัสประจำตัว 6 หลักด้านขวา', 'ใช้ดินสอ 2B ฝนให้เต็มวง ลบให้สะอาด', 'ห้ามขีดเขียนบริเวณสี่เหลี่ยมดำ 4 มุมและ QR'];
         notes.forEach((n, i) => parts.push(text(24, 79 + i * 4.4, `• ${n}`, 2.9, { fill: '#444' })));
 
         // บล็อกฝนรหัส (ใบรายคนพิมพ์รหัสให้ในช่องด้านบน ไม่ต้องฝน)
         const idX0 = layout.idBubbles[0][0].x - 3.4, idX1 = layout.idBubbles[layout.idBubbles.length - 1][0].x + 3.4;
-        parts.push(text((idX0 + idX1) / 2, 30, p ? 'รหัส (ไม่ต้องฝน)' : 'ฝนรหัสประจำตัว', 2.8, { anchor: 'middle', fill: '#444' }));
+        parts.push(text((idX0 + idX1) / 2, 30, p ? 'ฝนรหัส (สำรอง)' : 'ฝนรหัสประจำตัว', 2.8, { anchor: 'middle', fill: '#444' }));
         layout.idBubbles.forEach((col, d) => {
             const cx = col[0].x;
             parts.push(`<rect x="${cx - 2.6}" y="${layout.idBoxY - 3.2}" width="5.2" height="5" fill="none" stroke="#666" stroke-width="0.25"/>`);
             if (p && p.code) parts.push(text(cx, layout.idBoxY + 0.6, p.code[d] || '', 3.6, { anchor: 'middle', bold: true }));
             col.forEach((b) => {
-                parts.push(`<circle cx="${b.x}" cy="${b.y}" r="${layout.idBubbleD / 2}" fill="none" stroke="${p ? '#ccc' : '#555'}" stroke-width="0.25"/>`);
+                parts.push(`<circle cx="${b.x}" cy="${b.y}" r="${layout.idBubbleD / 2}" fill="none" stroke="#555" stroke-width="0.25"/>`);
                 parts.push(text(b.x, b.y + 0.05, b.label, 2.4, { anchor: 'middle', baseline: 'central', fill: '#c4c4c4' }));
             });
         });

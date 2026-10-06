@@ -575,7 +575,9 @@
             participant = state.roster.find((p) => p.code === result.studentCode) || null;
             if (!participant) idNote = `รหัสที่ฝน ${result.studentCode} ไม่ตรงกับน้องคนไหนในคอร์ส`;
         }
-        if (!participant && !idNote) idNote = qr ? 'ใบเปล่า: ฝนรหัสไม่ครบ/อ่านไม่ได้' : 'อ่าน QR ไม่ได้';
+        if (!participant && !idNote) idNote = qr ? 'ใบเปล่า: ฝนรหัสไม่ครบ/อ่านไม่ได้' : 'อ่าน QR ไม่ได้ และฝนรหัสไม่ครบ';
+        // ใบรายคน: ใช้ QR เป็นหลัก ถ้ารหัสที่ฝนสำรองไว้ไม่ตรงกับชื่อในใบ ให้เตือน (อาจหยิบกระดาษเพื่อนมาใช้)
+        if (participant && result.studentCode && result.studentCode !== participant.code) idNote = 'รหัสที่ฝน ' + result.studentCode + ' ไม่ตรงกับชื่อบนกระดาษ ตรวจสอบก่อนบันทึก';
         showResult({
             answers: result.answers.map((a) => a.selected),
             flags: result.answers.map((a) => a.flag),
@@ -593,7 +595,7 @@
         const already = res.participant && state.submissions.some((s) => s.participantProfileId === res.participant.id);
         const hasFlags = res.flags.some((f) => f === 'multiple' || f === 'faint');
         // อ่านชัด ระบุตัวได้ และยังไม่เคยสแกน -> บันทึกเลย แล้วสแกนแผ่นต่อไปอัตโนมัติ
-        if (!res.manual && res.participant && !already && !hasFlags) saveResult(true);
+        if (!res.manual && res.participant && !already && !hasFlags && !res.idNote) saveResult(true);
         if (exam && state.stream) $('ach-camera-hint').textContent = 'ตรวจแล้ว ดูผลด้านล่าง';
     }
 
@@ -611,7 +613,7 @@
                 <div class="ach-result-head">
                     <div>
                         ${res.participant
-                            ? `<p class="ach-result-name">${esc(res.participant.fullName)}${res.participant.nickname ? ` (${esc(res.participant.nickname)})` : ''}</p><p class="ach-note">${esc(res.participant.code)}${already ? ' · <b class="ach-error">เคยบันทึกแล้ว บันทึกจะทับของเดิม</b>' : ''}</p>`
+                            ? `<p class="ach-result-name">${esc(res.participant.fullName)}${res.participant.nickname ? ` (${esc(res.participant.nickname)})` : ''}</p><p class="ach-note">${esc(res.participant.code)}${already ? ' · <b class="ach-error">เคยบันทึกแล้ว บันทึกจะทับของเดิม</b>' : ''}</p>${res.idNote ? `<p class="ach-note ach-error">${esc(res.idNote)}</p>` : ''}`
                             : `<p class="ach-result-name ach-error">ยังไม่รู้ว่าเป็นของใคร</p><p class="ach-note">${esc(res.idNote || '')}</p>`}
                         <select class="form-input ach-pick" id="ach-pick">
                             <option value="">-- เลือกน้องค่าย --</option>

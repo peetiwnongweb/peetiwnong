@@ -99,6 +99,9 @@ async function getRoster(req, res) {
     };
   });
 
+  // เรียงตามรหัสประจำตัว (ทั้งตารางบนจอ รายงานพิมพ์ และ CSV ใช้ลำดับนี้)
+  roster.sort((a, b) => String(a.code).localeCompare(String(b.code)));
+
   // totalCredits คำนวณจาก allSubjects เสมอ (ไม่ใช่ visibleSubjects) ให้ frontend ใช้คิดสัดส่วน % ของแต่ละวิชาตรงกับคะแนนรวมจริงที่ manager เห็น
   // แม้ผู้สอนจะเห็นวิชาตัวเองไม่ครบทุกวิชาก็ตาม (ไม่งั้นสัดส่วนที่โชว์จะพองเกินจริงเพราะฐานหน่วยกิตแคบกว่าความเป็นจริง)
   const totalCredits = allSubjects.reduce((sum, s) => sum + s.credits, 0);

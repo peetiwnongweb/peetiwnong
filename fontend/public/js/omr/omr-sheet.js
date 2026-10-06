@@ -27,23 +27,33 @@
         // หัวกระดาษ
         parts.push(text(24, 28, 'กระดาษคำตอบ', 6.2, { bold: true }));
         parts.push(text(24, 35, info.examTitle || '', 4.2, { bold: true }));
-        if (info.sectionsText) parts.push(text(24, 41, info.sectionsText, 3, { fill: '#444' }));
+        // รายชื่อตอน: ตัดขึ้นบรรทัดใหม่ไม่ให้ยาวเกินฝั่งซ้าย (ด้านขวาเป็นช่องรหัสประจำตัว) - สูงสุด 3 บรรทัดก่อนถึงช่องชื่อ
+        if (info.sectionsText) {
+            const MAX_CHARS = 44;
+            const lines = [];
+            String(info.sectionsText).split(' · ').forEach((item) => {
+                const last = lines[lines.length - 1];
+                if (last && (last + ' · ' + item).length <= MAX_CHARS) lines[lines.length - 1] = last + ' · ' + item;
+                else lines.push(item);
+            });
+            lines.slice(0, 3).forEach((line, i) => parts.push(text(24, 40.5 + i * 3.6, line, 2.9, { fill: '#444' })));
+        }
         const p = info.participant;
-        parts.push(text(24, 52, 'ชื่อ-นามสกุล', 3.4));
-        parts.push(`<line x1="44" y1="52.6" x2="110" y2="52.6" stroke="#888" stroke-width="0.2" stroke-dasharray="0.6 0.6"/>`);
-        if (p) parts.push(text(46, 51.6, p.fullName + (p.nickname ? ` (${p.nickname})` : ''), 3.6, { bold: true }));
-        parts.push(text(24, 60, 'คอร์ส', 3.4));
-        parts.push(`<line x1="34" y1="60.6" x2="110" y2="60.6" stroke="#888" stroke-width="0.2" stroke-dasharray="0.6 0.6"/>`);
-        if (p) parts.push(text(36, 59.6, p.course || '', 3.6, { bold: true }));
-        parts.push(text(24, 68, 'รหัสประจำตัว', 3.4));
-        parts.push(`<line x1="45" y1="68.6" x2="110" y2="68.6" stroke="#888" stroke-width="0.2" stroke-dasharray="0.6 0.6"/>`);
-        if (p) parts.push(text(47, 67.6, p.code || '', 3.6, { bold: true }));
+        parts.push(text(24, 55, 'ชื่อ-นามสกุล', 3.4));
+        parts.push(`<line x1="44" y1="55.6" x2="110" y2="55.6" stroke="#888" stroke-width="0.2" stroke-dasharray="0.6 0.6"/>`);
+        if (p) parts.push(text(46, 54.6, p.fullName + (p.nickname ? ` (${p.nickname})` : ''), 3.6, { bold: true }));
+        parts.push(text(24, 62.5, 'คอร์ส', 3.4));
+        parts.push(`<line x1="34" y1="63.1" x2="110" y2="63.1" stroke="#888" stroke-width="0.2" stroke-dasharray="0.6 0.6"/>`);
+        if (p) parts.push(text(36, 62.1, p.course || '', 3.6, { bold: true }));
+        parts.push(text(24, 70, 'รหัสประจำตัว', 3.4));
+        parts.push(`<line x1="45" y1="70.6" x2="110" y2="70.6" stroke="#888" stroke-width="0.2" stroke-dasharray="0.6 0.6"/>`);
+        if (p) parts.push(text(47, 69.6, p.code || '', 3.6, { bold: true }));
 
         // คำชี้แจง
         const notes = p
             ? ['ใช้ดินสอ 2B ฝนให้เต็มวงและเข้ม', 'ต้องการเปลี่ยนคำตอบให้ลบให้สะอาด', 'ห้ามขีดเขียนหรือพับบริเวณสี่เหลี่ยมดำ 4 มุมและ QR']
             : ['ใบนี้ไม่มีชื่อ ต้องเขียนชื่อและฝนรหัสประจำตัว 6 หลักด้านขวา', 'ใช้ดินสอ 2B ฝนให้เต็มวง ลบให้สะอาด', 'ห้ามขีดเขียนบริเวณสี่เหลี่ยมดำ 4 มุมและ QR'];
-        notes.forEach((n, i) => parts.push(text(24, 78 + i * 4.6, `• ${n}`, 2.9, { fill: '#444' })));
+        notes.forEach((n, i) => parts.push(text(24, 79 + i * 4.4, `• ${n}`, 2.9, { fill: '#444' })));
 
         // บล็อกฝนรหัส (ใบรายคนพิมพ์รหัสให้ในช่องด้านบน ไม่ต้องฝน)
         const idX0 = layout.idBubbles[0][0].x - 3.4, idX1 = layout.idBubbles[layout.idBubbles.length - 1][0].x + 3.4;

@@ -387,9 +387,46 @@
                 <button type="button" class="btn-primary" id="ach-print-roster">พิมพ์ใบรายคน (มีชื่อ + QR) ทั้งคอร์ส</button>
                 <label class="ach-inline">ใบเปล่า <input type="number" class="form-input" id="ach-print-blank-count" min="1" max="200" value="5"> แผ่น</label>
                 <button type="button" class="btn-outline" id="ach-print-blank">พิมพ์ใบเปล่า (ฝนรหัส)</button>
+            </div>
+            <p class="ach-note" style="margin-top:1rem">ใบรายคนและรายชื่อเรียงตามรหัสประจำตัว แจกกระดาษตามลำดับรายชื่อได้เลย</p>
+            <div class="ach-print-actions">
+                <button type="button" class="btn-outline" id="ach-print-signlist">พิมพ์รายชื่อลงชื่อรับกระดาษคำตอบ</button>
             </div>`;
         $('ach-print-roster').addEventListener('click', () => printSheets(false));
         $('ach-print-blank').addEventListener('click', () => printSheets(true));
+        $('ach-print-signlist').addEventListener('click', printSignList);
+    }
+
+    const byCode = (a, b) => String(a.code).localeCompare(String(b.code));
+
+    // รายชื่อน้องค่ายเรียงตามรหัส พร้อมช่องลงชื่อรับ/ส่งกระดาษคำตอบ (A4 หน้าละ 25 คน)
+    function printSignList() {
+        const exam = state.exam;
+        const people = state.roster.slice().sort(byCode);
+        if (!people.length) return toast('ไม่มีน้องค่ายในคอร์สนี้', false);
+        const win = window.open('', '_blank');
+        if (!win) return toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป', false);
+        const ROWS = 25;
+        const totalPages = Math.ceil(people.length / ROWS);
+        const pages = [];
+        for (let p = 0; p < totalPages; p++) {
+            const rows = people.slice(p * ROWS, (p + 1) * ROWS).map((x, i) => `<tr><td class="c">${p * ROWS + i + 1}</td><td class="c">${esc(x.code)}</td><td>${esc(x.fullName)}</td><td>${esc(x.nickname || '')}</td><td></td><td></td></tr>`).join('');
+            pages.push(`<section class="page">
+                <header><h1>รายชื่อรับกระดาษคำตอบ</h1><p>${esc(exam.title)} · คอร์ส${esc(exam.courseName)} · ${people.length} คน</p><p class="fill">วันที่สอบ ........................................ ห้องสอบ ........................................</p></header>
+                <table><thead><tr><th class="c" style="width:11mm">ลำดับ</th><th class="c" style="width:20mm">รหัส</th><th>ชื่อ-นามสกุล</th><th style="width:20mm">ชื่อเล่น</th><th class="c" style="width:32mm">ลงชื่อรับ</th><th class="c" style="width:32mm">ลงชื่อส่ง</th></tr></thead><tbody>${rows}</tbody></table>
+                <footer><span>ลงชื่อ ........................................ ผู้คุมสอบ</span><span>หน้า ${p + 1} / ${totalPages}</span></footer>
+            </section>`);
+        }
+        win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายชื่อรับกระดาษคำตอบ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
+<style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{margin:0;font-family:Sarabun,sans-serif;color:#111;background:#e5e7eb}
+.page{background:#fff;width:186mm;height:273mm;margin:0 auto;display:flex;flex-direction:column;break-after:page;page-break-after:always;overflow:hidden}.page:last-child{break-after:auto;page-break-after:auto}
+header{text-align:center;border-bottom:2px solid #26324a;padding-bottom:6px;margin-bottom:8px}h1{margin:0 0 2px;font-size:19px}header p{margin:2px 0;font-size:13px}header .fill{margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th{background:#26324a;color:#fff;font-weight:600;text-align:left;padding:5px 6px;border:1px solid #26324a}td{border:1px solid #9ca3af;padding:0 6px;height:8.6mm}.c{text-align:center}
+footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px;padding-top:8px}
+@media screen{body{padding:12mm 0}.page{padding:12mm;width:210mm;height:297mm;margin-bottom:8mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}}</style></head><body>${pages.join('')}
+<script>(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print()},200)});<\/script></body></html>`);
+        win.document.close();
     }
 
     async function printSheets(blank) {
@@ -405,7 +442,7 @@
             const base = { examTitle: exam.title, sectionsText };
             const pages = blank
                 ? Array.from({ length: Math.max(1, Math.min(200, Number($('ach-print-blank-count').value) || 1)) }, () => PTNOmrSheet.renderSheetSvg(layout, { ...base, participant: null }, data.blankQrSvg))
-                : data.participants.map((p) => PTNOmrSheet.renderSheetSvg(layout, { ...base, participant: p }, p.qrSvg));
+                : data.participants.slice().sort(byCode).map((p) => PTNOmrSheet.renderSheetSvg(layout, { ...base, participant: p }, p.qrSvg));
             if (!pages.length) { win.close(); return toast('ไม่มีน้องค่ายในคอร์สนี้', false); }
             win.document.open();
             win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>กระดาษคำตอบ ${esc(exam.title)}</title>

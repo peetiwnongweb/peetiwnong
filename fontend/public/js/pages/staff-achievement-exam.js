@@ -615,9 +615,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         if (!corners) {
             state.stableCount = 0;
             drawOverlay(null, w, h);
-            $('ach-camera-hint').textContent = debug.candidates
-                ? `เห็นสี่เหลี่ยมดำ ${Math.min(debug.candidates, 4)}/4 มุม ขยับให้เห็นครบ ไม่เอานิ้วบัง`
-                : 'จ่อกระดาษให้เห็นสี่เหลี่ยมดำครบ 4 มุม';
+            $('ach-camera-hint').textContent = 'วางกระดาษให้เต็มกรอบเส้นประ เห็นสี่เหลี่ยมดำครบ 4 มุม';
             return scheduleScan();
         }
         const moved = state.lastCorners ? Math.max(...corners.map((p, i) => Math.hypot(p.x - state.lastCorners[i].x, p.y - state.lastCorners[i].y))) : Infinity;

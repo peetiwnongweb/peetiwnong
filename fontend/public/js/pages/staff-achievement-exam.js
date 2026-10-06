@@ -834,9 +834,10 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
                         ${res.participant
                             ? `<p class="ach-result-name">${esc(res.participant.fullName)}${res.participant.nickname ? ` (${esc(res.participant.nickname)})` : ''}</p><p class="ach-note">${esc(res.participant.code)}${already ? ' · <b class="ach-error">เคยบันทึกแล้ว บันทึกจะทับของเดิม</b>' : ''}</p>${res.idNote ? `<p class="ach-note ach-error">${esc(res.idNote)}</p>` : ''}`
                             : `<p class="ach-result-name ach-error">ยังไม่รู้ว่าเป็นของใคร</p><p class="ach-note">${esc(res.idNote || '')}</p>`}
+                        <input type="text" class="form-input ach-pick" id="ach-pick-search" placeholder="ค้นหารหัส ชื่อ หรือชื่อเล่น แล้วกด Enter" autocomplete="off">
                         <select class="form-input ach-pick" id="ach-pick">
                             <option value="">-- เลือกน้องค่าย --</option>
-                            ${state.roster.map((p) => `<option value="${p.id}" ${res.participant && res.participant.id === p.id ? 'selected' : ''}>${esc(p.code)} ${esc(p.fullName)}${p.nickname ? ` (${esc(p.nickname)})` : ''}${done.has(p.id) ? ' ✓' : ''}</option>`).join('')}
+                            ${state.roster.slice().sort((a, b) => String(a.code).localeCompare(String(b.code))).map((p) => `<option value="${p.id}" data-search="${esc(`${p.code} ${p.fullName} ${p.nickname || ''}`.toLowerCase())}" ${res.participant && res.participant.id === p.id ? 'selected' : ''}>${esc(p.code)} ${esc(p.fullName)}${p.nickname ? ` (${esc(p.nickname)})` : ''}${done.has(p.id) ? ' ✓' : ''}</option>`).join('')}
                         </select>
                     </div>
                     <div class="ach-score">
@@ -854,6 +855,24 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         $('ach-pick').addEventListener('change', (e) => {
             res.participant = state.roster.find((p) => p.id === Number(e.target.value)) || null;
             renderResultPanel();
+        });
+        // ค้นหา: กรองรายชื่อใน dropdown ระหว่างพิมพ์ เหลือคนเดียวเลือกให้เลย / กด Enter เลือกคนแรกที่ตรง
+        const pickSearch = $('ach-pick-search');
+        const pickOptions = [...$('ach-pick').options].filter((o) => o.value);
+        const choose = (opt) => {
+            res.participant = state.roster.find((p) => p.id === Number(opt.value)) || null;
+            renderResultPanel();
+        };
+        pickSearch.addEventListener('input', () => {
+            const q = pickSearch.value.trim().toLowerCase();
+            const matches = pickOptions.filter((o) => { const hit = !q || o.dataset.search.includes(q); o.hidden = !hit; return hit; });
+            if (q && matches.length === 1) choose(matches[0]);
+        });
+        pickSearch.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            const first = pickOptions.find((o) => !o.hidden);
+            if (first) choose(first);
         });
         wrap.querySelectorAll('.ach-choice').forEach((b) => b.addEventListener('click', () => {
             const q = Number(b.dataset.q), c = Number(b.dataset.c);

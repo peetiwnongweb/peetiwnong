@@ -11,7 +11,7 @@
     const FIDUCIAL_CENTERS = [[15, 15], [195, 15], [195, 282], [15, 282]]; // TL TR BR BL
     const BUBBLE_D = 4.4;             // เส้นผ่านศูนย์กลางวง (มม.)
     const CHOICE_GAP = 5.8;           // ระยะห่างวงในข้อเดียวกัน
-    const ROW_H = 6.1;                // ความสูงต่อแถว
+    const ROW_H = 5.7;                // ความสูงต่อแถว
     const ANSWER_TOP = 102;           // ขอบบนพื้นที่คำตอบ
     const ANSWER_BOTTOM = 272;
     const COLUMN_LEFT = 20;
@@ -34,7 +34,8 @@
     };
 
     // exam: { choiceCount: 4|5, choiceStyle, sections: [{ title, questionCount }] }
-    // คำถามเลขต่อเนื่องทั้งแผ่น (1..N) แต่ละตอนมีหัวตอนกิน 1 แถว ไหลจากบนลงล่างทีละคอลัมน์
+    // คำถามเลขต่อเนื่องทั้งแผ่น (1..N) ไหลจากบนลงล่างทีละคอลัมน์ - แต่ละตอน: แถวชื่อวิชา + แถวตัวเลือก (ก ข ค ง) + ข้อ
+    // ถ้าตอนยาวต่อไปคอลัมน์ใหม่ หัวคอลัมน์นั้นมีแถวตัวเลือกซ้ำให้ด้วย
     function computeLayout(exam) {
         const choiceCount = exam.choiceCount === 5 ? 5 : 4;
         const labels = (CHOICE_LABELS[exam.choiceStyle] || CHOICE_LABELS.thai).slice(0, choiceCount);
@@ -42,6 +43,7 @@
         let number = 0;
         (exam.sections || []).forEach((section, sectionIndex) => {
             items.push({ type: 'header', sectionIndex, text: section.title || '' });
+            items.push({ type: 'labels', sectionIndex });
             for (let i = 0; i < section.questionCount; i++) {
                 number += 1;
                 items.push({ type: 'question', sectionIndex, number, indexInSection: i });
@@ -49,24 +51,29 @@
         });
         const questions = [];
         const headers = [];
+        const labelRows = [];
         let col = 0;
         let row = 0;
         let overflow = false;
-        items.forEach((item, idx) => {
-            // หัวตอนไม่อยู่แถวล่างสุดของคอลัมน์ (ข้อแรกของตอนจะหลุดไปคอลัมน์ถัดไป) - ขึ้นคอลัมน์ใหม่แทน
-            if (item.type === 'header' && row >= ROWS_PER_COLUMN - 1 && row > 0) { col += 1; row = 0; }
-            if (row >= ROWS_PER_COLUMN) { col += 1; row = 0; }
+        const choiceXs = (x0) => labels.map((label, c) => ({ x: x0 + 9.5 + c * CHOICE_GAP, label }));
+        const place = (item) => {
             if (col >= COLUMNS) { overflow = true; return; }
             const x0 = COLUMN_LEFT + col * COLUMN_W;
             const y = ANSWER_TOP + row * ROW_H + ROW_H / 2;
-            if (item.type === 'header') {
-                headers.push({ x: x0, y, text: item.text, sectionIndex: item.sectionIndex });
-            } else {
-                const choices = labels.map((label, c) => ({ x: x0 + 9.5 + c * CHOICE_GAP, y, label }));
-                questions.push({ number: item.number, sectionIndex: item.sectionIndex, indexInSection: item.indexInSection, numberX: x0 + 6.2, y, choices });
-            }
+            if (item.type === 'header') headers.push({ x: x0, y, text: item.text, sectionIndex: item.sectionIndex });
+            else if (item.type === 'labels') labelRows.push({ y, choices: choiceXs(x0) });
+            else questions.push({ number: item.number, sectionIndex: item.sectionIndex, indexInSection: item.indexInSection, numberX: x0 + 6.2, y, choices: choiceXs(x0).map((c) => ({ ...c, y })) });
             row += 1;
-            void idx;
+        };
+        items.forEach((item) => {
+            // ชื่อวิชาต้องมีที่พอสำหรับแถวตัวเลือก + อย่างน้อย 1 ข้อในคอลัมน์เดียวกัน ไม่งั้นขึ้นคอลัมน์ใหม่
+            if (item.type === 'header' && row > 0 && row > ROWS_PER_COLUMN - 3) { col += 1; row = 0; }
+            if (row >= ROWS_PER_COLUMN) {
+                col += 1; row = 0;
+                // ข้อที่ต่อจากคอลัมน์ก่อน: ใส่แถวตัวเลือกซ้ำที่หัวคอลัมน์
+                if (item.type === 'question') place({ type: 'labels' });
+            }
+            place(item);
         });
         const idBubbles = [];
         for (let d = 0; d < ID_DIGITS; d++) {
@@ -85,6 +92,7 @@
             idBubbles,
             idBoxY: ID_TOP - 7,
             headers,
+            labelRows,
             questions,
             questionCount: number,
             choiceCount,

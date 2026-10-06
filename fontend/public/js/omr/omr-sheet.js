@@ -64,6 +64,7 @@
             if (p && p.code) parts.push(text(cx, layout.idBoxY + 0.6, p.code[d] || '', 3.6, { anchor: 'middle', bold: true }));
             col.forEach((b) => {
                 parts.push(`<circle cx="${b.x}" cy="${b.y}" r="${layout.idBubbleD / 2}" fill="none" stroke="#111" stroke-width="0.4"/>`);
+                parts.push(text(b.x, b.y + 0.05, b.label, 2.3, { anchor: 'middle', baseline: 'central', fill: '#cdcdcd' }));
             });
         });
 
@@ -81,13 +82,12 @@
             parts.push(`<rect x="${h.x}" y="${h.y - 2.5}" width="40" height="5" rx="1" fill="#eef1f8"/>`);
             parts.push(text(h.x + 1.5, h.y + 0.1, h.text, 3, { bold: true, baseline: 'central', fill: '#26324a' }));
         });
-        const columnHeads = new Map();
-        layout.questions.forEach((q) => { if (!columnHeads.has(q.numberX)) columnHeads.set(q.numberX, q); });
-        columnHeads.forEach((q) => q.choices.forEach((c) => parts.push(text(c.x, 100.2, c.label, 3.1, { anchor: 'middle', baseline: 'central', bold: true }))));
+        (layout.labelRows || []).forEach((r) => r.choices.forEach((c) => parts.push(text(c.x, r.y + 0.3, c.label, 3.1, { anchor: 'middle', baseline: 'central', bold: true }))));
         layout.questions.forEach((q) => {
             parts.push(text(q.numberX, q.y + 0.05, `${q.number}.`, 3, { anchor: 'end', baseline: 'central', bold: true }));
             q.choices.forEach((c) => {
                 parts.push(`<circle cx="${c.x}" cy="${c.y}" r="${layout.bubbleD / 2}" fill="none" stroke="#111" stroke-width="0.4"/>`);
+                parts.push(text(c.x, c.y + 0.05, c.label, 2.5, { anchor: 'middle', baseline: 'central', fill: '#cdcdcd' }));
             });
         });
 

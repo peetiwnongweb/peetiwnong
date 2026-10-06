@@ -482,30 +482,14 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
             <div class="ach-scan-top">
                 <span id="ach-scan-progress" class="ach-note"></span>
                 <div class="ach-print-actions">
-                    <button type="button" class="btn-primary" id="ach-cam-start">เปิดกล้องสแกน</button>
-                    <button type="button" class="btn-primary hidden" id="ach-cam-shot">ถ่ายเลย</button>
-                    <button type="button" class="btn-outline hidden" id="ach-cam-stop">ปิดกล้อง</button>
-                    <label class="btn-outline ach-file-btn">อัปโหลดรูป/PDF<input type="file" accept="image/*,application/pdf" id="ach-file-input" multiple hidden></label>
+                    <label class="btn-primary ach-file-btn">อัปโหลดไฟล์สแกน (PDF/รูป)<input type="file" accept="image/*,application/pdf" id="ach-file-input" multiple hidden></label>
                     <button type="button" class="btn-outline" id="ach-manual-btn">กรอกคำตอบเอง</button>
                 </div>
             </div>
-            <div class="ach-camera hidden" id="ach-camera">
-                <video id="ach-video" playsinline muted></video>
-                <canvas id="ach-overlay"></canvas>
-                <p class="ach-camera-hint" id="ach-camera-hint">จ่อกระดาษให้เห็นสี่เหลี่ยมดำครบ 4 มุม</p>
-            </div>
+            <p class="ach-note">สแกนกระดาษคำตอบด้วยเครื่องสแกนเนอร์ (ขาวดำ/Grayscale 150–200 dpi) เป็น PDF หลายหน้าในไฟล์เดียวได้ หรือถ่ายรูปให้เห็นสี่เหลี่ยมดำครบ 4 มุม แล้วอัปโหลดทีละหลายไฟล์ได้</p>
             <div id="ach-scan-result"></div>
             <div id="ach-batch"></div>`;
         renderScanProgress();
-        $('ach-cam-start').addEventListener('click', startCamera);
-        $('ach-cam-stop').addEventListener('click', stopCamera);
-        $('ach-cam-shot').addEventListener('click', () => {
-            const video = $('ach-video');
-            if (!state.stream || !video || !video.videoWidth) return;
-            state.scanResult = null;
-            state.waitForClear = false;
-            if (!processGray(grabVideoFrame(video), true)) toast('หาสี่เหลี่ยมดำ 4 มุมไม่เจอ ขยับให้เห็นครบทั้ง 4 มุม', false);
-        });
         $('ach-file-input').addEventListener('change', (e) => { const files = [...e.target.files]; e.target.value = ''; handleFiles(files); });
         $('ach-manual-btn').addEventListener('click', () => showResult({ answers: Array.from({ length: totalQuestions(state.exam) }, () => []), flags: [], participant: null, manual: true }));
     }

@@ -63,8 +63,8 @@
             parts.push(`<rect x="${cx - 2.6}" y="${layout.idBoxY - 3.2}" width="5.2" height="5" fill="none" stroke="#666" stroke-width="0.25"/>`);
             if (p && p.code) parts.push(text(cx, layout.idBoxY + 0.6, p.code[d] || '', 3.6, { anchor: 'middle', bold: true }));
             col.forEach((b) => {
-                parts.push(`<circle cx="${b.x}" cy="${b.y}" r="${layout.idBubbleD / 2}" fill="none" stroke="#555" stroke-width="0.25"/>`);
-                parts.push(text(b.x, b.y + 0.05, b.label, 2.4, { anchor: 'middle', baseline: 'central', fill: '#c4c4c4' }));
+                parts.push(`<circle cx="${b.x}" cy="${b.y}" r="${layout.idBubbleD / 2}" fill="none" stroke="#111" stroke-width="0.4"/>`);
+                parts.push(text(b.x, b.y + 0.05, b.label, 2.4, { anchor: 'middle', baseline: 'central', fill: '#b8b8b8' }));
             });
         });
 
@@ -83,8 +83,8 @@
         layout.questions.forEach((q) => {
             parts.push(text(q.numberX, q.y + 0.05, `${q.number}.`, 3, { anchor: 'end', baseline: 'central', bold: true }));
             q.choices.forEach((c) => {
-                parts.push(`<circle cx="${c.x}" cy="${c.y}" r="${layout.bubbleD / 2}" fill="none" stroke="#555" stroke-width="0.25"/>`);
-                parts.push(text(c.x, c.y + 0.05, c.label, 2.6, { anchor: 'middle', baseline: 'central', fill: '#c4c4c4' }));
+                parts.push(`<circle cx="${c.x}" cy="${c.y}" r="${layout.bubbleD / 2}" fill="none" stroke="#111" stroke-width="0.4"/>`);
+                parts.push(text(c.x, c.y + 0.05, c.label, 2.6, { anchor: 'middle', baseline: 'central', fill: '#b8b8b8' }));
             });
         });
 

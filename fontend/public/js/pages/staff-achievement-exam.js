@@ -483,6 +483,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
                 <span id="ach-scan-progress" class="ach-note"></span>
                 <div class="ach-print-actions">
                     <button type="button" class="btn-primary" id="ach-cam-start">เปิดกล้องสแกน</button>
+                    <button type="button" class="btn-primary hidden" id="ach-cam-shot">ถ่ายเลย</button>
                     <button type="button" class="btn-outline hidden" id="ach-cam-stop">ปิดกล้อง</button>
                     <label class="btn-outline ach-file-btn">อัปโหลดรูป<input type="file" accept="image/*" id="ach-file-input" hidden></label>
                     <button type="button" class="btn-outline" id="ach-manual-btn">กรอกคำตอบเอง</button>
@@ -497,6 +498,13 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         renderScanProgress();
         $('ach-cam-start').addEventListener('click', startCamera);
         $('ach-cam-stop').addEventListener('click', stopCamera);
+        $('ach-cam-shot').addEventListener('click', () => {
+            const video = $('ach-video');
+            if (!state.stream || !video || !video.videoWidth) return;
+            state.scanResult = null;
+            state.waitForClear = false;
+            if (!processGray(grabVideoFrame(video), true)) toast('หาสี่เหลี่ยมดำ 4 มุมไม่เจอ ขยับให้เห็นครบทั้ง 4 มุม', false);
+        });
         $('ach-file-input').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) scanFile(f); });
         $('ach-manual-btn').addEventListener('click', () => showResult({ answers: Array.from({ length: totalQuestions(state.exam) }, () => []), flags: [], participant: null, manual: true }));
     }
@@ -515,6 +523,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         drawOverlay(null, 1, 1);
         $('ach-cam-start').classList.add('hidden');
         $('ach-cam-stop').classList.remove('hidden');
+        $('ach-cam-shot').classList.remove('hidden');
         $('ach-scan-result').innerHTML = '';
         state.scanResult = null;
         state.waitForClear = false;
@@ -532,12 +541,24 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
             $('ach-camera').classList.add('hidden');
             $('ach-cam-start')?.classList.remove('hidden');
             $('ach-cam-stop')?.classList.add('hidden');
+            $('ach-cam-shot')?.classList.add('hidden');
         }
     }
 
     function scheduleScan() {
         clearTimeout(state.scanTimer);
         state.scanTimer = setTimeout(scanTick, 280);
+    }
+
+    function grabVideoFrame(video) {
+        const vw = video.videoWidth, vh = video.videoHeight;
+        let cw = vw, ch = vh;
+        if (vw / vh > 3 / 4) cw = Math.round(vh * 3 / 4); else ch = Math.round(vw * 4 / 3);
+        const canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, (vw - cw) / 2, (vh - ch) / 2, cw, ch, 0, 0, cw, ch);
+        return PTNOmr.toGray(ctx.getImageData(0, 0, cw, ch).data, cw, ch);
     }
 
     function grabFrame(source, w, h) {
@@ -567,7 +588,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
             [[gx + m, gy + m], [gx + gw - m, gy + m], [gx + gw - m, gy + gh - m], [gx + m, gy + gh - m]].forEach(([cx, cy]) => ctx.fillRect(cx - s / 2, cy - s / 2, s, s));
             return;
         }
-        const scale = Math.max(canvas.width / w, canvas.height / h);
+        const scale = Math.min(canvas.width / w, canvas.height / h);
         const ox = (canvas.width - w * scale) / 2, oy = (canvas.height - h * scale) / 2;
         ctx.strokeStyle = color; ctx.lineWidth = 4;
         ctx.beginPath();
@@ -579,9 +600,10 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
     function scanTick() {
         const video = $('ach-video');
         if (!state.stream || !video || !video.videoWidth || state.scanResult) return;
-        const w = video.videoWidth, h = video.videoHeight;
-        const gray = grabFrame(video, w, h);
-        const corners = PTNOmr.findFiducials(gray);
+        const gray = grabVideoFrame(video);
+        const w = gray.width, h = gray.height;
+        const debug = {};
+        const corners = PTNOmr.findFiducials(gray, debug);
         if (state.waitForClear) {
             drawOverlay(corners, w, h, '#94a3b8');
             if (corners) {
@@ -593,16 +615,19 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         if (!corners) {
             state.stableCount = 0;
             drawOverlay(null, w, h);
-            $('ach-camera-hint').textContent = 'จ่อกระดาษให้เห็นสี่เหลี่ยมดำครบ 4 มุม';
+            $('ach-camera-hint').textContent = debug.candidates
+                ? `เห็นสี่เหลี่ยมดำ ${Math.min(debug.candidates, 4)}/4 มุม ขยับให้เห็นครบ ไม่เอานิ้วบัง`
+                : 'จ่อกระดาษให้เห็นสี่เหลี่ยมดำครบ 4 มุม';
             return scheduleScan();
         }
         const moved = state.lastCorners ? Math.max(...corners.map((p, i) => Math.hypot(p.x - state.lastCorners[i].x, p.y - state.lastCorners[i].y))) : Infinity;
         state.lastCorners = corners;
-        state.stableCount = moved < Math.max(w, h) * 0.012 ? state.stableCount + 1 : 0;
-        drawOverlay(corners, w, h, state.stableCount >= 2 ? '#22c55e' : '#f59e0b');
-        $('ach-camera-hint').textContent = state.stableCount >= 2 ? 'กำลังตรวจ...' : 'ถือนิ่ง ๆ';
-        if (state.stableCount < 2) return scheduleScan();
-        processGray(gray);
+        state.stableCount = moved < Math.max(w, h) * 0.03 ? state.stableCount + 1 : 0;
+        drawOverlay(corners, w, h, state.stableCount >= 1 ? '#22c55e' : '#f59e0b');
+        $('ach-camera-hint').textContent = state.stableCount >= 1 ? 'กำลังตรวจ...' : 'เจอแล้ว ถือนิ่ง ๆ';
+        if (state.stableCount < 1) return scheduleScan();
+        // ตรวจอัตโนมัติเฉพาะตอนอ่าน QR ได้ (ยืนยันว่าจับมุมถูก) - อ่านไม่ได้ให้สแกนต่อ หรือกด "ถ่ายเลย"
+        if (!processGray(gray, false)) $('ach-camera-hint').textContent = 'อ่าน QR ไม่ได้ ขยับให้ชัดขึ้น หรือกด "ถ่ายเลย"';
         if (!state.scanResult) scheduleScan();
     }
 
@@ -619,10 +644,11 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         img.src = url;
     }
 
-    function processGray(gray) {
+    function processGray(gray, force = true) {
         const layout = layoutOf(state.exam);
         const result = PTNOmr.scan(gray, layout, window.jsQR);
         if (!result) return false;
+        if (!result.qrText && !force) return false;
         const qr = PTNOmr.parseQr(result.qrText);
         if (qr && qr.examId !== state.exam.id) {
             toast('กระดาษนี้เป็นของชุดข้อสอบอื่น', false);

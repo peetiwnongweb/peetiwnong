@@ -415,6 +415,50 @@ model OralExamScoreBand {
   @@map("oral_exam_score_bands")
 }
 
+// ชุดข้อสอบวัดผลสัมฤทธิ์แบบฝนกระดาษคำตอบ แล้วสแกนตรวจด้วยกล้อง (OMR - ดู fontend/public/js/omr/omr-engine.js)
+// 1 ชุด = กระดาษคำตอบ 1 แบบของ 1 คอร์ส แบ่งเป็นตอนตามรายวิชา (sections) คะแนนแต่ละตอนแปลงเข้า "คะแนนสอบ" ของวิชานั้นตอนประกาศผล
+// sections: [{ subjectId, questionCount, pointsPerQuestion }] เรียงตามลำดับบนกระดาษ (เลขข้อต่อเนื่องทั้งแผ่น)
+// answerKey: เฉลยรายข้อตามเลขข้อ - array ของ index ตัวเลือกที่ถูก (ถูกได้หลายตัวเลือก) หรือ "*" = ข้อที่ตัดทิ้ง ได้คะแนนทุกคน
+model AchievementExam {
+  id              Int                         @id @default(autoincrement())
+  title           String
+  courseFormatId  Int                         @map("course_format_id")
+  choiceCount     Int                         @default(4) @map("choice_count")
+  choiceStyle     String                      @default("thai") @map("choice_style")
+  sections        Json
+  answerKey       Json                        @default("[]") @map("answer_key")
+  // true = ประกาศผลแล้ว (คะแนนถูกเขียนลงตารางคะแนน น้องค่ายเห็น) - สแกนเพิ่ม/แก้เฉลยหลังประกาศจะอัปเดตคะแนนให้ทันที
+  isPublished     Boolean                     @default(false) @map("is_published")
+  publishedAt     DateTime?                   @map("published_at")
+  createdByUserId Int                         @map("created_by_user_id")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
+  submissions     AchievementExamSubmission[]
+
+  @@map("achievement_exams")
+}
+
+// ผลสแกนกระดาษคำตอบ 1 แผ่น (1 คนต่อ 1 ชุดข้อสอบ สแกนซ้ำ = ทับของเดิม)
+// answers: คำตอบรายข้อ [[index ตัวเลือก]] (ว่าง = ไม่ได้ฝน, มากกว่า 1 = ฝนหลายช่อง นับผิด) - sectionScores คำนวณจากเฉลยปัจจุบัน
+model AchievementExamSubmission {
+  id                   Int                @id @default(autoincrement())
+  examId               Int                @map("exam_id")
+  exam                 AchievementExam    @relation(fields: [examId], references: [id], onDelete: Cascade)
+  participantProfileId Int                @map("participant_profile_id")
+  participantProfile   ParticipantProfile @relation(fields: [participantProfileId], references: [id], onDelete: Cascade)
+  answers              Json
+  sectionScores        Json               @map("section_scores")
+  totalPoints          Float              @map("total_points")
+  // scan = สแกนด้วยกล้อง, manual = กรอกคำตอบเอง (กรณีสแกนไม่ได้)
+  source               String             @default("scan")
+  scannedByUserId      Int?               @map("scanned_by_user_id")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@unique([examId, participantProfileId])
+  @@map("achievement_exam_submissions")
+}
+
 // ค่าย (สร้างโดย SuperAdmin เท่านั้น) 1 แถว = 1 รุ่นของค่าย ครั้งที่ต้องไม่ซ้ำกัน
 // สร้างค่ายใหม่จะ (1) มอบตำแหน่ง/ฝ่ายให้ผู้ถูกเลือกใน StaffProfile จริง (2) ลบน้องค่ายทั้งหมดถาวร (ดู campController.js)
 // presidentUserId/secretaryUserId เป็น nullable + onDelete SetNull เพราะบัญชีอาจถูกลบทีหลัง ไม่ต้องการให้ลบแถว Camp ทั้งแถวไปด้วย
@@ -582,6 +626,7 @@ model ParticipantProfile {
   updatedAt                 DateTime                  @updatedAt @map("updated_at")
   subjectScores             ParticipantSubjectScore[]
   oralExamAttempts          OralExamAttempt[]
+  achievementSubmissions    AchievementExamSubmission[]
   // ครั้งที่จัดค่ายล่าสุด ณ ตอนบัญชีนี้ถูกสร้าง/ลงทะเบียน (audit trail เท่านั้น) เก็บไว้แม้จะถูกลบทิ้งตอนสร้างค่ายรุ่นถัดไป (ดู campController.js)
   campGenerationNo          Int?                      @map("camp_generation_no")
 

@@ -126,7 +126,11 @@ function computeAcademicTier(user, myAssignedSubjects) {
 
 // data-tier="manager-instructor" เห็นได้ทั้ง manager และ instructor (ต่างจาก data-tier="instructor" เฉย ๆ ที่ manager เห็นด้วยเฉพาะตอนสอนวิชาตัวเองอยู่ด้วยเท่านั้น)
 // ใช้กับระบบสอบอธิบาย: backend อนุญาตให้ manager เปิด/ประเมินได้ทุกวิชาอยู่แล้วไม่ต้องรอเป็นผู้สอนก่อน หน้าตาจึงต้องเปิดให้ manager เข้าถึงได้เสมอ
+// role ของผู้ใช้ปัจจุบัน (ตั้งตอนโหลดหน้า) ใช้กับ data-tier="superadmin" = ฟีเจอร์ช่วงทดสอบ (Beta) ที่เปิดเฉพาะ SuperAdmin
+let academicUserRole = null;
+
 function matchesAcademicTier(tierAttr, showInstructorTabsToo) {
+    if (tierAttr === 'superadmin') return academicUserRole === 'SUPERADMIN';
     return tierAttr === academicTier
         || (tierAttr === 'instructor' && showInstructorTabsToo)
         || (tierAttr === 'manager-instructor' && (academicTier === 'manager' || academicTier === 'instructor'));
@@ -3227,6 +3231,7 @@ window.addEventListener('DOMContentLoaded', () => {
         ]).then(([mine]) => {
             mySubjects = mine;
             mySubjectIds = mine.map((s) => s.id);
+            academicUserRole = user?.role || null;
             academicTier = computeAcademicTier(user, mine);
             applyAcademicTier();
             renderOralExamSubjectSelect();

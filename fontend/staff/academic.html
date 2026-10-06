@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/layout/camp-lock.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/form.css?v=20261002-1">
     <link rel="stylesheet" href="../css/pages/staff-activities.css?v=20261002-1">
-    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20261005-5">
+    <link rel="stylesheet" href="../css/pages/staff-academic.css?v=20261006-2">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,11 @@
     <script src="../js/layout/time-select.js?v=20261002-1"></script>
     <script src="../js/layout/auth.js?v=20261002-1"></script>
     <script src="../js/layout/nav.js?v=20261002-1"></script>
-    <script src="../js/pages/staff-academic.js?v=20261005-5"></script>
+    <script src="../js/pages/staff-academic.js?v=20261006-2"></script>
+    <script src="../js/vendor/jsQR.js"></script>
+    <script src="../js/omr/omr-engine.js?v=20261006-1"></script>
+    <script src="../js/omr/omr-sheet.js?v=20261006-1"></script>
+    <script src="../js/pages/staff-achievement-exam.js?v=20261006-2"></script>
 </head>
 
 <body>
@@ -53,6 +57,7 @@
             <nav class="desktop-nav">
                 <button onclick="goToScoreTab('mysubject')" class="nav-btn" id="nav-mysubject" data-tier="instructor">รายวิชาของฉัน</button>
                 <button onclick="switchTab('examstub')" class="nav-btn" id="nav-examstub" data-tier="manager-instructor">การสอบอธิบาย</button>
+                <button onclick="switchTab('achievement')" class="nav-btn" id="nav-achievement" data-tier="superadmin">สอบวัดผล <span class="beta-badge">Beta</span></button>
                 <button onclick="goToScoreTab('scores')" class="nav-btn active-nav-btn" id="nav-scores">จัดการคะแนน</button>
                 <button onclick="switchTab('subjects')" class="nav-btn" id="nav-subjects" data-tier="manager">จัดการรายวิชา</button>
                 <button onclick="switchTab('schedule')" class="nav-btn" id="nav-schedule">จัดการตารางเรียน</button>
@@ -175,6 +180,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                     </svg>
                     การสอบอธิบาย
+                </button>
+                <button onclick="switchTab('achievement')" class="mobile-nav-btn" id="m-nav-achievement" data-tier="superadmin">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                    </svg>
+                    สอบวัดผล <span class="beta-badge">Beta</span>
                 </button>
                 <button onclick="goToScoreTab('scores')" class="mobile-nav-btn active-nav-btn" id="m-nav-scores">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -726,6 +737,46 @@
             </div>
         </div>
 
+        <!-- ================= PAGE: สอบวัดผล (ฝนกระดาษคำตอบ + สแกนตรวจ) ================= -->
+        <div id="page-achievement" class="tab-content" data-tier="superadmin">
+            <div class="max-w-7xl page-padding">
+                <div class="section-header center mb-lg">
+                    <h1 class="page-title">สอบวัดผล <span class="beta-badge">Beta</span></h1>
+                    <p class="section-subtitle">ฝนกระดาษคำตอบ แล้วสแกนตรวจด้วยกล้องมือถือ คะแนนขึ้นทันที (ช่วงทดสอบ เห็นเฉพาะ SuperAdmin)</p>
+                </div>
+
+                <div class="activity-card" style="max-width: 960px; margin: 0 auto 1.5rem;">
+                    <div class="ach-head-row">
+                        <p class="profile-section-title">ชุดข้อสอบ</p>
+                        <button type="button" class="btn-primary hidden" id="ach-create-btn">+ สร้างชุดข้อสอบ</button>
+                    </div>
+                    <div id="ach-create-form" class="ach-form hidden"></div>
+                    <div id="ach-exam-list" class="ach-exam-list"></div>
+                </div>
+
+                <div class="activity-card hidden" id="ach-detail" style="max-width: 960px; margin: 0 auto 1.5rem;">
+                    <div class="ach-head-row">
+                        <div>
+                            <p class="profile-section-title" id="ach-detail-title"></p>
+                            <p class="ach-note" id="ach-detail-meta"></p>
+                        </div>
+                        <button type="button" class="btn-outline" id="ach-detail-close">ปิด</button>
+                    </div>
+                    <div class="ach-views">
+                        <button type="button" class="ach-view-btn" data-view="key">1. เฉลย</button>
+                        <button type="button" class="ach-view-btn" data-view="print">2. พิมพ์กระดาษคำตอบ</button>
+                        <button type="button" class="ach-view-btn" data-view="scan">3. สแกนตรวจ</button>
+                        <button type="button" class="ach-view-btn" data-view="results">4. ผลสอบ</button>
+                        <button type="button" class="ach-view-btn" data-view="settings" data-ach-manage>ตั้งค่าชุดข้อสอบ</button>
+                    </div>
+                    <div class="ach-view" data-view="key"><div id="ach-key-wrap"></div></div>
+                    <div class="ach-view hidden" data-view="print"><div id="ach-print-wrap"></div></div>
+                    <div class="ach-view hidden" data-view="scan"><div id="ach-scan-wrap"></div></div>
+                    <div class="ach-view hidden" data-view="results"><div id="ach-results-wrap"></div></div>
+                    <div class="ach-view hidden" data-view="settings"><div id="ach-settings-form" class="ach-form"></div></div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- รายงานคะแนนสำหรับพิมพ์/บันทึกเป็น PDF (ซ่อนบนจอเสมอ สร้างเนื้อหาสดตอนกดปุ่มพิมพ์ในตารางคะแนน) - ต้องเป็นลูกโดยตรงของ body (ไม่ซ้อนใน main) เพราะ CSS @media print ใช้ body>*:not(#score-report-print) ซ่อนของเดิมทั้งหมด ถ้าซ้อนอยู่ใน main จะโดน main{display:none} บังไปด้วย -->
@@ -756,6 +807,7 @@
                         <span onclick="window.location.href='/'" class="footer-link">หน้าแรก</span>
                         <span onclick="goToScoreTab('mysubject')" class="footer-link" data-tier="instructor">รายวิชาของฉัน</span>
                         <span onclick="switchTab('examstub')" class="footer-link" data-tier="manager-instructor">การสอบอธิบาย</span>
+                        <span onclick="switchTab('achievement')" class="footer-link" data-tier="superadmin">สอบวัดผล (Beta)</span>
                         <span onclick="goToScoreTab('scores')" class="footer-link" id="footer-nav-scores">จัดการคะแนน</span>
                         <span onclick="switchTab('subjects')" class="footer-link" data-tier="manager">จัดการรายวิชา</span>
                         <span onclick="switchTab('schedule')" class="footer-link" id="footer-nav-schedule">จัดการตารางเรียน</span>

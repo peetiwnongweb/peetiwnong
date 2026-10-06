@@ -382,7 +382,15 @@
     // ---------- พิมพ์กระดาษคำตอบ ----------
     function renderPrint() {
         $('ach-print-wrap').innerHTML = `
-            <p class="ach-note">พิมพ์ A4 คนละแผ่น ตั้งขนาดเป็น "ขนาดจริง/100%" ไม่ต้องย่อขยาย สี่เหลี่ยมดำ 4 มุมต้องอยู่ครบ</p>
+            <p class="ach-note">พิมพ์คนละแผ่น ตั้งขนาดเป็น "ขนาดจริง/100%" ในหน้าต่างพิมพ์ และเลือกกระดาษให้ตรงกับที่เลือกด้านล่าง สี่เหลี่ยมดำ 4 มุมต้องอยู่ครบ</p>
+            <div class="ach-print-actions" style="margin-bottom:0.5rem">
+                <label class="ach-inline">ขนาดกระดาษ
+                    <select class="form-input" id="ach-print-paper" style="width:auto">
+                        <option value="A4">A4 (วงใหญ่ ฝนง่าย)</option>
+                        <option value="A5">A5 (ประหยัดกระดาษ วงเล็กลง)</option>
+                    </select>
+                </label>
+            </div>
             <div class="ach-print-actions">
                 <button type="button" class="btn-primary" id="ach-print-roster">พิมพ์ใบรายคน (มีชื่อ + QR) ทั้งคอร์ส</button>
                 <label class="ach-inline">ใบเปล่า <input type="number" class="form-input" id="ach-print-blank-count" min="1" max="200" value="5"> แผ่น</label>
@@ -429,8 +437,10 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
         win.document.close();
     }
 
+    // A5 = ย่อกระดาษ A4 ทั้งแผ่นลง 71% (ตัวตรวจอ้างอิงสี่เหลี่ยมดำ 4 มุม จึงอ่านได้ทุกขนาด)
     async function printSheets(blank) {
         const exam = state.exam;
+        const paper = ($('ach-print-paper') && $('ach-print-paper').value === 'A5') ? { name: 'A5', w: 148, h: 210 } : { name: 'A4', w: 210, h: 297 };
         const win = window.open('', '_blank');
         if (!win) return toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป', false);
         win.document.write('<p style="font-family:sans-serif;padding:20px">กำลังเตรียมกระดาษคำตอบ...</p>');
@@ -447,7 +457,7 @@ footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px
             win.document.open();
             win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>กระดาษคำตอบ ${esc(exam.title)}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap">
-<style>@page{size:A4 portrait;margin:0}body{margin:0;background:#e5e7eb}.p{width:210mm;height:297mm;margin:0 auto;background:#fff;break-after:page;page-break-after:always;overflow:hidden}.p:last-child{break-after:auto;page-break-after:auto}.p svg{display:block;width:210mm;height:297mm}@media screen{body{padding:8mm 0}.p{margin-bottom:8mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}}</style>
+<style>@page{size:${paper.name} portrait;margin:0}body{margin:0;background:#e5e7eb}.p{width:${paper.w}mm;height:${paper.h}mm;margin:0 auto;background:#fff;break-after:page;page-break-after:always;overflow:hidden}.p:last-child{break-after:auto;page-break-after:auto}.p svg{display:block;width:${paper.w}mm;height:${paper.h}mm}@media screen{body{padding:8mm 0}.p{margin-bottom:8mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}}</style>
 </head><body>${pages.map((svg) => `<div class="p">${svg}</div>`).join('')}
 <script>(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print()},300)});<\/script></body></html>`);
             win.document.close();

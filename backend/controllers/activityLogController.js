@@ -10,6 +10,7 @@ const SELF_REGISTER = { summary: { startsWith: 'สมัครลงทะเ�
 const STUDY_ENTITY_TYPES = [
   'SUBJECT', 'PARTICIPANT_SUBJECT_SCORE', 'CLASS_SCHEDULE', 'STUDY_DOCUMENT',
   'ORAL_EXAM_SESSION', 'ORAL_EXAM_ATTEMPT', 'ORAL_EXAM_SCORE_BAND', 'GRADE_BAND', 'SCORE_WEIGHT_SETTING',
+  'ACHIEVEMENT_EXAM', 'ACHIEVEMENT_SUBMISSION',
 ];
 // "activity" = ระบบกิจกรรม (กิจกรรม/คะแนนกลุ่ม/กลุ่ม) ไม่ว่าใครทำ แยกออกมาเหมือน study
 const ACTIVITY_ENTITY_TYPES = ['CAMP_ACTIVITY', 'ACTIVITY_SCORE', 'GROUP'];

@@ -2291,3 +2291,78 @@
   color: #64748b;
   margin: 0.5rem 0 1rem;
 }
+
+/* ==========================================
+   แท็บสอบวัดผล (ฝนกระดาษคำตอบ + สแกนตรวจ)
+   ========================================== */
+.ach-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; }
+.ach-note { font-size: 0.85rem; color: #64748b; margin: 0.25rem 0; }
+.ach-error { color: #dc2626 !important; }
+.ach-form { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; }
+.ach-exam-list { display: grid; gap: 0.6rem; }
+.ach-exam-card { display: flex; flex-direction: column; gap: 0.25rem; text-align: left; padding: 0.8rem 1rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; background: #fff; cursor: pointer; font: inherit; }
+.ach-exam-card.is-active { border-color: #2563eb; background: #eff6ff; }
+.ach-exam-card-title { font-weight: 700; color: #1e293b; }
+.ach-exam-card-meta { font-size: 0.85rem; color: #64748b; }
+.ach-exam-card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.ach-tag { font-size: 0.75rem; padding: 0.1rem 0.55rem; border-radius: 999px; background: #f1f5f9; color: #475569; }
+.ach-tag.ok { background: #dcfce7; color: #166534; }
+.ach-views { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0 1rem; }
+.ach-view-btn { padding: 0.4rem 0.9rem; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; font: inherit; font-size: 0.9rem; cursor: pointer; }
+.ach-view-btn.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+.ach-sections { display: grid; gap: 0.5rem; margin-bottom: 0.75rem; }
+.ach-section-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.ach-section-row select { flex: 1 1 12rem; }
+.ach-section-row label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; }
+.ach-section-row input { width: 5.5rem; }
+.ach-icon-btn, .ach-link { border: 0; background: none; cursor: pointer; font: inherit; color: #2563eb; }
+.ach-danger-btn { border: 1px solid #fca5a5; color: #dc2626; background: #fff; border-radius: 0.6rem; padding: 0.5rem 1rem; font: inherit; cursor: pointer; margin-right: auto; }
+.ach-grid-section { margin-bottom: 1rem; }
+.ach-grid-title { font-weight: 700; margin: 0.5rem 0; }
+.ach-grid-title span { font-weight: 400; font-size: 0.8rem; color: #64748b; }
+.ach-quick { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: 0.35rem 1rem; }
+.ach-q { display: flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.3rem; border-radius: 0.5rem; }
+.ach-q.is-correct { background: #f0fdf4; }
+.ach-q.is-wrong { background: #fef2f2; }
+.ach-q.is-flag { outline: 2px solid #f59e0b; }
+.ach-q-no { width: 2rem; text-align: right; font-weight: 700; font-size: 0.85rem; }
+.ach-choice { width: 1.9rem; height: 1.9rem; border-radius: 50%; border: 1px solid #94a3b8; background: #fff; font: inherit; font-size: 0.8rem; cursor: pointer; }
+.ach-choice.on { background: #1e293b; color: #fff; border-color: #1e293b; }
+.ach-choice.key:not(.on) { border: 2px solid #16a34a; }
+.ach-choice:disabled { cursor: default; opacity: 0.55; }
+.ach-cancel-q { font-size: 0.7rem; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; padding: 0.1rem 0.45rem; cursor: pointer; }
+.ach-cancel-q.on { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.ach-flag { font-size: 0.7rem; color: #b45309; }
+.ach-print-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.ach-inline { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.9rem; }
+.ach-inline input { width: 5rem; }
+.ach-file-btn { cursor: pointer; }
+.ach-scan-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+.ach-camera { position: relative; max-width: 520px; margin: 0 auto 1rem; border-radius: 0.75rem; overflow: hidden; background: #000; }
+.ach-camera video { display: block; width: 100%; }
+.ach-camera canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.ach-camera-hint { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 0.4rem; text-align: center; color: #fff; background: rgba(0,0,0,.55); font-size: 0.9rem; }
+.ach-result { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; }
+.ach-result-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+.ach-result-name { font-weight: 700; font-size: 1.05rem; margin: 0; }
+.ach-pick { margin-top: 0.4rem; max-width: 22rem; }
+.ach-score { display: flex; flex-direction: column; align-items: flex-end; }
+.ach-score-total { font-size: 2rem; font-weight: 800; color: #1e293b; line-height: 1; }
+.ach-score-total small { font-size: 1rem; color: #64748b; }
+.ach-saved { text-align: center; font-weight: 700; color: #16a34a; padding: 1rem; }
+.ach-results-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+.ach-table-wrap { overflow-x: auto; }
+.ach-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.ach-table th, .ach-table td { border-bottom: 1px solid #e2e8f0; padding: 0.4rem; text-align: left; }
+.ach-table th { background: #f1f5f9; }
+.ach-table .c { text-align: center; }
+.ach-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.35rem; }
+.ach-stat { display: grid; grid-template-columns: auto 1fr; gap: 0 0.4rem; padding: 0.35rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; font-size: 0.8rem; }
+.ach-stat.hard { background: #fef2f2; }
+.ach-stat.easy { background: #f0fdf4; }
+.ach-stat-no { font-weight: 700; }
+.ach-stat-pct { text-align: right; font-weight: 700; }
+.ach-stat-dist { grid-column: 1 / -1; display: flex; gap: 0.3rem; color: #64748b; }
+.ach-stat-dist i { font-style: normal; }
+.ach-stat-dist i.k { font-weight: 800; color: #166534; }

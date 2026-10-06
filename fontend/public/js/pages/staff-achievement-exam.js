@@ -421,8 +421,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap">
 <style>@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{margin:0;font-family:Sarabun,sans-serif;color:#111;background:#e5e7eb}
 .page{background:#fff;width:186mm;height:273mm;margin:0 auto;display:flex;flex-direction:column;break-after:page;page-break-after:always;overflow:hidden}.page:last-child{break-after:auto;page-break-after:auto}
-header{text-align:center;border-bottom:2px solid #26324a;padding-bottom:6px;margin-bottom:8px}h1{margin:0 0 2px;font-size:19px}header p{margin:2px 0;font-size:13px}header .fill{margin-top:6px}
-table{width:100%;border-collapse:collapse;font-size:13.5px}th{background:#26324a;color:#fff;font-weight:600;text-align:left;padding:5px 6px;border:1px solid #26324a}td{border:1px solid #9ca3af;padding:0 6px;height:8.6mm}.c{text-align:center}
+header{text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px}h1{margin:0 0 2px;font-size:19px}header p{margin:2px 0;font-size:13px}header .fill{margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th{background:#fff;color:#000;font-weight:700;text-align:left;padding:5px 6px;border:1.2px solid #000}td{border:1px solid #000;padding:0 6px;height:8.6mm;color:#000}.c{text-align:center}
 footer{margin-top:auto;display:flex;justify-content:space-between;font-size:13px;padding-top:8px}
 @media screen{body{padding:12mm 0}.page{padding:12mm;width:210mm;height:297mm;margin-bottom:8mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}}</style></head><body>${pages.join('')}
 <script>(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print()},200)});<\/script></body></html>`);

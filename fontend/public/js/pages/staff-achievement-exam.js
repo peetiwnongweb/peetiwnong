@@ -412,7 +412,7 @@
         for (let p = 0; p < totalPages; p++) {
             const rows = people.slice(p * ROWS, (p + 1) * ROWS).map((x, i) => `<tr><td class="c">${p * ROWS + i + 1}</td><td class="c">${esc(x.code)}</td><td>${esc(x.fullName)}</td><td>${esc(x.nickname || '')}</td><td></td><td></td></tr>`).join('');
             pages.push(`<section class="page">
-                <header><h1>รายชื่อรับกระดาษคำตอบ</h1><p>${esc(exam.title)} · คอร์ส${esc(exam.courseName)} · ${people.length} คน</p><p class="fill">วันที่สอบ ........................................ ห้องสอบ ........................................</p></header>
+                <header><h1>รายชื่อรับกระดาษคำตอบ</h1><p>${esc(exam.title)} · คอร์ส${esc(exam.courseName)} · ${people.length} คน</p></header>
                 <table><thead><tr><th class="c" style="width:11mm">ลำดับ</th><th class="c" style="width:20mm">รหัส</th><th>ชื่อ-นามสกุล</th><th style="width:20mm">ชื่อเล่น</th><th class="c" style="width:32mm">ลงชื่อรับ</th><th class="c" style="width:32mm">ลงชื่อส่ง</th></tr></thead><tbody>${rows}</tbody></table>
                 <footer><span></span><span>หน้า ${p + 1} / ${totalPages}</span></footer>
             </section>`);

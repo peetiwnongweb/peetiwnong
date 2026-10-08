@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>เกมเปิดป้าย ค่ายพี่ติวน้อง</title>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8ECFF; --surface:#FFFFFF; --ink:#1E1B4B; --muted:#57568C; --line:#C6CBF3;
+  --edge:#1E1B4B; --sun:#FFC72C; --sun-ink:#33250A; --pink:#D81B66; --pink-ink:#FFFFFF;
+  --ui:"Mitr","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+  --hand:"Mali","Mitr","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#141235; --surface:#221F55; --ink:#F2F1FF; --muted:#ABAADB; --line:#3D3A86; --edge:#07061C; --pink:#FF5F9A; --pink-ink:#2A0716; }
+}
+:root[data-theme="dark"]{ --bg:#141235; --surface:#221F55; --ink:#F2F1FF; --muted:#ABAADB; --line:#3D3A86; --edge:#07061C; --pink:#FF5F9A; --pink-ink:#2A0716; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);line-height:1.5}
+.page{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+.hidden{display:none!important}
+.back{color:var(--muted)}
+h1{font-size:clamp(1.9rem,6vw,3rem);margin:6px 0 4px;line-height:1.15}
+.lead{color:var(--muted);margin:0 0 18px}
+.card{background:var(--surface);border:3px solid var(--edge);border-radius:18px;box-shadow:5px 5px 0 var(--edge);padding:16px 18px;margin-bottom:18px}
+.card h2{margin:0 0 10px;font-size:1.2rem}
+.btn{font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:3px solid var(--edge);border-radius:14px;padding:7px 14px;box-shadow:3px 3px 0 var(--edge);cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--pink);color:var(--pink-ink)}
+.btn.sun{background:var(--sun);color:var(--sun-ink)}
+.btn.small{padding:3px 10px;font-size:.9rem;border-radius:10px}
+.btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.92rem;color:var(--muted)}
+input[type=text],textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:7px 10px;width:100%}
+textarea{min-height:120px;resize:vertical}
+.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.rules{margin:0;padding-left:1.3em}
+.rules li{margin:3px 0}
+.note{font-size:.88rem;color:var(--muted)}
+.rounds{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.rd{display:grid;grid-template-columns:auto 80px 1fr auto;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px}
+.rd .no{font-weight:600;width:1.8em;text-align:center}
+.rd .thumb{width:80px;height:60px;border-radius:8px;object-fit:cover;background:var(--bg);display:grid;place-items:center;font-size:.78rem;color:var(--muted);overflow:hidden;border:2px solid var(--line)}
+.rd .fields{display:grid;gap:6px;grid-template-columns:1fr 1fr}
+.rd .acts{display:flex;gap:4px}
+@media(max-width:640px){.rd{grid-template-columns:auto 1fr}.rd .fields{grid-column:1/-1;grid-template-columns:1fr}.rd .acts{grid-column:1/-1;justify-content:flex-end}}
+.empty{color:var(--muted);padding:14px;text-align:center;border:2px dashed var(--line);border-radius:12px}
+
+/* หน้าเล่น */
+#play-view{background:var(--bg)}
+#play-view:fullscreen{padding:16px;overflow:auto}
+.play{display:grid;gap:16px;grid-template-columns:1fr 270px;align-items:start}
+@media(max-width:860px){.play{grid-template-columns:1fr}}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.bar .info{font-size:1.15rem;font-weight:500}
+.bar .hint{color:var(--muted);font-weight:400}
+.pts{display:inline-block;background:var(--sun);color:var(--sun-ink);border:3px solid var(--edge);border-radius:999px;padding:2px 14px;font-weight:600}
+.stage-box{display:flex;justify-content:center}
+.stage{position:relative;border:4px solid var(--edge);border-radius:16px;overflow:hidden;background:#111;box-shadow:6px 6px 0 var(--edge);width:100%;height:300px}
+.stage img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stage .txt{position:absolute;inset:0;display:grid;place-items:center;padding:5%;text-align:center;background:#FFF7DA;color:#1E1B4B;font-family:var(--hand);font-weight:600;line-height:1.2;word-break:break-word}
+.tiles{position:absolute;inset:0;display:grid;perspective:900px}
+.tile{margin:0;padding:0;font:inherit;font-weight:600;color:#1E1B4B;border:2px solid #1E1B4B;display:grid;place-items:center;cursor:pointer;transition:transform .45s ease,opacity .45s ease}
+.tile.open{transform:rotateY(90deg);opacity:0;pointer-events:none}
+.tile:hover:not(.open){filter:brightness(1.1)}
+.tile:focus-visible{outline:4px solid #fff;outline-offset:-6px}
+.banner{position:absolute;left:0;right:0;bottom:0;background:rgba(30,27,75,.9);color:#fff;text-align:center;padding:10px 12px;font-size:clamp(1.2rem,3.4vw,2.3rem);font-weight:600;line-height:1.3}
+.banner small{display:block;font-size:.55em;font-weight:400;opacity:.9}
+.teams{display:flex;flex-direction:column;gap:12px}
+@media(max-width:860px){.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}}
+.team{background:var(--surface);border:3px solid var(--edge);border-radius:14px;padding:10px 12px;box-shadow:4px 4px 0 var(--edge)}
+.team.turn{outline:4px solid var(--pink);outline-offset:2px}
+.team .tn{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.team .tn b{font-size:1.05rem}
+.team .sc{font-size:2rem;font-weight:600;line-height:1.1}
+.team .ta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.turn-tag{font-size:.78rem;background:var(--pink);color:var(--pink-ink);border-radius:999px;padding:0 9px;white-space:nowrap}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;justify-content:center}
+
+/* สรุปคะแนน */
+.res{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.res li{display:flex;align-items:center;gap:14px;background:var(--surface);border:3px solid var(--edge);border-radius:14px;padding:10px 16px;box-shadow:4px 4px 0 var(--edge);font-size:1.2rem}
+.res .rk{display:grid;place-items:center;width:2.2em;height:2.2em;border-radius:50%;border:3px solid var(--edge);font-weight:600;background:var(--bg);flex:none}
+.res li.first .rk{background:var(--sun);color:var(--sun-ink)}
+.res .nm{flex:1;font-weight:500}
+.res .pt{font-size:1.6rem;font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="/game/">← รวมเกม</a>
+
+  <!-- ตั้งค่า -->
+  <div id="setup-view">
+    <h1>เกมเปิดป้าย</h1>
+    <p class="lead">ภาพหรือข้อความถูกปิดด้วยป้ายตัวเลข แต่ละทีมผลัดกันเปิดป้ายแล้วทาย ยิ่งเปิดน้อยตอนตอบถูก ยิ่งได้คะแนนเยอะ</p>
+
+    <div class="card" id="resume-card" hidden>
+      <div class="row" style="justify-content:space-between">
+        <span id="resume-text">มีเกมที่เล่นค้างไว้</span>
+        <button class="btn primary" id="resume-btn">เล่นต่อ</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>กติกา</h2>
+      <ol class="rules">
+        <li>ทีมที่ได้ตา เลือก<b>เปิดป้าย 1 ป้าย</b> แล้วทายว่าภาพหรือข้อความคืออะไร</li>
+        <li>ทายถูก พิธีกรกด <b>"ถูก"</b> ให้ทีมนั้น ได้คะแนน = <b>จำนวนป้ายที่ยังไม่เปิด</b> (อย่างน้อย 1 คะแนน)</li>
+        <li>ทายผิดหรือไม่ทาย กด <b>"ตาถัดไป"</b> ให้ทีมต่อไปเปิดป้ายเพิ่ม</li>
+        <li>ข้อถัดไปเริ่มที่ทีมถัดไป ครบทุกข้อแล้วดูสรุปคะแนน</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>ตั้งค่า</h2>
+      <div class="grid2">
+        <label class="f">ชื่อทีม (บรรทัดละทีม)
+          <textarea id="teams-input"></textarea>
+        </label>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label class="f">จำนวนป้าย
+            <select id="grid-input">
+              <option value="3">3 × 3 = 9 ป้าย</option>
+              <option value="4">4 × 4 = 16 ป้าย</option>
+              <option value="5">5 × 5 = 25 ป้าย</option>
+              <option value="6">6 × 6 = 36 ป้าย</option>
+            </select>
+          </label>
+          <label class="row" style="gap:6px"><input type="checkbox" id="shuffle-input"> สลับลำดับข้อแบบสุ่ม</label>
+          <p class="note" style="margin:0">ทุกอย่างเก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่ได้อัปโหลดขึ้นเว็บ ใช้เครื่องเดียวกันตอนเล่นจริง</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">ข้อที่จะเล่น <span id="round-count" class="note"></span></h2>
+        <div class="row">
+          <label class="btn sun" for="add-img" style="cursor:pointer">+ เพิ่มรูป</label>
+          <input type="file" id="add-img" accept="image/*" multiple hidden>
+          <button class="btn" id="add-text">+ เพิ่มข้อความ</button>
+        </div>
+      </div>
+      <p class="note" id="add-status" style="margin:8px 0 0">เลือกรูปได้หลายรูปพร้อมกัน ชื่อไฟล์จะถูกใส่เป็นคำตอบให้ก่อน แก้ได้</p>
+      <div class="rounds" id="rounds"></div>
+    </div>
+
+    <div class="row" style="justify-content:center">
+      <button class="btn primary" id="start-btn" style="font-size:1.3rem;padding:10px 32px">เริ่มเกมใหม่</button>
+    </div>
+  </div>
+
+  <!-- เล่น -->
+  <div id="play-view" class="hidden">
+    <div class="bar">
+      <div class="info"><span id="p-round"></span> <span class="hint" id="p-hint"></span></div>
+      <span class="pts" id="p-pts"></span>
+    </div>
+    <div class="play">
+      <div>
+        <div class="stage-box" id="stage-box"><div class="stage" id="stage"></div></div>
+        <div class="ctrl">
+          <button class="btn" id="random-btn">สุ่มเปิด 1 ป้าย</button>
+          <button class="btn" id="turn-btn">ตาถัดไป ▶</button>
+          <button class="btn" id="reveal-btn">เฉลย (ไม่มีใครได้คะแนน)</button>
+          <button class="btn primary" id="next-btn">ข้อถัดไป</button>
+        </div>
+        <div class="ctrl">
+          <button class="btn small" id="full-btn">เต็มจอ</button>
+          <button class="btn small" id="setup-btn">กลับไปตั้งค่า</button>
+        </div>
+      </div>
+      <div class="teams" id="teams"></div>
+    </div>
+  </div>
+
+  <!-- สรุป -->
+  <div id="result-view" class="hidden">
+    <h1>สรุปคะแนน</h1>
+    <p class="lead" id="r-lead"></p>
+    <ol class="res" id="results"></ol>
+    <div class="row" style="justify-content:center;margin-top:22px">
+      <button class="btn primary" id="again-btn">เล่นใหม่ชุดเดิม</button>
+      <button class="btn" id="back-setup-btn">กลับไปตั้งค่า</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  var COLORS = ['#FFC72C', '#FF8AB8', '#7CCBFF', '#94E07F', '#CDA8FF'];
+
+  // ---- เก็บข้อมูลในเบราว์เซอร์ (IndexedDB เก็บรูปได้) ถ้าใช้ไม่ได้ก็เล่นได้แต่ไม่จำ ----
+  var idb = null;
+  function dbOpen() {
+    return new Promise(function (res) {
+      try {
+        var r = indexedDB.open('ptn-reveal-game', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
+        r.onsuccess = function () { res(r.result); };
+        r.onerror = function () { res(null); };
+      } catch (e) { res(null); }
+    });
+  }
+  function dbGet(k) {
+    return new Promise(function (res) {
+      if (!idb) return res(null);
+      try {
+        var q = idb.transaction('kv').objectStore('kv').get(k);
+        q.onsuccess = function () { res(q.result || null); };
+        q.onerror = function () { res(null); };
+      } catch (e) { res(null); }
+    });
+  }
+  function dbSet(k, v) { if (!idb) return; try { idb.transaction('kv', 'readwrite').objectStore('kv').put(v, k); } catch (e) {} }
+
+  var setup = { teams: ['ทีม 1', 'ทีม 2', 'ทีม 3', 'ทีม 4'], grid: 4, shuffle: false, rounds: [] };
+  var game = null;
+  var urls = {};
+  function urlFor(r) { if (!r.blob) return ''; if (!urls[r.id]) urls[r.id] = URL.createObjectURL(r.blob); return urls[r.id]; }
+  function saveSetup() { dbSet('setup', setup); }
+  function saveGame() { dbSet('game', game); }
+
+  function show(view) {
+    ['setup-view', 'play-view', 'result-view'].forEach(function (v) { $(v).classList.toggle('hidden', v !== view); });
+    window.scrollTo(0, 0);
+  }
+
+  // ---- ตั้งค่า ----
+  function shrinkImage(file) {
+    return new Promise(function (res, rej) {
+      var u = URL.createObjectURL(file);
+      var im = new Image();
+      im.onload = function () {
+        var max = 1600, k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+        var w = Math.max(1, Math.round(im.naturalWidth * k)), h = Math.max(1, Math.round(im.naturalHeight * k));
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(im, 0, 0, w, h);
+        URL.revokeObjectURL(u);
+        c.toBlob(function (b) { res({ blob: b || file, ar: w / h }); }, 'image/jpeg', 0.86);
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('เปิดรูปไม่ได้: ' + file.name)); };
+      im.src = u;
+    });
+  }
+
+  function renderSetup() {
+    $('teams-input').value = setup.teams.join('\n');
+    $('grid-input').value = String(setup.grid);
+    $('shuffle-input').checked = !!setup.shuffle;
+    renderRounds();
+  }
+
+  function renderRounds() {
+    var list = $('rounds');
+    $('round-count').textContent = setup.rounds.length ? '(' + setup.rounds.length + ' ข้อ)' : '';
+    if (!setup.rounds.length) { list.innerHTML = '<div class="empty">ยังไม่มีข้อ กด "+ เพิ่มรูป" หรือ "+ เพิ่มข้อความ"</div>'; return; }
+    list.innerHTML = setup.rounds.map(function (r, i) {
+      var thumb = r.type === 'image' ? '<img class="thumb" src="' + urlFor(r) + '" alt="">' : '<div class="thumb">ข้อความ</div>';
+      var ph = r.type === 'image' ? 'คำตอบ (เฉลย)' : 'ข้อความที่ซ่อนไว้ = คำตอบ';
+      return '<div class="rd" data-i="' + i + '"><div class="no">' + (i + 1) + '</div>' + thumb
+        + '<div class="fields"><input type="text" data-f="answer" placeholder="' + ph + '" value="' + esc(r.answer) + '">'
+        + '<input type="text" data-f="hint" placeholder="คำใบ้ / หมวด (ไม่ใส่ก็ได้)" value="' + esc(r.hint) + '"></div>'
+        + '<div class="acts"><button class="btn small" data-a="up" title="เลื่อนขึ้น"' + (i ? '' : ' disabled') + '>↑</button>'
+        + '<button class="btn small" data-a="down" title="เลื่อนลง"' + (i < setup.rounds.length - 1 ? '' : ' disabled') + '>↓</button>'
+        + '<button class="btn small" data-a="del" title="ลบ">✕</button></div></div>';
+    }).join('');
+  }
+
+  $('rounds').addEventListener('input', function (e) {
+    var row = e.target.closest('.rd'); if (!row || !e.target.dataset.f) return;
+    setup.rounds[+row.dataset.i][e.target.dataset.f] = e.target.value;
+    saveSetup();
+  });
+  $('rounds').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-a]'); if (!b) return;
+    var i = +b.closest('.rd').dataset.i, R = setup.rounds;
+    if (b.dataset.a === 'up' && i > 0) R.splice(i - 1, 0, R.splice(i, 1)[0]);
+    else if (b.dataset.a === 'down' && i < R.length - 1) R.splice(i + 1, 0, R.splice(i, 1)[0]);
+    else if (b.dataset.a === 'del') {
+      if (!confirm('ลบข้อ ' + (i + 1) + '?')) return;
+      var gone = R.splice(i, 1)[0];
+      if (urls[gone.id]) { URL.revokeObjectURL(urls[gone.id]); delete urls[gone.id]; }
+    }
+    saveSetup(); renderRounds();
+  });
+  $('teams-input').addEventListener('input', function () {
+    setup.teams = this.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+    saveSetup();
+  });
+  $('grid-input').addEventListener('change', function () { setup.grid = +this.value; saveSetup(); });
+  $('shuffle-input').addEventListener('change', function () { setup.shuffle = this.checked; saveSetup(); });
+
+  $('add-img').addEventListener('change', function (e) {
+    var files = [].slice.call(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    var done = 0;
+    $('add-status').textContent = 'กำลังเพิ่มรูป 0/' + files.length + ' ...';
+    files.reduce(function (p, f) {
+      return p.then(function () {
+        return shrinkImage(f).then(function (o) {
+          setup.rounds.push({ id: uid(), type: 'image', blob: o.blob, ar: o.ar, answer: f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim(), hint: '' });
+        }).catch(function (err) { alert(err.message); }).then(function () {
+          done++; $('add-status').textContent = 'กำลังเพิ่มรูป ' + done + '/' + files.length + ' ...';
+        });
+      });
+    }, Promise.resolve()).then(function () {
+      $('add-status').textContent = 'เพิ่มแล้ว ' + done + ' รูป ตรวจคำตอบให้ถูกก่อนเล่น';
+      saveSetup(); renderRounds();
+    });
+  });
+  $('add-text').addEventListener('click', function () {
+    setup.rounds.push({ id: uid(), type: 'text', answer: '', hint: '' });
+    saveSetup(); renderRounds();
+    var inputs = $('rounds').querySelectorAll('input[data-f="answer"]');
+    inputs[inputs.length - 1].focus();
+  });
+
+  function playable(r) { return r && (r.type === 'image' ? !!r.blob : !!String(r.answer).trim()); }
+
+  function startGame() {
+    var rounds = setup.rounds.filter(playable);
+    if (!rounds.length) { alert('เพิ่มรูปหรือข้อความอย่างน้อย 1 ข้อก่อน'); return; }
+    var teams = setup.teams.length ? setup.teams.slice(0, 12) : ['ทีม 1', 'ทีม 2'];
+    var order = rounds.map(function (r) { return r.id; });
+    if (setup.shuffle) shuffle(order);
+    game = { order: order, idx: 0, opened: [], solved: false, winner: -1, gained: 0, scores: teams.map(function () { return 0; }), turn: 0, grid: setup.grid, teams: teams, done: false };
+    saveGame();
+    enterPlay();
+  }
+  $('start-btn').addEventListener('click', function () {
+    if (game && !game.done && !confirm('เริ่มเกมใหม่ คะแนนเกมเดิมจะหาย ต่อไหม?')) return;
+    startGame();
+  });
+  $('resume-btn').addEventListener('click', function () { if (game) (game.done ? showResults() : enterPlay()); });
+
+  function updateResume() {
+    var has = !!game;
+    $('resume-card').hidden = !has;
+    if (has) $('resume-text').textContent = game.done ? 'เกมล่าสุดเล่นจบแล้ว' : 'มีเกมที่เล่นค้างไว้ ข้อ ' + (game.idx + 1) + ' จาก ' + game.order.length;
+    $('resume-btn').textContent = has && game.done ? 'ดูสรุปคะแนน' : 'เล่นต่อ';
+  }
+
+  // ---- เล่น ----
+  function cur() { var id = game.order[game.idx]; return setup.rounds.find(function (r) { return r.id === id; }) || null; }
+  function total() { return game.grid * game.grid; }
+  function points() { return Math.max(1, total() - game.opened.length); }
+
+  function enterPlay() {
+    // ข้อที่ถูกลบออกไประหว่างเกม ข้ามไป
+    game.order = game.order.filter(function (id) { return playable(setup.rounds.find(function (r) { return r.id === id; })); });
+    if (!game.order.length) { alert('ไม่มีข้อให้เล่นแล้ว'); show('setup-view'); return; }
+    if (game.idx >= game.order.length) game.idx = game.order.length - 1;
+    show('play-view');
+    buildStage();
+  }
+
+  function buildStage() {
+    var r = cur(), n = game.grid, st = $('stage'), html = '';
+    html += r.type === 'image' ? '<img src="' + urlFor(r) + '" alt="">' : '<div class="txt" id="stage-txt">' + esc(r.answer) + '</div>';
+    html += '<div class="tiles" style="grid-template-columns:repeat(' + n + ',1fr);grid-template-rows:repeat(' + n + ',1fr)">';
+    for (var i = 0; i < n * n; i++) {
+      var row = Math.floor(i / n), col = i % n;
+      html += '<button class="tile" data-t="' + i + '" style="background:' + COLORS[(row * 2 + col) % COLORS.length] + '">' + (i + 1) + '</button>';
+    }
+    html += '</div><div class="banner hidden" id="banner"></div>';
+    st.innerHTML = html;
+    st.querySelectorAll('.tile').forEach(function (b) { b.onclick = function () { openTile(+b.dataset.t); }; });
+    fitStage();
+    renderPlay();
+  }
+
+  function fitStage() {
+    if (!game || $('play-view').classList.contains('hidden')) return;
+    var r = cur(); if (!r) return;
+    var ar = r.type === 'image' ? (r.ar || 4 / 3) : 16 / 10;
+    var box = $('stage-box'), w = box.clientWidth;
+    var wide = window.innerWidth > 860;
+    var h = wide ? window.innerHeight - Math.max(box.getBoundingClientRect().top, 0) - 140 : window.innerHeight * 0.6;
+    h = Math.max(h, 220);
+    var sw = w, sh = w / ar;
+    if (sh > h) { sh = h; sw = h * ar; }
+    var st = $('stage');
+    st.style.width = Math.floor(sw) + 'px';
+    st.style.height = Math.floor(sh) + 'px';
+    st.style.fontSize = Math.max(14, Math.min(sw, sh) / game.grid * 0.4) + 'px';
+    var t = $('stage-txt');
+    if (t) {
+      var fs = sh * 0.3;
+      t.style.fontSize = fs + 'px';
+      while (fs > 14 && (t.scrollHeight > t.clientHeight + 1 || t.scrollWidth > t.clientWidth + 1)) { fs *= 0.9; t.style.fontSize = fs + 'px'; }
+    }
+  }
+  window.addEventListener('resize', fitStage);
+  document.addEventListener('fullscreenchange', function () { setTimeout(fitStage, 50); });
+
+  function renderPlay() {
+    var r = cur(), n = game.teams.length;
+    $('p-round').textContent = 'ข้อ ' + (game.idx + 1) + ' / ' + game.order.length;
+    $('p-hint').textContent = r.hint ? '· ' + r.hint : '';
+    $('p-pts').textContent = game.solved ? 'เฉลยแล้ว' : 'ตอบถูกตอนนี้ได้ ' + points() + ' คะแนน';
+    // ป้าย
+    $('stage').querySelectorAll('.tile').forEach(function (b) {
+      b.classList.toggle('open', game.solved || game.opened.indexOf(+b.dataset.t) >= 0);
+    });
+    var ban = $('banner');
+    ban.classList.toggle('hidden', !game.solved);
+    if (game.solved) {
+      ban.innerHTML = esc(r.answer || 'เฉลย')
+        + (game.winner >= 0 ? '<small>' + esc(game.teams[game.winner]) + ' ตอบถูก +' + game.gained + ' คะแนน</small>' : '<small>ไม่มีทีมไหนตอบถูก</small>');
+    }
+    // ทีม
+    $('teams').innerHTML = game.teams.map(function (name, i) {
+      var isTurn = i === game.turn && !game.solved;
+      return '<div class="team' + (isTurn ? ' turn' : '') + '">'
+        + '<div class="tn"><b>' + esc(name) + '</b>' + (isTurn ? '<span class="turn-tag">ตานี้</span>' : '') + '</div>'
+        + '<div class="sc">' + game.scores[i] + '</div>'
+        + '<div class="ta"><button class="btn small primary" data-win="' + i + '"' + (game.solved ? ' disabled' : '') + '>ถูก +' + points() + '</button>'
+        + '<button class="btn small" data-adj="' + i + '" data-d="-1" title="ลบ 1 คะแนน">−1</button>'
+        + '<button class="btn small" data-adj="' + i + '" data-d="1" title="เพิ่ม 1 คะแนน">+1</button></div></div>';
+    }).join('');
+    var allOpen = game.opened.length >= total();
+    $('random-btn').disabled = game.solved || allOpen;
+    $('turn-btn').disabled = game.solved || n < 2;
+    $('reveal-btn').disabled = game.solved;
+    $('next-btn').textContent = game.idx < game.order.length - 1 ? 'ข้อถัดไป' : 'ดูสรุปคะแนน';
+  }
+
+  function openTile(i) {
+    if (game.solved || game.opened.indexOf(i) >= 0) return;
+    game.opened.push(i);
+    saveGame(); renderPlay();
+  }
+  function solve(winner) {
+    game.solved = true;
+    game.winner = winner;
+    game.gained = 0;
+    if (winner >= 0) { game.gained = points(); game.scores[winner] += game.gained; }
+    saveGame(); renderPlay();
+  }
+
+  $('teams').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || b.disabled) return;
+    if (b.dataset.win != null) solve(+b.dataset.win);
+    else if (b.dataset.adj != null) { game.scores[+b.dataset.adj] += +b.dataset.d; saveGame(); renderPlay(); }
+  });
+  $('random-btn').addEventListener('click', function () {
+    var closed = [];
+    for (var i = 0; i < total(); i++) if (game.opened.indexOf(i) < 0) closed.push(i);
+    if (closed.length) openTile(closed[Math.floor(Math.random() * closed.length)]);
+  });
+  $('turn-btn').addEventListener('click', function () { game.turn = (game.turn + 1) % game.teams.length; saveGame(); renderPlay(); });
+  $('reveal-btn').addEventListener('click', function () { if (confirm('เฉลยข้อนี้โดยไม่มีใครได้คะแนน?')) solve(-1); });
+  $('next-btn').addEventListener('click', function () {
+    if (!game.solved && !confirm('ข้อนี้ยังไม่เฉลย ข้ามไปเลยไหม?')) return;
+    if (game.idx < game.order.length - 1) {
+      game.idx++; game.opened = []; game.solved = false; game.winner = -1; game.gained = 0;
+      game.turn = (game.turn + 1) % game.teams.length;
+      saveGame(); buildStage();
+    } else {
+      game.done = true; saveGame(); showResults();
+    }
+  });
+  $('full-btn').addEventListener('click', function () {
+    var el = $('play-view');
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+  });
+  $('setup-btn').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen();
+    updateResume(); show('setup-view');
+  });
+
+  // ---- สรุป ----
+  function showResults() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    var rows = game.teams.map(function (name, i) { return { name: name, score: game.scores[i] }; });
+    rows.sort(function (a, b) { return b.score - a.score; });
+    var rank = 0, prev = null;
+    $('results').innerHTML = rows.map(function (r, i) {
+      if (r.score !== prev) { rank = i + 1; prev = r.score; }
+      return '<li class="' + (rank === 1 ? 'first' : '') + '"><span class="rk">' + rank + '</span><span class="nm">' + esc(r.name) + '</span><span class="pt">' + r.score + '</span></li>';
+    }).join('');
+    $('r-lead').textContent = 'เล่นครบ ' + game.order.length + ' ข้อ';
+    show('result-view');
+  }
+  $('again-btn').addEventListener('click', startGame);
+  $('back-setup-btn').addEventListener('click', function () { updateResume(); show('setup-view'); });
+
+  // ---- เริ่มต้น ----
+  dbOpen().then(function (db) {
+    idb = db;
+    return Promise.all([dbGet('setup'), dbGet('game')]);
+  }).then(function (res) {
+    if (res[0]) setup = res[0];
+    else setup.rounds = [
+      { id: uid(), type: 'text', answer: 'ค่ายพี่ติวน้อง', hint: 'ตัวอย่าง · ชื่อค่าย' },
+      { id: uid(), type: 'text', answer: 'ทฤษฎีบทพีทาโกรัส', hint: 'ตัวอย่าง · คณิตศาสตร์' },
+      { id: uid(), type: 'text', answer: 'ตารางธาตุ', hint: 'ตัวอย่าง · เคมี' }
+    ];
+    game = res[1];
+    renderSetup();
+    updateResume();
+  });
+})();
+</script>
+</body>
+</html>

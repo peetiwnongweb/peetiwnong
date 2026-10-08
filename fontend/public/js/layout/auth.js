@@ -170,10 +170,9 @@ function applyStaffTaskMenuVisibility(user) {
 }
 
 // ปุ่ม "เขียนข่าว" เห็นได้ทุกคนที่เป็นพี่ค่าย ไม่ว่าจะสังกัดฝ่ายไหน (การเขียนข่าวเป็นสิทธิ์พื้นฐานของพี่ค่ายทุกคน ไม่กรองตามฝ่ายเหมือนเมนู "งาน" ด้านบน)
-// SuperAdmin เห็นเฉพาะตอนอยู่ในโซนพี่ค่ายเหมือนกัน (จำลองพี่ค่าย) ไม่มี data-department-name จึงไม่ถูก applyStaffTaskMenuVisibility() กรองไปด้วยโดยบังเอิญ
+// SuperAdmin เห็นทุกหน้า (ทางลัดในเมนูบัญชี) ไม่มี data-department-name จึงไม่ถูก applyStaffTaskMenuVisibility() กรองไปด้วยโดยบังเอิญ
 function applyNewsWriteLinkVisibility(user) {
-    const isSuperAdminInStaffArea = !!(user && user.role === 'SUPERADMIN') && window.location.pathname.startsWith('/staff/');
-    const show = !!(user && (user.role === 'STAFF' || isSuperAdminInStaffArea));
+    const show = !!(user && (user.role === 'STAFF' || user.role === 'SUPERADMIN'));
     document.querySelectorAll('#hero-news-write-link, #user-menu-news-write-link, #m-menu-news-write-link').forEach((el) => {
         el.classList.toggle('hidden', !show);
     });
@@ -518,6 +517,23 @@ function pointAdminLinkForRole(link, isSuperAdmin) {
     if (textNode) textNode.textContent = ` ${label} `;
 }
 
+// SuperAdmin มีทั้งหน้า SuperAdmin และหน้า Admin (หลังบ้านพี่ค่ายผู้ดูแล) - เพิ่มปุ่ม Admin ต่อท้ายปุ่ม SuperAdmin ในเมนูบัญชี
+function ensureSuperAdminBackofficeLink(link, show) {
+    if (!link) return;
+    const id = link.id + '-backoffice';
+    let extra = document.getElementById(id);
+    if (!extra && show) {
+        extra = link.cloneNode(true);
+        extra.id = id;
+        extra.removeAttribute('onclick');
+        extra.onclick = () => { window.location.href = '/admin/'; };
+        const textNode = [...extra.childNodes].reverse().find((n) => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+        if (textNode) textNode.textContent = ' Admin (หลังบ้าน) ';
+        link.insertAdjacentElement('afterend', extra);
+    }
+    if (extra) extra.classList.toggle('hidden', !show);
+}
+
 function loginUser(userData) {
     isUserLoggedIn = true;
     const isSuperAdmin = userData.role === 'SUPERADMIN';
@@ -563,6 +579,7 @@ function loginUser(userData) {
     const adminLink = document.getElementById('user-menu-admin-link');
     if (adminLink) adminLink.classList.toggle('hidden', !hasAdminAccess || isSimulating);
     pointAdminLinkForRole(adminLink, isSuperAdmin);
+    ensureSuperAdminBackofficeLink(adminLink, isSuperAdmin && !isSimulating);
 
     // SuperAdmin ไม่มีโปรไฟล์พี่ค่าย/น้องค่ายจริง ซ่อน "โปรไฟล์" ไว้ตอนไม่ได้จำลอง แต่โชว์ตอนจำลองให้เหมือนบทบาทจริง (แม้หน้าจะว่างเพราะไม่มีข้อมูลจริงก็ตาม)
     const profileLinkDesktop = document.getElementById('user-menu-profile-link');
@@ -590,6 +607,7 @@ function loginUser(userData) {
     if (mMenuProfileLink) mMenuProfileLink.classList.toggle('hidden', isSuperAdmin && !isSimulating);
     if (mMenuAdminLink) mMenuAdminLink.classList.toggle('hidden', !hasAdminAccess || isSimulating);
     pointAdminLinkForRole(mMenuAdminLink, isSuperAdmin);
+    ensureSuperAdminBackofficeLink(mMenuAdminLink, isSuperAdmin && !isSimulating);
 
     // ลิงก์ "โปรไฟล์" พาไปหน้าที่ถูกต้องตาม role (STAFF/PARTICIPANT มีหน้าโปรไฟล์จริง)
     // ตอน SuperAdmin จำลองอยู่ก็ให้เข้าหน้าโปรไฟล์ของโซนที่กำลังจำลองได้เหมือนกัน (ข้อมูลจะว่างเพราะไม่มีโปรไฟล์จริง แต่โครงหน้าต้องขึ้นได้ ไม่ใช่ stub เฉย ๆ)

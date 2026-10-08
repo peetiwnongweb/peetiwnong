@@ -6,7 +6,7 @@
 <title>บิงโกลักษณะออนไลน์</title>
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="/js/config.js?v=20261002-1"></script>
-<script src="/game/bingo-data.js?v=20261008-2"></script>
+<script src="/game/bingo/bingo-data.js?v=20261008-3"></script>
 <style>
 :root{
   --bg:#E8ECFF; --surface:#FFFFFF; --ink:#1E1B4B; --muted:#57568C; --line:#C6CBF3;
@@ -78,7 +78,7 @@ tr.me td{font-weight:600;color:var(--pink)}
 <div class="page">
   <header style="margin-bottom:16px">
     <h1>บิงโกลักษณะ <span style="color:var(--pink)">ออนไลน์</span></h1>
-    <p class="muted" style="margin:0">พิธีกรสุ่มลักษณะบนจอ แต่ละกลุ่มเล่นบนมือถือ กดชื่อที่ตรง = ยกมือเสนอ 10 วินาทีไม่มีใครค้านได้กา · <a href="/game/" style="color:inherit">โหมดพิมพ์การ์ด</a></p>
+    <p class="muted" style="margin:0">พิธีกรสุ่มลักษณะบนจอ แต่ละกลุ่มเล่นบนมือถือ กดชื่อที่ตรง = ยกมือเสนอ 10 วินาทีไม่มีใครค้านได้กา · <a href="/game/bingo/" style="color:inherit">โหมดพิมพ์การ์ด</a> · <a href="/game/" style="color:inherit">รวมเกม</a></p>
   </header>
 
   <!-- หน้าแรก: เลือกบทบาท -->
@@ -369,7 +369,7 @@ tr.me td{font-weight:600;color:var(--pink)}
     show('host');
     var headers = { 'x-host-token': hostToken };
     $('h-code').textContent = code;
-    $('h-url').textContent = location.host + '/game/online';
+    $('h-url').textContent = location.host + '/game/bingo/online';
     $('h-qr').src = (window.PTN_API_URL ? window.PTN_API_URL(API + '/' + code + '/qr') : API + '/' + code + '/qr') + '?origin=' + encodeURIComponent(location.origin);
     var seenBingos = 0;
     // นาฬิกาให้เหตุผลฝ่ายละ 15 วินาที

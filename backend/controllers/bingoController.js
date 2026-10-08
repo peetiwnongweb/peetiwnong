@@ -1,4 +1,4 @@
-// เกมบิงโกลักษณะแบบออนไลน์ (หน้า /game/online/) - เก็บห้องไว้ในหน่วยความจำ (เกมสั้น ๆ ไม่ต้องลงฐานข้อมูล)
+// เกมบิงโกลักษณะแบบออนไลน์ (หน้า /game/bingo/online/) - เก็บห้องไว้ในหน่วยความจำ (เกมสั้น ๆ ไม่ต้องลงฐานข้อมูล)
 // กติกา: กลุ่มกดชื่อที่ตรงกับลักษณะ = ยกมือเสนอ -> จับเวลา 10 วิ ไม่มีกลุ่มไหนค้าน = ได้กา
 //        มีกลุ่มค้าน -> ให้เหตุผลฝ่ายละ 15 วิ -> กรรมการ/พิธีกรตัดสิน: ฝ่ายเสนอชนะ = ได้กา, ฝ่ายค้านชนะ = ฝ่ายค้าน +1 คะแนน
 //        กาได้รอบละ 1 ช่อง · บิงโกที่ 1 +10 ที่ 2 +5 ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน
@@ -209,7 +209,7 @@ async function roomQr(req, res) {
   const room = getRoom(req, res);
   if (!room) return;
   const origin = String(req.query.origin || 'https://peetiwnong.site').replace(/[^a-zA-Z0-9:/._-]/g, '');
-  const svg = await QRCode.toString(`${origin}/game/online/?room=${room.code}`, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' });
+  const svg = await QRCode.toString(`${origin}/game/bingo/online/?room=${room.code}`, { type: 'svg', margin: 1, errorCorrectionLevel: 'M' });
   res.type('image/svg+xml').send(svg);
 }
 

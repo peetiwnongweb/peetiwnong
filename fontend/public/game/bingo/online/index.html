@@ -72,6 +72,15 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
 .score-big{font-size:2.6rem;font-weight:600;line-height:1.1;margin:4px 0}
 .score-big small{font-size:1rem;font-weight:400;color:var(--muted)}
 tr.me td{font-weight:600;color:var(--pink)}
+.objection-pop{position:fixed;left:0;right:0;top:0;z-index:50;background:#DC2626;color:#fff;padding:16px 16px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);text-align:center;animation:popin .25s ease-out}
+.objection-pop p{margin:0 0 4px;font-size:1.05rem}
+.objection-pop .big{font-size:1.5rem;font-weight:600;line-height:1.3;margin-bottom:10px}
+.objection-pop .cd{font-size:2.2rem;display:block;line-height:1}
+.objection-pop .row{justify-content:center;margin-top:10px}
+.objection-pop .btn{border-color:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.35)}
+.objection-pop .btn.objbtn{background:#fff;color:#DC2626;font-size:1.4rem;padding:12px 28px}
+.objection-pop .btn.skip{background:transparent;color:#fff}
+@keyframes popin{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -121,6 +130,7 @@ tr.me td{font-weight:600;color:var(--pink)}
       <div>
         <div class="ticket"><div><p class="round" id="p-round"></p><p class="trait" id="p-trait">รอพิธีกรสุ่มลักษณะ</p></div></div>
         <div id="p-alert" class="alert hidden"></div>
+        <div id="p-objection" class="objection-pop hidden" role="alertdialog" aria-live="assertive"></div>
         <div class="board" id="p-board"></div>
         <p class="status" id="p-status"></p>
         <button class="btn primary big" id="p-bingo" disabled>บิงโก!</button>
@@ -139,7 +149,7 @@ tr.me td{font-weight:600;color:var(--pink)}
         <div class="card">
           <h2>กติกา</h2>
           <ol style="margin:0;padding-left:1.2rem">
-            <li>แต่ละรอบ กดชื่อที่ตรงกับลักษณะ = <b>ยกมือเสนอ</b> (กาได้รอบละ 1 ช่อง)</li>
+            <li>แต่ละรอบ กดชื่อที่ตรงกับลักษณะ = <b>ยกมือเสนอ</b> (กาได้รอบละ 1 ช่อง · ทั้งห้องเสนอได้ทีละข้อ)</li>
             <li>ไม่มีกลุ่มไหน<b>ค้าน</b>ภายใน 10 วินาที ได้กา</li>
             <li>มีคนค้าน ให้เหตุผลฝ่ายละ 15 วินาที กรรมการตัดสิน: ฝ่ายเสนอชนะได้กา ฝ่ายค้านชนะได้ +1 คะแนน</li>
             <li>บิงโกที่ 1 +10 · ที่ 2 +5 · ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน</li>
@@ -275,6 +285,43 @@ tr.me td{font-weight:600;color:var(--pink)}
     show('player');
     var headers = { 'x-player-id': creds.playerId, 'x-player-token': creds.playerToken };
     var lastDecisionAt = 0;
+    var alerted = {};    // ข้อเสนอที่เตือนไปแล้ว (เสียง/สั่นครั้งเดียว)
+    var dismissed = {};  // ข้อเสนอที่กด "ไม่ค้าน" แล้ว (ซ่อนแถบแดง)
+    function beep() {
+      try {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        var ctx = beep.ctx || (beep.ctx = new Ctx());
+        [0, 0.18].forEach(function (t) {
+          var o = ctx.createOscillator(), g = ctx.createGain();
+          o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+          g.gain.setValueAtTime(0.25, ctx.currentTime + t); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.15);
+          o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.16);
+        });
+      } catch (e) {}
+      try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+    }
+    // เบราว์เซอร์มือถือเล่นเสียงได้หลังผู้ใช้แตะจอครั้งแรก - ปลดล็อกเสียงตอนแตะครั้งแรก
+    document.addEventListener('pointerdown', function unlock() { try { var Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx && !beep.ctx) beep.ctx = new Ctx(); if (beep.ctx && beep.ctx.resume) beep.ctx.resume(); } catch (e) {} document.removeEventListener('pointerdown', unlock); });
+    function objectTo(id, btn) {
+      if (btn) btn.disabled = true;
+      call('POST', '/' + code + '/requests/' + id + '/object', {}, headers)
+        .then(function () { dismissed[id] = 1; setStatus('ค้านแล้ว! เตรียมให้เหตุผล 15 วินาที', 'bad'); refresh(); })
+        .catch(function (e) { dismissed[id] = 1; alert(e.message); refresh(); });
+    }
+    function renderObjectionPopup(s) {
+      var pop = $('p-objection');
+      var target = s.others.find(function (r) { return r.status === 'proposed' && !dismissed[r.id] && r.remainingMs > 0; });
+      if (!target) { pop.classList.add('hidden'); return; }
+      if (!alerted[target.id]) { alerted[target.id] = 1; beep(); }
+      pop.classList.remove('hidden');
+      pop.innerHTML = '<p><b>' + esc(target.playerName) + '</b> ยกมือเสนอ</p>'
+        + '<div class="big">"' + esc(target.cellName) + '" = "' + esc(target.trait) + '"</div>'
+        + '<p>ค้านได้ภายใน</p>' + countdownSpan('pop-cd-' + target.id, target.remainingMs) + '<p>วินาที</p>'
+        + '<div class="row"><button class="btn objbtn" id="pop-object">ค้าน!</button><button class="btn skip" id="pop-skip">ไม่ค้าน</button></div>';
+      $('pop-object').onclick = function () { objectTo(target.id, $('pop-object')); };
+      $('pop-skip').onclick = function () { dismissed[target.id] = 1; pop.classList.add('hidden'); };
+    }
     function setStatus(text, kind) { var el = $('p-status'); el.textContent = text; el.className = 'status ' + (kind || ''); }
     function render(s) {
       countdowns = [];
@@ -294,7 +341,7 @@ tr.me td{font-weight:600;color:var(--pink)}
       var pendingCell = mine ? mine.cell : -1;
       board.innerHTML = s.board.map(function (name, i) {
         var cls = 'cell' + (marked[i] ? ' marked' : '') + (i === pendingCell ? ' pending' : '');
-        var disabled = marked[i] || mine || s.markedThisRound || !s.round;
+        var disabled = marked[i] || mine || s.markedThisRound || !s.round || s.others.length > 0;
         return '<button class="' + cls + '" data-i="' + i + '"' + (disabled ? ' disabled' : '') + '><span>' + esc(name) + '</span></button>';
       }).join('');
       board.querySelectorAll('.cell').forEach(function (b) {
@@ -310,6 +357,7 @@ tr.me td{font-weight:600;color:var(--pink)}
       if (!s.round) setStatus('รอพิธีกรสุ่มลักษณะรอบแรก', '');
       else if (mine && mine.status === 'proposed') setStatus('', '');
       else if (s.markedThisRound) setStatus('รอบนี้กาแล้ว รอลักษณะถัดไป', 'ok');
+      else if (s.others.length) setStatus('รอข้อเสนอของ ' + s.others[0].playerName + ' จบก่อน แล้วค่อยเสนอ', '');
       else setStatus('เลือกชื่อที่ตรงกับลักษณะนี้ (ถ้าไม่มี รอรอบถัดไป)', '');
       if (mine && mine.status === 'proposed') {
         alertBox.className = 'alert';
@@ -336,13 +384,9 @@ tr.me td{font-weight:600;color:var(--pink)}
         return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" · <b>' + esc(r.objectorName) + '</b> ค้าน · รอกรรมการตัดสิน</span></div>';
       }).join('') : '<p class="muted">ยังไม่มี</p>';
       $('p-others').querySelectorAll('[data-object]').forEach(function (b) {
-        b.onclick = function () {
-          b.disabled = true;
-          call('POST', '/' + code + '/requests/' + b.dataset.object + '/object', {}, headers)
-            .then(function () { setStatus('ค้านแล้ว! เตรียมให้เหตุผล 15 วินาที', 'bad'); refresh(); })
-            .catch(function (e) { alert(e.message); refresh(); });
-        };
+        b.onclick = function () { objectTo(b.dataset.object, b); };
       });
+      renderObjectionPopup(s);
       $('p-board-rank').innerHTML = s.leaderboard.map(function (p, i) {
         return '<tr' + (p.me ? ' class="me"' : '') + '><td>' + (i + 1) + '. ' + esc(p.name) + '</td><td style="text-align:right"><b>' + p.total + '</b></td></tr>';
       }).join('');
@@ -359,7 +403,7 @@ tr.me td{font-weight:600;color:var(--pink)}
     $('p-bingo').onclick = function () {
       call('POST', '/' + code + '/bingo', {}, headers).then(function (r) { alert('บิงโก! ที่ ' + r.order + (r.bonus ? ' ได้ +' + r.bonus + ' คะแนน' : '') + ' รอกรรมการตรวจการ์ด'); refresh(); }).catch(function (e) { alert(e.message); });
     };
-    poll(refresh, 1500);
+    poll(refresh, 1000);
   }
 
   // ---------- พิธีกร ----------

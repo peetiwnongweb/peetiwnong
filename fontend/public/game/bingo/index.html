@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>บิงโกลักษณะ</title>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8ECFF; --surface:#FFFFFF; --ink:#1E1B4B; --muted:#57568C; --line:#C6CBF3;
+  --edge:#1E1B4B; --sun:#FFC72C; --sun-ink:#33250A; --pink:#D81B66; --pink-ink:#FFFFFF;
+  --focus:#0B7C68; --soft:#FFF3C9;
+  --ui:"Mitr","Noto Sans Thai","Leelawadee UI","Thonburi",Tahoma,sans-serif;
+  --hand:"Mali","Mitr","Noto Sans Thai","Leelawadee UI","Thonburi",Tahoma,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141235; --surface:#221F55; --ink:#F2F1FF; --muted:#ABAADB; --line:#3D3A86;
+    --edge:#07061C; --pink:#FF5F9A; --pink-ink:#2A0716; --focus:#3AD6B8; --soft:#3A3470;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141235; --surface:#221F55; --ink:#F2F1FF; --muted:#ABAADB; --line:#3D3A86;
+  --edge:#07061C; --pink:#FF5F9A; --pink-ink:#2A0716; --focus:#3AD6B8; --soft:#3A3470;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:1rem;line-height:1.55;-webkit-text-size-adjust:100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.page{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+
+header{margin-bottom:20px}
+h1{font-size:clamp(2.1rem,7vw,3.4rem);font-weight:600;line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);max-width:44ch}
+h2{font-size:1.1rem;font-weight:500;margin:0 0 8px}
+
+.layout{display:grid;gap:20px;grid-template-columns:minmax(0,1fr);grid-template-areas:"board" "caller" "extras"}
+body[data-mode="play"] .layout{grid-template-areas:"caller" "board" "extras"}
+.board-area{grid-area:board;min-width:0}
+.caller{grid-area:caller;min-width:0}
+.extras{grid-area:extras;min-width:0}
+@media (min-width:880px){
+  .layout, body[data-mode="play"] .layout{
+    grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);
+    grid-template-rows:auto 1fr;
+    grid-template-areas:"board caller" "board extras";
+    gap:20px 32px;align-items:start;
+  }
+}
+body[data-mode="edit"] .play-only{display:none}
+/* โหมดเล่น: ไม่แสดงตาราง แสดงแค่ลักษณะที่สุ่ม (ผู้เล่นใช้การ์ดที่พิมพ์) */
+body[data-mode="play"] .board-area{display:none}
+body[data-mode="play"] .layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;grid-template-areas:"caller" "extras";max-width:760px;margin:0 auto}
+body[data-mode="play"] .ticket{min-height:18rem}
+body[data-mode="play"] .trait{font-size:clamp(2.2rem,8vw,4rem)}
+body[data-mode="play"] .edit-only{display:none}
+
+/* buttons */
+.btn{font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:3px solid var(--edge);border-radius:14px;padding:11px 18px;cursor:pointer;box-shadow:3px 3px 0 var(--edge);transition:transform .06s, box-shadow .06s}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--edge)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.primary{background:var(--pink);color:var(--pink-ink);font-size:1.3rem;width:100%;padding:14px 18px}
+.btn.small{padding:7px 12px;font-size:.95rem;border-radius:12px;box-shadow:2px 2px 0 var(--edge)}
+.btn.armed{background:var(--sun);color:var(--sun-ink)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.sizes{display:inline-flex;border:3px solid var(--edge);border-radius:12px;overflow:hidden;padding:0;margin:0;background:var(--surface)}
+.sizes label{position:relative;display:block}
+.sizes input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.sizes span{display:block;padding:7px 14px;font-weight:500}
+.sizes input:checked + span{background:var(--ink);color:var(--surface)}
+.sizes input:focus-visible + span{outline:3px solid var(--focus);outline-offset:-3px}
+
+/* board */
+.board-wrap{position:relative}
+.board{--n:3;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));grid-template-rows:repeat(var(--n),minmax(0,1fr));gap:2px;aspect-ratio:1;background:var(--line);border:3px solid var(--edge);border-radius:18px;box-shadow:6px 6px 0 var(--edge);overflow:hidden}
+.cell{position:relative;container-type:inline-size;display:grid;place-items:center;min-width:0;min-height:0;padding:6%;margin:0;border:0;border-radius:0;background:var(--surface);color:inherit;font:inherit;overflow:hidden}
+button.cell{cursor:pointer}
+.cell.editable{cursor:text}
+.cell.editable:focus-within{background:var(--soft);outline:3px solid var(--sun);outline-offset:-3px}
+.name{display:block;width:100%;min-height:1.3em;font-family:var(--hand);font-weight:600;line-height:1.3;text-align:center;overflow-wrap:anywhere;font-size:max(11px,17cqi);outline:none}
+.cell[data-len="m"] .name{font-size:max(10px,14cqi)}
+.cell[data-len="l"] .name{font-size:max(9px,12.5cqi)}
+.name:empty::before{content:attr(data-ph);color:var(--muted);font-weight:500;opacity:.75}
+.name:focus:empty::before{content:""}
+.cell.win{background:var(--sun);color:var(--sun-ink)}
+.stamp{position:absolute;inset:8%;border:max(3px,5.5cqi) solid var(--pink);border-radius:50%;transform:rotate(-10deg);opacity:.82;pointer-events:none}
+.stamp::after{content:"";position:absolute;inset:9%;border:max(1px,1.6cqi) solid var(--pink);border-radius:50%}
+.stamp.fresh{animation:stamp .2s ease-out}
+@keyframes stamp{from{transform:rotate(-10deg) scale(1.7);opacity:0}to{transform:rotate(-10deg) scale(1);opacity:.82}}
+
+.under{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;margin-top:14px;min-height:1.6em}
+.status{color:var(--muted)}
+.hint{color:var(--pink);font-weight:500}
+
+/* bingo banner */
+.banner{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.banner[hidden]{display:none}
+.sticker{background:var(--pink);color:var(--pink-ink);border:4px solid var(--edge);border-radius:24px;box-shadow:8px 8px 0 var(--edge);padding:.1em .55em .15em;transform:rotate(-6deg);text-align:center;animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+.sticker b{display:block;font-size:clamp(3rem,15vw,5.5rem);font-weight:600;line-height:1.15}
+.sticker small{display:block;font-size:1.05rem;margin-top:-.2em;padding-bottom:.3em}
+@keyframes pop{from{transform:rotate(-6deg) scale(.4);opacity:0}to{transform:rotate(-6deg) scale(1);opacity:1}}
+.confetti{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:5}
+.confetti i{position:absolute;top:-24px;width:10px;height:16px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+/* caller */
+.steps{list-style:none;counter-reset:s;margin:0 0 18px;padding:0;display:grid;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:10px;align-items:start}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:var(--sun);color:var(--sun-ink);border:2px solid var(--edge);font-weight:600;line-height:1}
+.ticket{background:var(--sun);color:var(--sun-ink);border:3px solid var(--edge);border-radius:18px;box-shadow:6px 6px 0 var(--edge);padding:16px 18px 20px;min-height:9.5rem;display:grid;align-content:center;justify-items:center;text-align:center;margin-bottom:16px}
+.round{margin:0 0 12px;font-size:.95rem;border-bottom:2px dashed currentColor;padding-bottom:6px;width:100%}
+.trait{margin:0;font-size:clamp(1.6rem,6vw,2.3rem);font-weight:600;line-height:1.4;text-wrap:balance;overflow-wrap:anywhere}
+.ticket.idle .trait{font-size:1.15rem;font-weight:400}
+.ticket.land .trait{animation:land .25s ease-out}
+@keyframes land{from{transform:scale(1.18)}to{transform:scale(1)}}
+.rules .steps{margin-bottom:0}
+.rules b{color:var(--pink)}
+.remain{margin:10px 0 0;color:var(--muted);font-size:.95rem;text-align:center}
+
+/* extras */
+.extras{display:grid;gap:18px}
+.history{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.history li{background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:3px 12px 3px 4px;display:flex;align-items:center;gap:8px;font-size:.95rem}
+.history .num{display:grid;place-items:center;min-width:1.6rem;height:1.6rem;padding:0 4px;border-radius:999px;background:var(--ink);color:var(--surface);font-size:.85rem;line-height:1}
+.check{display:flex;gap:10px;align-items:center;cursor:pointer}
+.check input{width:1.3rem;height:1.3rem;accent-color:var(--pink);margin:0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.traits-line{border-top:2px solid var(--line);padding-top:16px}
+.traits-line span{color:var(--muted)}
+
+/* dialog */
+dialog{border:3px solid var(--edge);border-radius:18px;background:var(--surface);color:var(--ink);padding:20px;width:min(520px,calc(100vw - 32px));box-shadow:8px 8px 0 var(--edge);font-family:var(--ui)}
+dialog::backdrop{background:rgba(20,18,53,.6)}
+dialog p{margin:0 0 10px;color:var(--muted)}
+dialog textarea{width:100%;font:inherit;font-size:16px;line-height:1.6;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);resize:vertical}
+dialog .row{margin-top:14px;justify-content:flex-end}
+dialog .err{color:var(--pink);font-weight:500;min-height:1.5em;margin:8px 0 0}
+.btn.save{background:var(--pink);color:var(--pink-ink)}
+.print-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 14px}
+.print-grid label{display:grid;gap:4px;font-weight:500}
+.print-grid input,.print-grid select{font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body data-mode="edit">
+<div class="page">
+  <header>
+    <h1>บิงโกลักษณะ</h1>
+    <p>เล่นเป็นกลุ่ม สุ่มลักษณะทีละข้อ กลุ่มไหนมีชื่อตรงยกมือเสนอ 10 วินาทีไม่มีใครค้านได้กา ครบแถวก่อนได้บิงโก</p>
+    <p style="margin-top:8px"><a href="/game/bingo/online/" class="btn small" style="display:inline-block;text-decoration:none">เล่นออนไลน์ (แต่ละกลุ่มใช้มือถือ)</a> <a href="/game/" class="btn small" style="display:inline-block;text-decoration:none">รวมเกม</a></p>
+  </header>
+
+  <main class="layout">
+    <section class="board-area" aria-label="ตารางบิงโก">
+      <div class="toolbar edit-only">
+        <fieldset class="sizes">
+          <legend class="sr">ขนาดตาราง</legend>
+          <label><input type="radio" name="size" value="3"><span>3×3</span></label>
+          <label><input type="radio" name="size" value="4"><span>4×4</span></label>
+          <label><input type="radio" name="size" value="5"><span>5×5</span></label>
+        </fieldset>
+        <button type="button" class="btn small" id="randomBtn">สุ่มชื่อดังใส่ตาราง</button>
+        <button type="button" class="btn small" id="shuffleBtn">สลับตำแหน่งชื่อ</button>
+        <button type="button" class="btn small" id="clearBtn">ล้างชื่อทั้งหมด</button>
+      </div>
+      <div class="board-wrap">
+        <div class="board" id="board"></div>
+        <div class="banner" id="banner" hidden><div class="sticker"><b>บิงโก!</b><small id="bannerSub"></small></div></div>
+      </div>
+      <div class="under">
+        <span class="status" id="status"></span>
+        <span class="hint" id="hint" role="status"></span>
+      </div>
+    </section>
+
+    <section class="caller">
+      <div class="edit-only">
+        <h2>วิธีเล่น</h2>
+        <ol class="steps">
+          <li><span>พิมพ์การ์ดแจกกลุ่มละ 1 ใบ หรือเขียนชื่อคน ตัวการ์ตูน ตัวละครลงตารางเอง</span></li>
+          <li><span>กดสุ่มลักษณะ ช่องไหนตรงกับลักษณะนั้นให้กา</span></li>
+          <li><span>เล่นเป็น<b>กลุ่ม</b> กลุ่มละ 1 การ์ด แต่ละรอบกลุ่มกาได้แค่ <b>1 ช่อง</b></span></li>
+          <li><span>กลุ่มที่มีชื่อตรงกับลักษณะ <b>ยกมือเสนอ</b>พิธีกร</span></li>
+          <li><span><b>จับเวลา 10 วินาที</b> ถ้าไม่มีกลุ่มไหนค้าน ได้กาช่องนั้น</span></li>
+          <li><span>ถ้ามีกลุ่ม<b>ค้าน</b> ให้เหตุผลฝ่ายละ <b>15 วินาที</b> แล้ว<b>กรรมการ</b>ตัดสิน: ฝ่ายเสนอชนะ = ได้กา, ฝ่ายค้านชนะ = ฝ่ายค้านได้ <b>1 คะแนน</b></span></li>
+          <li><span>กาครบแถว แนวนอน แนวตั้ง หรือแนวทแยง ตะโกน <b>"บิงโก!"</b> ที่ 1 ได้ <b>+10</b> ที่ 2 <b>+5</b> ที่ 3 <b>+3</b></span></li>
+          <li><span><b>คะแนนรวม</b> = ช่องที่กาได้ ช่องละ 1 คะแนน + คะแนนจากการค้าน + คะแนนบิงโก</span></li>
+        </ol>
+        <button type="button" class="btn primary" id="startBtn">เริ่มเกม</button>
+      </div>
+      <div class="play-only">
+        <div class="ticket idle" id="ticket">
+          <p class="round" id="round" hidden></p>
+          <p class="trait" id="trait"></p>
+        </div>
+        <button type="button" class="btn primary" id="drawBtn">สุ่มลักษณะ</button>
+        <p class="remain" id="remain"></p>
+      </div>
+    </section>
+
+    <section class="extras">
+      <div class="play-only rules">
+        <h2>กติกา</h2>
+        <ol class="steps">
+          <li><span>เล่นเป็น<b>กลุ่ม</b> กลุ่มละ 1 การ์ด แต่ละรอบกลุ่มกาได้แค่ <b>1 ช่อง</b></span></li>
+          <li><span>กลุ่มที่มีชื่อตรงกับลักษณะ <b>ยกมือเสนอ</b>พิธีกร</span></li>
+          <li><span><b>จับเวลา 10 วินาที</b> ถ้าไม่มีกลุ่มไหนค้าน ได้กาช่องนั้น</span></li>
+          <li><span>ถ้ามีกลุ่ม<b>ค้าน</b> ให้เหตุผลฝ่ายละ <b>15 วินาที</b> แล้ว<b>กรรมการ</b>ตัดสิน: ฝ่ายเสนอชนะ = ได้กา, ฝ่ายค้านชนะ = ฝ่ายค้านได้ <b>1 คะแนน</b></span></li>
+          <li><span>กาครบแถว แนวนอน แนวตั้ง หรือแนวทแยง ตะโกน <b>"บิงโก!"</b> ที่ 1 ได้ <b>+10</b> ที่ 2 <b>+5</b> ที่ 3 <b>+3</b></span></li>
+          <li><span><b>คะแนนรวม</b> = ช่องที่กาได้ ช่องละ 1 คะแนน + คะแนนจากการค้าน + คะแนนบิงโก</span></li>
+        </ol>
+      </div>
+      <div class="play-only" id="historyWrap" hidden>
+        <h2>ลักษณะที่ออกแล้ว</h2>
+        <ol class="history" id="history"></ol>
+      </div>
+      <label class="check play-only" hidden><input type="checkbox" id="oneRule"> กาได้รอบละ 1 ช่อง</label>
+      <div class="row play-only">
+        <button type="button" class="btn small" id="newBtn">เริ่มเกมใหม่</button>
+        <button type="button" class="btn small" id="editBtn">กลับหน้าตั้งค่า</button>
+      </div>
+      <div class="row traits-line">
+        <button type="button" class="btn small" id="traitsBtn">แก้รายการลักษณะ</button>
+        <span id="traitCount"></span>
+      </div>
+      <div class="row">
+        <button type="button" class="btn small" id="printBtn">พิมพ์การ์ด A4</button>
+        <span class="status">แผ่นละ 4 การ์ด ชื่อสุ่มไม่ซ้ำกันทุกใบ</span>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="sr" id="live" aria-live="polite"></div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <h2 id="dlgTitle">รายการลักษณะ</h2>
+  <p>พิมพ์บรรทัดละ 1 ลักษณะ เพิ่ม ลบ หรือแก้ได้ตามใจ</p>
+  <textarea id="traitText" rows="12" spellcheck="false"></textarea>
+  <p class="err" id="dlgErr"></p>
+  <div class="row">
+    <button type="button" class="btn small" id="resetTraits">คืนค่าเริ่มต้น</button>
+    <button type="button" class="btn small" id="cancelTraits">ยกเลิก</button>
+    <button type="button" class="btn small save" id="saveTraits">บันทึกรายการ</button>
+  </div>
+</dialog>
+
+<dialog id="printDlg" aria-labelledby="printTitle">
+  <h2 id="printTitle">พิมพ์การ์ดบิงโก</h2>
+  <p>A4 แผ่นละ 4 การ์ด แต่ละใบสุ่มชื่อดังจากคลังชื่อ (ไม่ซ้ำกันในใบเดียวกัน)</p>
+  <div class="print-grid">
+    <label>จำนวนแผ่น<input type="number" id="printSheets" min="1" max="100" value="30"></label>
+    <label>ขนาดตาราง<select id="printSize"><option value="3">3×3</option><option value="4">4×4</option><option value="5">5×5</option></select></label>
+  </div>
+  <label class="check"><input type="checkbox" id="printTraits" checked> แนบหน้ารายการลักษณะสำหรับผู้ดำเนินเกม</label>
+  <p class="err" id="printErr"></p>
+  <div class="row">
+    <button type="button" class="btn small" id="cancelPrint">ยกเลิก</button>
+    <button type="button" class="btn small save" id="doPrint">พิมพ์</button>
+  </div>
+</dialog>
+
+<script src="/game/bingo/bingo-data.js?v=20261008-3"></script>
+<script>
+(function(){
+  var DEFAULT_TRAITS = window.BINGO_DATA.traits.slice();
+  // คลังชื่อดังที่คนทั่วไปรู้จัก (คนไทย ดาราต่างประเทศ ตัวการ์ตูน ตัวละคร) ใช้สุ่มลงตารางและพิมพ์การ์ด
+  var NAME_POOL = window.BINGO_DATA.names.slice();
+  var KEY = "trait-bingo-v2", MAX = 5;
+  var $ = function(id){ return document.getElementById(id); };
+  var board = $("board"), hintEl = $("hint"), statusEl = $("status"), live = $("live");
+  var ticket = $("ticket"), roundEl = $("round"), traitEl = $("trait"), remainEl = $("remain");
+  var drawBtn = $("drawBtn"), dlg = $("dlg");
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var state = {
+    size: 3, names: blank(""), marks: blank(0), mode: "edit",
+    traits: DEFAULT_TRAITS.slice(), deck: [], drawn: [], current: null,
+    round: 0, oneRule: false, lines: 0, busy: false
+  };
+
+  function blank(v){ var a = []; for (var i = 0; i < MAX*MAX; i++) a.push(v); return a; }
+  function shuffle(a){ for (var i = a.length-1; i > 0; i--){ var j = Math.floor(Math.random()*(i+1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function inUse(){ var o = []; for (var r = 0; r < state.size; r++) for (var c = 0; c < state.size; c++) o.push(r*MAX+c); return o; }
+  function lenClass(s){ var n = s.replace(/[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/g, "").length; return n <= 6 ? "s" : n <= 12 ? "m" : "l"; }
+
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY); if (!raw) return;
+      var d = JSON.parse(raw);
+      if ([3,4,5].indexOf(d.size) >= 0) state.size = d.size;
+      if (Array.isArray(d.names) && d.names.length === MAX*MAX)
+        state.names = d.names.map(function(x){ return typeof x === "string" ? x.slice(0,40) : ""; });
+      if (Array.isArray(d.traits)) {
+        // ลักษณะเรื่องอายุถูกเอาออกจากเกมแล้ว ล้างออกจากรายการที่เคยบันทึกไว้ในเครื่องด้วย
+        var REMOVED = ["อายุเกิน 50 ปี", "อายุมากกว่าเรา", "อายุน้อยกว่าเรา"];
+        var t = cleanTraits(d.traits.filter(function(x){ return REMOVED.indexOf(x) < 0; }).join("\n"));
+        if (t.length >= 3) state.traits = t;
+      }
+      state.oneRule = !!d.oneRule;
+    } catch (e) {}
+  }
+  var saveTimer = null;
+  function save(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function(){
+      try { localStorage.setItem(KEY, JSON.stringify({ size: state.size, names: state.names, traits: state.traits, oneRule: state.oneRule })); } catch (e) {}
+    }, 200);
+  }
+  function cleanTraits(text){
+    var seen = {}, out = [];
+    String(text).split("\n").forEach(function(l){
+      l = l.trim().slice(0,80);
+      if (l && !seen[l]) { seen[l] = 1; out.push(l); }
+    });
+    return out.slice(0,300);
+  }
+
+  function hint(msg){ hintEl.textContent = msg || ""; }
+
+  /* ---------- board ---------- */
+  function renderBoard(){
+    board.style.setProperty("--n", state.size);
+    board.textContent = "";
+    for (var r = 0; r < state.size; r++) for (var c = 0; c < state.size; c++) {
+      var i = r*MAX+c, name = state.names[i], cell, span = document.createElement("span");
+      span.className = "name";
+      if (state.mode === "edit") {
+        cell = document.createElement("div");
+        cell.className = "cell editable";
+        try { span.contentEditable = "plaintext-only"; } catch (e) { span.contentEditable = "true"; }
+        span.setAttribute("role", "textbox");
+        span.setAttribute("aria-label", "แถว " + (r+1) + " ช่องที่ " + (c+1));
+        span.setAttribute("enterkeyhint", "next");
+        span.spellcheck = false;
+        span.dataset.ph = "เขียนชื่อ";
+        span.dataset.i = i;
+      } else {
+        cell = document.createElement("button");
+        cell.type = "button";
+        cell.className = "cell";
+        cell.dataset.i = i;
+      }
+      span.textContent = name;
+      cell.dataset.len = lenClass(name);
+      cell.appendChild(span);
+      board.appendChild(cell);
+    }
+    if (state.mode === "play") paintMarks(-1);
+    updateStatus();
+  }
+
+  function completedLines(){
+    var n = state.size, L = [], k, r, c, line;
+    for (r = 0; r < n; r++){ line = []; for (c = 0; c < n; c++) line.push(r*MAX+c); L.push(line); }
+    for (c = 0; c < n; c++){ line = []; for (r = 0; r < n; r++) line.push(r*MAX+c); L.push(line); }
+    line = []; for (k = 0; k < n; k++) line.push(k*MAX+k); L.push(line);
+    line = []; for (k = 0; k < n; k++) line.push(k*MAX+(n-1-k)); L.push(line);
+    return L.filter(function(l){ return l.every(function(i){ return state.marks[i]; }); });
+  }
+
+  function paintMarks(fresh){
+    var win = {};
+    completedLines().forEach(function(l){ l.forEach(function(i){ win[i] = 1; }); });
+    Array.prototype.forEach.call(board.querySelectorAll("button.cell"), function(b){
+      var i = +b.dataset.i, on = !!state.marks[i], st = b.querySelector(".stamp");
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.classList.toggle("win", !!win[i]);
+      if (on && !st) {
+        st = document.createElement("span");
+        st.className = "stamp" + (i === fresh ? " fresh" : "");
+        st.setAttribute("aria-hidden", "true");
+        b.appendChild(st);
+      } else if (!on && st) st.remove();
+    });
+  }
+
+  function updateStatus(){
+    var cells = inUse(), total = cells.length;
+    if (state.mode === "edit") {
+      var filled = cells.filter(function(i){ return state.names[i]; }).length;
+      statusEl.textContent = "เขียนแล้ว " + filled + " จาก " + total + " ช่อง";
+    } else {
+      var marked = cells.filter(function(i){ return state.marks[i]; }).length;
+      statusEl.textContent = "กาแล้ว " + marked + " จาก " + total + " ช่อง" + (state.lines ? " ได้บิงโก " + state.lines + " แถว" : "");
+    }
+  }
+
+  function toggleMark(i){
+    if (state.busy) return;
+    if (!state.round) { hint("กดสุ่มลักษณะก่อน แล้วค่อยกาช่องที่ตรง"); return; }
+    var fresh = -1;
+    if (state.marks[i]) state.marks[i] = 0;
+    else {
+      if (state.oneRule && inUse().some(function(j){ return state.marks[j] === state.round; })) {
+        hint("รอบนี้กาไปแล้ว 1 ช่อง แตะช่องเดิมเพื่อยกเลิกก่อนถ้าจะเปลี่ยน"); return;
+      }
+      state.marks[i] = state.round; fresh = i;
+    }
+    hint("");
+    var before = state.lines;
+    state.lines = completedLines().length;
+    paintMarks(fresh);
+    updateStatus();
+    if (state.lines > before) celebrate(state.lines);
+  }
+
+  /* ---------- editing names ---------- */
+  function readName(span){ return span.textContent.replace(/\s+/g, " ").trim().slice(0,40); }
+
+  board.addEventListener("input", function(e){
+    var span = e.target; if (!span.classList || !span.classList.contains("name")) return;
+    var v = readName(span);
+    if (!v && span.childNodes.length && !span.textContent.length) span.textContent = "";
+    state.names[+span.dataset.i] = v;
+    span.parentNode.dataset.len = lenClass(v);
+    hint(""); updateStatus(); save();
+  });
+  board.addEventListener("focusout", function(e){
+    var span = e.target; if (!span.classList || !span.classList.contains("name") || span.dataset.i === undefined) return;
+    var v = state.names[+span.dataset.i];
+    if (span.textContent !== v) span.textContent = v;
+  });
+  board.addEventListener("keydown", function(e){
+    var span = e.target;
+    if (state.mode !== "edit" || e.key !== "Enter" || e.isComposing) return;
+    e.preventDefault();
+    var all = Array.prototype.slice.call(board.querySelectorAll(".name"));
+    var next = all[all.indexOf(span) + 1];
+    if (next) focusEnd(next); else span.blur();
+  });
+  board.addEventListener("paste", function(e){
+    if (state.mode !== "edit") return;
+    e.preventDefault();
+    var text = ((e.clipboardData || window.clipboardData).getData("text") || "").replace(/\s+/g, " ");
+    if (!document.execCommand || !document.execCommand("insertText", false, text)) {
+      var sel = window.getSelection();
+      if (sel.rangeCount) { var rg = sel.getRangeAt(0); rg.deleteContents(); rg.insertNode(document.createTextNode(text)); rg.collapse(false); }
+      e.target.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+  board.addEventListener("click", function(e){
+    if (state.mode === "edit") {
+      var cell = e.target.closest(".cell");
+      if (cell && e.target === cell) focusEnd(cell.querySelector(".name"));
+    } else {
+      var b = e.target.closest("button.cell");
+      if (b) toggleMark(+b.dataset.i);
+    }
+  });
+  function focusEnd(span){
+    span.focus();
+    try { var rg = document.createRange(); rg.selectNodeContents(span); rg.collapse(false); var s = window.getSelection(); s.removeAllRanges(); s.addRange(rg); } catch (e) {}
+  }
+
+  /* ---------- panel ---------- */
+  function renderPanel(){
+    document.body.dataset.mode = state.mode;
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="size"]'), function(r){ r.checked = (+r.value === state.size); });
+    $("traitCount").textContent = "ตอนนี้มี " + state.traits.length + " ข้อ";
+    $("oneRule").checked = state.oneRule;
+    if (state.mode !== "play") return;
+    if (state.round) {
+      roundEl.hidden = false; roundEl.textContent = "รอบที่ " + state.round;
+      traitEl.textContent = state.current; ticket.classList.remove("idle");
+    } else {
+      roundEl.hidden = true; traitEl.textContent = "กดสุ่มลักษณะเพื่อเริ่มรอบแรก"; ticket.classList.add("idle");
+    }
+    remainEl.textContent = state.deck.length
+      ? "เหลืออีก " + state.deck.length + " ลักษณะที่ยังไม่ออก"
+      : "ออกครบทุกลักษณะแล้ว สุ่มครั้งต่อไปจะสับใหม่ทั้งหมด";
+    var h = $("history"); h.textContent = "";
+    for (var k = state.drawn.length - 1; k >= 0; k--) {
+      var li = document.createElement("li"), num = document.createElement("span");
+      num.className = "num"; num.textContent = k + 1;
+      li.appendChild(num); li.appendChild(document.createTextNode(state.drawn[k]));
+      h.appendChild(li);
+    }
+    $("historyWrap").hidden = !state.drawn.length;
+  }
+
+  function resetRound(){
+    state.marks = blank(0); state.drawn = []; state.current = null;
+    state.round = 0; state.lines = 0; state.busy = false; drawBtn.disabled = false;
+    state.deck = shuffle(state.traits.slice());
+    $("banner").hidden = true;
+  }
+
+  function draw(){
+    if (state.busy) return;
+    if (!state.deck.length) state.deck = shuffle(state.traits.slice());
+    var trait = state.deck.pop();
+    state.busy = true; drawBtn.disabled = true; hint("");
+    function finish(){
+      state.round++; state.current = trait; state.drawn.push(trait);
+      state.busy = false; drawBtn.disabled = false;
+      renderPanel();
+      ticket.classList.remove("land"); void ticket.offsetWidth; ticket.classList.add("land");
+      live.textContent = "รอบที่ " + state.round + " " + trait;
+    }
+    // แสดงเฉพาะลักษณะที่สุ่มได้ ไม่วนโชว์ลักษณะอื่นระหว่างสุ่ม
+    finish();
+  }
+
+  function start(){
+    // โหมดเล่นไม่แสดงตาราง (ใช้การ์ดที่พิมพ์) เริ่มได้เลยไม่ต้องเขียนชื่อให้ครบ
+    hint(""); state.mode = "play"; resetRound(); renderBoard(); renderPanel();
+    window.scrollTo(0, 0);
+  }
+
+  function celebrate(n){
+    var banner = $("banner");
+    $("bannerSub").textContent = n > 1 ? "ครบ " + n + " แถวแล้ว" : "";
+    banner.hidden = true; void banner.offsetWidth; banner.hidden = false;
+    live.textContent = "บิงโก ครบ " + n + " แถว";
+    clearTimeout(celebrate.t);
+    celebrate.t = setTimeout(function(){ banner.hidden = true; }, 2400);
+    if (reduced) return;
+    var box = document.createElement("div"); box.className = "confetti";
+    var colors = ["var(--sun)", "var(--pink)", "var(--focus)", "var(--ink)"];
+    for (var k = 0; k < 36; k++) {
+      var p = document.createElement("i");
+      p.style.left = (Math.random()*100) + "%";
+      p.style.background = colors[k % colors.length];
+      p.style.animationDuration = (1.2 + Math.random()*1.1) + "s";
+      p.style.animationDelay = (Math.random()*0.3) + "s";
+      box.appendChild(p);
+    }
+    document.body.appendChild(box);
+    setTimeout(function(){ box.remove(); }, 2800);
+  }
+
+  /* two-tap confirm for actions that throw work away */
+  function armed(btn, askLabel, needs, fn){
+    var orig = btn.textContent, t = null;
+    function disarm(){ clearTimeout(t); t = null; btn.textContent = orig; btn.classList.remove("armed"); }
+    btn.addEventListener("click", function(){
+      if (t || !needs()) { disarm(); fn(); return; }
+      btn.textContent = askLabel; btn.classList.add("armed");
+      t = setTimeout(disarm, 3000);
+    });
+  }
+
+  /* ---------- wiring ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="size"]'), function(r){
+    r.addEventListener("change", function(){ state.size = +r.value; hint(""); renderBoard(); save(); });
+  });
+  $("shuffleBtn").addEventListener("click", function(){
+    var cells = inUse(), names = shuffle(cells.map(function(i){ return state.names[i]; }));
+    cells.forEach(function(i, k){ state.names[i] = names[k]; });
+    renderBoard(); save();
+  });
+  armed($("clearBtn"), "กดอีกครั้งเพื่อล้าง",
+    function(){ return inUse().some(function(i){ return state.names[i]; }); },
+    function(){ inUse().forEach(function(i){ state.names[i] = ""; }); hint(""); renderBoard(); save(); });
+  /* สุ่มชื่อดังลงทุกช่องของตาราง (ไม่ซ้ำกัน) */
+  function pickNames(n){ return shuffle(NAME_POOL.slice()).slice(0, n); }
+  armed($("randomBtn"), "กดอีกครั้ง ชื่อเดิมจะถูกแทน",
+    function(){ return inUse().some(function(i){ return state.names[i]; }); },
+    function(){ var cells = inUse(), names = pickNames(cells.length); cells.forEach(function(i, k){ state.names[i] = names[k]; }); hint(""); renderBoard(); save(); });
+
+  /* พิมพ์การ์ด: A4 แผ่นละ 4 ใบ (2×2) เปิดหน้าต่างใหม่แล้วสั่งพิมพ์ */
+  function escHtml(t){ return String(t).replace(/[&<>"]/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]; }); }
+  function printCards(sheets, size, withTraits){
+    var win = window.open("", "_blank");
+    if (!win) { $("printErr").textContent = "เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาตป๊อปอัป"; return false; }
+    var base = { 3: 15, 4: 11.5, 5: 9 }[size];
+    var pages = [], no = 0;
+    for (var p = 0; p < sheets; p++) {
+      var cards = [];
+      for (var c = 0; c < 4; c++) {
+        no++;
+        var cells = pickNames(size * size).map(function(name){
+          var len = lenClass(name), fs = len === "s" ? base : len === "m" ? base * 0.85 : base * 0.72;
+          return '<div class="cell" style="font-size:' + fs.toFixed(1) + 'pt">' + escHtml(name) + "</div>";
+        }).join("");
+        cards.push('<div class="card"><div class="head"><b>บิงโกลักษณะ</b><span>ใบที่ ' + no + '</span></div>'
+          + '<div class="grid" style="grid-template-columns:repeat(' + size + ',1fr);grid-template-rows:repeat(' + size + ',1fr)">' + cells + "</div>"
+          + '<div class="foot">ชื่อกลุ่ม ..............................................</div><div class="rule">กาได้รอบละ 1 ช่อง · เสนอแล้ว 10 วิไม่มีใครค้านได้กา · ช่องละ 1 คะแนน</div></div>');
+      }
+      pages.push('<section class="sheet">' + cards.join("") + "</section>");
+    }
+    if (withTraits) {
+      var items = state.traits.map(function(t, i){ return "<li>" + escHtml(t) + "</li>"; }).join("");
+      pages.push('<section class="traits"><h1>รายการลักษณะ (สำหรับผู้ดำเนินเกม)</h1><p>เล่นเป็นกลุ่ม กลุ่มละ 1 การ์ด แต่ละรอบกลุ่มกาได้แค่ 1 ช่อง · กลุ่มที่มีชื่อตรงยกมือเสนอ จับเวลา 10 วินาที ไม่มีใครค้านได้กา · มีคนค้าน ให้เหตุผลฝ่ายละ 15 วินาที กรรมการตัดสิน ฝ่ายเสนอชนะได้กา ฝ่ายค้านชนะได้ 1 คะแนน · บิงโกที่ 1 +10 ที่ 2 +5 ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน</p><ol>' + items + "</ol></section>");
+    }
+    win.document.write('<!doctype html><html lang="th"><head><meta charset="utf-8"><title>การ์ดบิงโกลักษณะ</title>'
+      + '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mali:wght@600&family=Mitr:wght@400;500&display=swap">'
+      + "<style>@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+      + "body{margin:0;font-family:Mitr,'Leelawadee UI',Tahoma,sans-serif;color:#1E1B4B;background:#e5e7eb}"
+      + ".sheet{width:194mm;height:280mm;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:6mm;break-after:page;page-break-after:always;background:#fff}"
+      + ".card{border:0.6mm dashed #9aa0c8;border-radius:4mm;padding:4mm;display:flex;flex-direction:column;gap:2.5mm;min-height:0}"
+      + ".head{display:flex;justify-content:space-between;align-items:baseline}.head b{font-size:15pt;font-weight:500}.head span{font-size:10pt;color:#57568C}"
+      + ".grid{flex:1;display:grid;border:0.7mm solid #1E1B4B;border-radius:2.5mm;overflow:hidden;gap:0.35mm;background:#1E1B4B;min-height:0}"
+      + ".cell{background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:1mm;font-family:Mali,Mitr,sans-serif;font-weight:600;line-height:1.2;overflow-wrap:anywhere;overflow:hidden}"
+      + ".foot{font-size:10pt;color:#57568C}.rule{font-size:8.5pt;color:#D81B66;margin-top:-1.5mm}"
+      + ".traits{width:194mm;margin:0 auto;background:#fff;padding:2mm}.traits h1{font-size:16pt;margin:0 0 2mm;font-weight:500}.traits p{margin:0 0 4mm;font-size:10.5pt;color:#57568C}"
+      + ".traits ol{columns:3;column-gap:8mm;margin:0;padding-left:7mm;font-size:10.5pt;line-height:1.55}"
+      + "@media screen{body{padding:8mm 0}.sheet,.traits{margin-bottom:8mm;padding:8mm;width:210mm;height:297mm;box-shadow:0 2px 10px rgba(0,0,0,.15)}.traits{height:auto}}"
+      + "</style></head><body>" + pages.join("")
+      + "<script>(document.fonts?document.fonts.ready:Promise.resolve()).then(function(){setTimeout(function(){window.print()},300)});<\/script></body></html>");
+    win.document.close();
+    return true;
+  }
+  $("printBtn").addEventListener("click", function(){
+    $("printSize").value = String(state.size); $("printErr").textContent = "";
+    if ($("printDlg").showModal) $("printDlg").showModal(); else $("printDlg").setAttribute("open", "");
+  });
+  function closePrint(){ var d = $("printDlg"); if (d.close) d.close(); else d.removeAttribute("open"); }
+  $("cancelPrint").addEventListener("click", closePrint);
+  $("doPrint").addEventListener("click", function(){
+    var sheets = Math.round(+$("printSheets").value), size = +$("printSize").value;
+    if (!(sheets >= 1 && sheets <= 100)) { $("printErr").textContent = "จำนวนแผ่นต้องอยู่ระหว่าง 1-100"; return; }
+    if (printCards(sheets, size, $("printTraits").checked)) closePrint();
+  });
+
+  $("startBtn").addEventListener("click", start);
+  drawBtn.addEventListener("click", draw);
+  armed($("newBtn"), "กดอีกครั้งเพื่อเริ่มใหม่",
+    function(){ return state.round > 0; },
+    function(){ hint(""); resetRound(); renderBoard(); renderPanel(); });
+  armed($("editBtn"), "กดอีกครั้ง ประวัติจะหาย",
+    function(){ return state.round > 0; },
+    function(){ hint(""); resetRound(); state.mode = "edit"; renderBoard(); renderPanel(); });
+  $("oneRule").addEventListener("change", function(e){ state.oneRule = e.target.checked; hint(""); save(); });
+
+  $("traitsBtn").addEventListener("click", function(){
+    $("traitText").value = state.traits.join("\n"); $("dlgErr").textContent = "";
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+  });
+  function closeDlg(){ if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
+  $("cancelTraits").addEventListener("click", closeDlg);
+  $("resetTraits").addEventListener("click", function(){ $("traitText").value = DEFAULT_TRAITS.join("\n"); $("dlgErr").textContent = ""; });
+  $("saveTraits").addEventListener("click", function(){
+    var t = cleanTraits($("traitText").value);
+    if (t.length < 3) { $("dlgErr").textContent = "ต้องมีอย่างน้อย 3 ลักษณะ ตอนนี้มี " + t.length + " ข้อ"; return; }
+    state.traits = t;
+    state.deck = shuffle(t.filter(function(x){ return state.drawn.indexOf(x) < 0; }));
+    save(); renderPanel(); closeDlg();
+  });
+
+  load();
+  renderBoard();
+  renderPanel();
+})();
+</script>
+</body>
+</html>

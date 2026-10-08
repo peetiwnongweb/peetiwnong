@@ -1,3 +1,7 @@
 # ลิงก์เก่า /webmanager ย้ายไปเป็น /superadmin แล้ว - ส่งต่ออัตโนมัติ กันบุ๊กมาร์กเดิมเข้าไม่ได้
 /webmanager /superadmin/ 301
 /webmanager/* /superadmin/:splat 301
+
+# บิงโกย้ายไปอยู่ใต้ /game/bingo/ (หน้า /game/ เป็นหน้ารวมเกม) - ลิงก์/QR เดิมของบิงโกออนไลน์ส่งต่ออัตโนมัติ
+/game/online /game/bingo/online/ 301
+/game/online/ /game/bingo/online/ 301

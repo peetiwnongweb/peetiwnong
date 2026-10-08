@@ -1,7 +1,7 @@
 // เกมบิงโกลักษณะแบบออนไลน์ (หน้า /game/bingo/online/) - เก็บห้องไว้ในหน่วยความจำ (เกมสั้น ๆ ไม่ต้องลงฐานข้อมูล)
 // กติกา: กลุ่มกดชื่อที่ตรงกับลักษณะ = ยกมือเสนอ -> จับเวลา 10 วิ ไม่มีกลุ่มไหนค้าน = ได้กา
 //        มีกลุ่มค้าน -> ให้เหตุผลฝ่ายละ 15 วิ -> กรรมการ/พิธีกรตัดสิน: ฝ่ายเสนอชนะ = ได้กา, ฝ่ายค้านชนะ = ฝ่ายค้าน +1 คะแนน
-//        กาได้รอบละ 1 ช่อง · บิงโกที่ 1 +10 ที่ 2 +5 ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน
+//        กาได้รอบละ 1 ช่อง · ค้านได้รอบละ 1 ครั้ง · บิงโกที่ 1 +10 ที่ 2 +5 ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน
 // ข้อจำกัด: เซิร์ฟเวอร์รีสตาร์ต (deploy ใหม่) ห้องที่เล่นค้างอยู่จะหาย
 const crypto = require('crypto');
 const QRCode = require('qrcode');
@@ -254,6 +254,7 @@ function playerState(req, res) {
     drawn: room.drawn,
     myRequest: active ? publicRequest(active) : null,
     markedThisRound: thisRound.some((r) => r.status === 'approved'),
+    objectedThisRound: room.requests.some((r) => r.round === room.round && r.objectorId === player.id),
     // ข้อเสนอของกลุ่มอื่นที่ยังค้านได้ (อยู่ในช่วง 10 วิ) และที่กำลังถกเถียง
     others: room.requests.filter((r) => r.playerId !== player.id && ACTIVE.includes(r.status)).map(publicRequest),
     lastDecision: lastDecided ? publicRequest(lastDecided) : null,
@@ -299,6 +300,8 @@ function objectRequest(req, res) {
   if (request.playerId === player.id) return res.status(400).json({ error: 'ค้านข้อเสนอของกลุ่มตัวเองไม่ได้' });
   if (request.status === 'disputed') return res.status(409).json({ error: `${request.objectorName} ค้านไปแล้ว` });
   if (request.status !== 'proposed') return res.status(409).json({ error: 'หมดเวลาค้านแล้ว' });
+  // แต่ละรอบ กลุ่มหนึ่งค้านได้ครั้งเดียว
+  if (room.requests.some((r) => r.round === request.round && r.objectorId === player.id)) return res.status(409).json({ error: 'รอบนี้กลุ่มคุณค้านไปแล้ว ค้านได้รอบละ 1 ครั้ง' });
   request.status = 'disputed';
   request.objectorId = player.id;
   request.objectorName = player.name;

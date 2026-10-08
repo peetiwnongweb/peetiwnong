@@ -311,16 +311,19 @@ tr.me td{font-weight:600;color:var(--pink)}
     }
     function renderObjectionPopup(s) {
       var pop = $('p-objection');
-      // รอบนี้ค้านไปแล้ว ค้านซ้ำไม่ได้ - ไม่ต้องเด้งเตือน
-      var target = s.objectedThisRound ? null : s.others.find(function (r) { return r.status === 'proposed' && !dismissed[r.id] && r.remainingMs > 0; });
+      // เด้งเตือนทุกข้อเสนอ - รอบนี้ค้านไปแล้วก็ยังเห็นว่าใครเสนออะไร แค่กดค้านไม่ได้
+      var target = s.others.find(function (r) { return r.status === 'proposed' && !dismissed[r.id] && r.remainingMs > 0; });
+      var canObject = !s.objectedThisRound;
       if (!target) { pop.classList.add('hidden'); return; }
       if (!alerted[target.id]) { alerted[target.id] = 1; beep(); }
       pop.classList.remove('hidden');
       pop.innerHTML = '<p><b>' + esc(target.playerName) + '</b> ยกมือเสนอ</p>'
         + '<div class="big">"' + esc(target.cellName) + '" = "' + esc(target.trait) + '"</div>'
-        + '<p>ค้านได้ภายใน</p>' + countdownSpan('pop-cd-' + target.id, target.remainingMs) + '<p>วินาที</p>'
-        + '<div class="row"><button class="btn objbtn" id="pop-object">ค้าน!</button><button class="btn skip" id="pop-skip">ไม่ค้าน</button></div>';
-      $('pop-object').onclick = function () { objectTo(target.id, $('pop-object')); };
+        + '<p>' + (canObject ? 'ค้านได้ภายใน' : 'ไม่มีใครค้านภายใน') + '</p>' + countdownSpan('pop-cd-' + target.id, target.remainingMs) + '<p>วินาที' + (canObject ? '' : ' ได้กา') + '</p>'
+        + '<div class="row">' + (canObject
+          ? '<button class="btn objbtn" id="pop-object">ค้าน!</button><button class="btn skip" id="pop-skip">ไม่ค้าน</button>'
+          : '<button class="btn objbtn" disabled>รอบนี้ค้านไปแล้ว</button><button class="btn skip" id="pop-skip">ปิด</button>') + '</div>';
+      if (canObject) $('pop-object').onclick = function () { objectTo(target.id, $('pop-object')); };
       $('pop-skip').onclick = function () { dismissed[target.id] = 1; pop.classList.add('hidden'); };
     }
     function setStatus(text, kind) { var el = $('p-status'); el.textContent = text; el.className = 'status ' + (kind || ''); }

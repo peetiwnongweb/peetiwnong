@@ -149,7 +149,7 @@ tr.me td{font-weight:600;color:var(--pink)}
         <div class="card">
           <h2>กติกา</h2>
           <ol style="margin:0;padding-left:1.2rem">
-            <li>แต่ละรอบ กดชื่อที่ตรงกับลักษณะ = <b>ยกมือเสนอ</b> (กาได้รอบละ 1 ช่อง · ทั้งห้องเสนอได้ทีละข้อ)</li>
+            <li>แต่ละรอบ กดชื่อที่ตรงกับลักษณะ = <b>ยกมือเสนอ</b> (กาได้รอบละ 1 ช่อง · ทั้งห้องเสนอได้ทีละข้อ · ค้านได้รอบละ 1 ครั้ง)</li>
             <li>ไม่มีกลุ่มไหน<b>ค้าน</b>ภายใน 10 วินาที ได้กา</li>
             <li>มีคนค้าน ให้เหตุผลฝ่ายละ 15 วินาที กรรมการตัดสิน: ฝ่ายเสนอชนะได้กา ฝ่ายค้านชนะได้ +1 คะแนน</li>
             <li>บิงโกที่ 1 +10 · ที่ 2 +5 · ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน</li>
@@ -311,7 +311,8 @@ tr.me td{font-weight:600;color:var(--pink)}
     }
     function renderObjectionPopup(s) {
       var pop = $('p-objection');
-      var target = s.others.find(function (r) { return r.status === 'proposed' && !dismissed[r.id] && r.remainingMs > 0; });
+      // รอบนี้ค้านไปแล้ว ค้านซ้ำไม่ได้ - ไม่ต้องเด้งเตือน
+      var target = s.objectedThisRound ? null : s.others.find(function (r) { return r.status === 'proposed' && !dismissed[r.id] && r.remainingMs > 0; });
       if (!target) { pop.classList.add('hidden'); return; }
       if (!alerted[target.id]) { alerted[target.id] = 1; beep(); }
       pop.classList.remove('hidden');
@@ -379,7 +380,7 @@ tr.me td{font-weight:600;color:var(--pink)}
       // ข้อเสนอของกลุ่มอื่น: ค้านได้ภายใน 10 วิ
       $('p-others').innerHTML = s.others.length ? s.others.map(function (r) {
         if (r.status === 'proposed') {
-          return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" = "' + esc(r.trait) + '" · เหลือ ' + countdownSpan('cd-' + r.id, r.remainingMs) + ' วิ</span><button class="btn small primary" data-object="' + r.id + '">ค้าน</button></div>';
+          return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" = "' + esc(r.trait) + '" · เหลือ ' + countdownSpan('cd-' + r.id, r.remainingMs) + ' วิ</span>' + (s.objectedThisRound ? '<span class="muted">รอบนี้ค้านไปแล้ว</span>' : '<button class="btn small primary" data-object="' + r.id + '">ค้าน</button>') + '</div>';
         }
         return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" · <b>' + esc(r.objectorName) + '</b> ค้าน · รอกรรมการตัดสิน</span></div>';
       }).join('') : '<p class="muted">ยังไม่มี</p>';

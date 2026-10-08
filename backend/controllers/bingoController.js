@@ -1,6 +1,7 @@
 // เกมบิงโกลักษณะแบบออนไลน์ (หน้า /game/online/) - เก็บห้องไว้ในหน่วยความจำ (เกมสั้น ๆ ไม่ต้องลงฐานข้อมูล)
-// พิธีกรสร้างห้อง -> กลุ่มเข้าห้องด้วยรหัส ได้การ์ดสุ่ม -> พิธีกรสุ่มลักษณะ -> กลุ่มกดชื่อที่คิดว่าตรง (= ยกมือถาม)
-// -> พิธีกรกดผ่าน/ไม่ผ่าน (ผ่านถึงได้กา, กาได้รอบละ 1 ช่อง) -> ครบแถวกด "บิงโก" ระบบเช็คแถวให้
+// กติกา: กลุ่มกดชื่อที่ตรงกับลักษณะ = ยกมือเสนอ -> จับเวลา 10 วิ ไม่มีกลุ่มไหนค้าน = ได้กา
+//        มีกลุ่มค้าน -> ให้เหตุผลฝ่ายละ 15 วิ -> กรรมการ/พิธีกรตัดสิน: ฝ่ายเสนอชนะ = ได้กา, ฝ่ายค้านชนะ = ฝ่ายค้าน +1 คะแนน
+//        กาได้รอบละ 1 ช่อง · บิงโกที่ 1 +10 ที่ 2 +5 ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน
 // ข้อจำกัด: เซิร์ฟเวอร์รีสตาร์ต (deploy ใหม่) ห้องที่เล่นค้างอยู่จะหาย
 const crypto = require('crypto');
 const QRCode = require('qrcode');
@@ -9,7 +10,10 @@ const rooms = new Map();
 const ROOM_TTL_MS = 12 * 60 * 60 * 1000;
 const MAX_ROOMS = 60;
 const MAX_PLAYERS = 120;
+const OBJECTION_WINDOW_MS = 10 * 1000;
+const BINGO_BONUS = [10, 5, 3];
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const ACTIVE = ['proposed', 'disputed'];
 
 const token = () => crypto.randomBytes(16).toString('hex');
 const now = () => Date.now();
@@ -43,10 +47,25 @@ function shuffle(arr) {
   return a;
 }
 
+// ข้อเสนอที่ครบ 10 วิแล้วไม่มีใครค้าน = ได้กาอัตโนมัติ (เรียกทุกครั้งที่มีคนดึงสถานะ)
+function settle(room) {
+  const t = now();
+  room.requests.forEach((r) => {
+    if (r.status === 'proposed' && t >= r.deadline) {
+      r.status = 'approved';
+      r.resolution = 'auto';
+      r.decidedAt = t;
+      const p = room.players.get(r.playerId);
+      if (p) p.marked.add(r.cell);
+    }
+  });
+}
+
 function getRoom(req, res) {
   const room = rooms.get(String(req.params.code || '').toUpperCase());
   if (!room) { res.status(404).json({ error: 'ไม่พบห้องนี้ หรือห้องหมดอายุแล้ว' }); return null; }
   room.touchedAt = now();
+  settle(room);
   return room;
 }
 
@@ -76,15 +95,35 @@ function completedLines(n, marked) {
   return lines.filter((line) => line.every((i) => marked.has(i)));
 }
 
+function scoreOf(room, p) {
+  const bingo = room.bingos.find((b) => b.playerId === p.id);
+  const bonus = bingo ? (BINGO_BONUS[bingo.order - 1] || 0) : 0;
+  return { cells: p.marked.size, objections: p.objectionPoints, bonus, total: p.marked.size + p.objectionPoints + bonus };
+}
+
 function playerSummary(room, p) {
   return {
     id: p.id,
     name: p.name,
-    markedCount: p.marked.size,
     lines: completedLines(room.size, p.marked).length,
     bingoAt: p.bingoAt,
     online: now() - p.seenAt < 15000,
+    score: scoreOf(room, p),
   };
+}
+
+function publicRequest(r) {
+  return {
+    id: r.id, playerId: r.playerId, playerName: r.playerName, cell: r.cell, cellName: r.cellName,
+    round: r.round, trait: r.trait, status: r.status, resolution: r.resolution || null,
+    objectorId: r.objectorId || null, objectorName: r.objectorName || null,
+    remainingMs: r.status === 'proposed' ? Math.max(0, r.deadline - now()) : 0,
+    decidedAt: r.decidedAt || null,
+  };
+}
+
+function leaderboard(room) {
+  return [...room.players.values()].map((p) => playerSummary(room, p)).sort((a, b) => b.score.total - a.score.total || a.name.localeCompare(b.name, 'th'));
 }
 
 // ---------- พิธีกร ----------
@@ -118,8 +157,9 @@ function hostState(req, res) {
     current: room.drawn[room.drawn.length - 1] || null,
     drawn: room.drawn,
     remaining: room.deck.length,
-    players: [...room.players.values()].map((p) => playerSummary(room, p)).sort((a, b) => a.name.localeCompare(b.name, 'th')),
-    requests: room.requests.filter((r) => r.status === 'pending'),
+    players: leaderboard(room),
+    active: room.requests.filter((r) => ACTIVE.includes(r.status)).map(publicRequest),
+    recent: room.requests.filter((r) => !ACTIVE.includes(r.status) && r.status !== 'expired').slice(-8).reverse().map(publicRequest),
     bingos: room.bingos,
   });
 }
@@ -131,21 +171,24 @@ function drawTrait(req, res) {
   const trait = room.deck.pop();
   room.drawn.push(trait);
   room.round += 1;
-  // คำขอที่ค้างจากรอบก่อนถือว่าหมดอายุ
-  room.requests.forEach((r) => { if (r.status === 'pending') r.status = 'expired'; });
   res.json({ round: room.round, current: trait });
 }
 
+// ตัดสิน: approve = ฝ่ายเสนอชนะ (ได้กา) / ไม่ approve = ฝ่ายค้านชนะ (ฝ่ายค้าน +1 ถ้ามีคนค้าน) หรือพิธีกรตีตกข้อเสนอที่ผิดชัดเจน
 function decideRequest(req, res) {
   const room = requireHost(req, res);
   if (!room) return;
   const request = room.requests.find((r) => r.id === req.params.requestId);
-  if (!request || request.status !== 'pending') return res.status(404).json({ error: 'คำขอนี้ตัดสินไปแล้วหรือหมดอายุ' });
+  if (!request || !ACTIVE.includes(request.status)) return res.status(404).json({ error: 'ข้อเสนอนี้ตัดสินไปแล้ว' });
   request.status = req.body.approve ? 'approved' : 'rejected';
+  request.resolution = request.objectorId ? 'judged' : 'host';
   request.decidedAt = now();
   if (request.status === 'approved') {
     const player = room.players.get(request.playerId);
     if (player) player.marked.add(request.cell);
+  } else if (request.objectorId) {
+    const objector = room.players.get(request.objectorId);
+    if (objector) objector.objectionPoints += 1;
   }
   res.json({ ok: true });
 }
@@ -158,7 +201,7 @@ function resetRoom(req, res) {
   room.round = 0;
   room.requests = [];
   room.bingos = [];
-  room.players.forEach((p) => { p.marked = new Set(); p.bingoAt = null; });
+  room.players.forEach((p) => { p.marked = new Set(); p.bingoAt = null; p.objectionPoints = 0; });
   res.json({ ok: true });
 }
 
@@ -184,6 +227,7 @@ function joinRoom(req, res) {
     name,
     board: shuffle(room.names).slice(0, room.size * room.size),
     marked: new Set(),
+    objectionPoints: 0,
     bingoAt: null,
     seenAt: now(),
   };
@@ -195,26 +239,33 @@ function playerState(req, res) {
   const { room, player } = requirePlayer(req, res);
   if (!room) return;
   const mine = room.requests.filter((r) => r.playerId === player.id);
-  const thisRound = mine.find((r) => r.round === room.round && r.status !== 'expired');
-  const last = mine.filter((r) => r.status === 'approved' || r.status === 'rejected').sort((a, b) => b.decidedAt - a.decidedAt)[0] || null;
+  const thisRound = mine.filter((r) => r.round === room.round);
+  const active = thisRound.find((r) => ACTIVE.includes(r.status));
+  const lastDecided = room.requests.filter((r) => (r.playerId === player.id || r.objectorId === player.id) && r.decidedAt).sort((a, b) => b.decidedAt - a.decidedAt)[0] || null;
   res.json({
     code: room.code,
     name: player.name,
+    playerId: player.id,
     size: room.size,
     board: player.board,
     marked: [...player.marked],
     round: room.round,
     current: room.drawn[room.drawn.length - 1] || null,
     drawn: room.drawn,
-    request: thisRound ? { cell: thisRound.cell, status: thisRound.status } : null,
-    lastDecision: last ? { cell: last.cell, status: last.status, trait: last.trait, decidedAt: last.decidedAt } : null,
+    myRequest: active ? publicRequest(active) : null,
+    markedThisRound: thisRound.some((r) => r.status === 'approved'),
+    // ข้อเสนอของกลุ่มอื่นที่ยังค้านได้ (อยู่ในช่วง 10 วิ) และที่กำลังถกเถียง
+    others: room.requests.filter((r) => r.playerId !== player.id && ACTIVE.includes(r.status)).map(publicRequest),
+    lastDecision: lastDecided ? publicRequest(lastDecided) : null,
     lines: completedLines(room.size, player.marked).length,
     bingoAt: player.bingoAt,
+    score: scoreOf(room, player),
+    leaderboard: leaderboard(room).map((p) => ({ name: p.name, total: p.score.total, me: p.id === player.id })),
     bingos: room.bingos,
   });
 }
 
-// "ยกมือถาม": ขอกาช่องนี้กับลักษณะรอบปัจจุบัน - รอบละ 1 คำขอ (ถ้าไม่ผ่าน ขอใหม่ในรอบเดียวกันได้)
+// ยกมือเสนอ: ขอกาช่องนี้กับลักษณะรอบปัจจุบัน - รอบละ 1 ช่อง (ข้อเสนอที่ไม่ผ่าน เสนอใหม่ในรอบเดียวกันได้)
 function requestMark(req, res) {
   const { room, player } = requirePlayer(req, res);
   if (!room) return;
@@ -223,16 +274,32 @@ function requestMark(req, res) {
   if (!Number.isInteger(cell) || cell < 0 || cell >= room.size * room.size) return res.status(400).json({ error: 'ช่องไม่ถูกต้อง' });
   if (player.marked.has(cell)) return res.status(400).json({ error: 'ช่องนี้กาไปแล้ว' });
   const thisRound = room.requests.filter((r) => r.playerId === player.id && r.round === room.round);
-  if (thisRound.some((r) => r.status === 'pending')) return res.status(409).json({ error: 'รอพิธีกรตัดสินคำขอเดิมก่อน' });
+  if (thisRound.some((r) => ACTIVE.includes(r.status))) return res.status(409).json({ error: 'รอผลข้อเสนอเดิมก่อน' });
   if (thisRound.some((r) => r.status === 'approved')) return res.status(409).json({ error: 'รอบนี้กาไปแล้ว 1 ช่อง รอลักษณะถัดไป' });
+  const t = now();
   room.requests.push({
     id: crypto.randomBytes(5).toString('hex'),
     playerId: player.id, playerName: player.name,
     cell, cellName: player.board[cell],
     round: room.round, trait: room.drawn[room.drawn.length - 1],
-    status: 'pending', createdAt: now(),
+    status: 'proposed', createdAt: t, deadline: t + OBJECTION_WINDOW_MS,
   });
   res.status(201).json({ ok: true });
+}
+
+// ค้านข้อเสนอของกลุ่มอื่น (ภายใน 10 วิ) - กลุ่มแรกที่ค้านเป็นฝ่ายค้าน
+function objectRequest(req, res) {
+  const { room, player } = requirePlayer(req, res);
+  if (!room) return;
+  const request = room.requests.find((r) => r.id === req.params.requestId);
+  if (!request) return res.status(404).json({ error: 'ไม่พบข้อเสนอนี้' });
+  if (request.playerId === player.id) return res.status(400).json({ error: 'ค้านข้อเสนอของกลุ่มตัวเองไม่ได้' });
+  if (request.status === 'disputed') return res.status(409).json({ error: `${request.objectorName} ค้านไปแล้ว` });
+  if (request.status !== 'proposed') return res.status(409).json({ error: 'หมดเวลาค้านแล้ว' });
+  request.status = 'disputed';
+  request.objectorId = player.id;
+  request.objectorName = player.name;
+  res.json({ ok: true });
 }
 
 function claimBingo(req, res) {
@@ -242,9 +309,11 @@ function claimBingo(req, res) {
   if (!lines.length) return res.status(400).json({ error: 'ยังไม่ครบแถว' });
   if (!player.bingoAt) {
     player.bingoAt = now();
-    room.bingos.push({ playerId: player.id, name: player.name, at: player.bingoAt, round: room.round, lines: lines.length, order: room.bingos.length + 1 });
+    const order = room.bingos.length + 1;
+    room.bingos.push({ playerId: player.id, name: player.name, at: player.bingoAt, round: room.round, lines: lines.length, order, bonus: BINGO_BONUS[order - 1] || 0 });
   }
-  res.json({ ok: true, order: room.bingos.find((b) => b.playerId === player.id).order });
+  const mineBingo = room.bingos.find((b) => b.playerId === player.id);
+  res.json({ ok: true, order: mineBingo.order, bonus: mineBingo.bonus });
 }
 
-module.exports = { createRoom, hostState, drawTrait, decideRequest, resetRoom, roomQr, joinRoom, playerState, requestMark, claimBingo };
+module.exports = { createRoom, hostState, drawTrait, decideRequest, resetRoom, roomQr, joinRoom, playerState, requestMark, objectRequest, claimBingo };

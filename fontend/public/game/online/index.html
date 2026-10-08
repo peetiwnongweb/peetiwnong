@@ -62,13 +62,23 @@ input,select{font:inherit;font-size:16px;padding:10px 12px;border:2px solid var(
 .hidden{display:none !important}
 table{width:100%;border-collapse:collapse;font-size:.92rem}
 td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+.alert{background:var(--soft);border:3px solid var(--edge);border-radius:14px;padding:10px 14px;margin-bottom:12px;font-weight:500}
+.alert.hot,.req.hot{background:var(--pink);color:var(--pink-ink)}
+.req.hot{flex-direction:column;align-items:stretch}
+.cd{font-size:1.1em}
+.debate-timer{display:flex;justify-content:center;align-items:baseline;gap:10px;background:var(--ink);color:var(--surface);border-radius:18px;padding:10px 16px;margin:12px 0;font-size:1.1rem}
+.debate-timer b{font-size:3rem;line-height:1}
+.debate-timer.done{background:var(--pink);color:var(--pink-ink)}
+.score-big{font-size:2.6rem;font-weight:600;line-height:1.1;margin:4px 0}
+.score-big small{font-size:1rem;font-weight:400;color:var(--muted)}
+tr.me td{font-weight:600;color:var(--pink)}
 </style>
 </head>
 <body>
 <div class="page">
   <header style="margin-bottom:16px">
     <h1>บิงโกลักษณะ <span style="color:var(--pink)">ออนไลน์</span></h1>
-    <p class="muted" style="margin:0">พิธีกรสุ่มลักษณะบนจอ แต่ละกลุ่มเล่นบนมือถือ กดชื่อที่ตรง = ยกมือถาม พิธีกรตัดสินผ่านแล้วถึงได้กา · <a href="/game/" style="color:inherit">โหมดพิมพ์การ์ด</a></p>
+    <p class="muted" style="margin:0">พิธีกรสุ่มลักษณะบนจอ แต่ละกลุ่มเล่นบนมือถือ กดชื่อที่ตรง = ยกมือเสนอ 10 วินาทีไม่มีใครค้านได้กา · <a href="/game/" style="color:inherit">โหมดพิมพ์การ์ด</a></p>
   </header>
 
   <!-- หน้าแรก: เลือกบทบาท -->
@@ -110,6 +120,7 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     <div class="grid2">
       <div>
         <div class="ticket"><div><p class="round" id="p-round"></p><p class="trait" id="p-trait">รอพิธีกรสุ่มลักษณะ</p></div></div>
+        <div id="p-alert" class="alert hidden"></div>
         <div class="board" id="p-board"></div>
         <p class="status" id="p-status"></p>
         <button class="btn primary big" id="p-bingo" disabled>บิงโก!</button>
@@ -117,15 +128,21 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       <div>
         <div class="card">
           <h2 id="p-name"></h2>
-          <p class="muted" style="margin:0">ห้อง <b id="p-room"></b> · กาแล้ว <b id="p-marked">0</b> ช่อง · ครบ <b id="p-lines">0</b> แถว</p>
+          <div class="score-big"><span id="p-total">0</span><small> คะแนน</small></div>
+          <p class="muted" style="margin:0">ช่องที่กา <b id="p-cells">0</b> · ค้านชนะ <b id="p-obj">0</b> · บิงโก <b id="p-bonus">0</b> · ครบ <b id="p-lines">0</b> แถว · ห้อง <b id="p-room"></b></p>
         </div>
         <div class="card">
-          <h2>วิธีเล่น</h2>
+          <h2>ข้อเสนอของกลุ่มอื่น</h2>
+          <div class="list" id="p-others"><p class="muted">ยังไม่มี</p></div>
+        </div>
+        <div class="card"><h2>อันดับคะแนน</h2><table><tbody id="p-board-rank"></tbody></table></div>
+        <div class="card">
+          <h2>กติกา</h2>
           <ol style="margin:0;padding-left:1.2rem">
-            <li>แต่ละรอบ กดชื่อในการ์ดที่คิดว่าตรงกับลักษณะ (= ยกมือถามพิธีกร)</li>
-            <li>รอพิธีกรตัดสิน ผ่านแล้วช่องนั้นถึงถูกกา กาได้รอบละ 1 ช่อง</li>
-            <li>ไม่ผ่าน ลองชื่ออื่นในรอบเดียวกันได้</li>
-            <li>ครบแถว แนวนอน แนวตั้ง หรือแนวทแยง กด "บิงโก!"</li>
+            <li>แต่ละรอบ กดชื่อที่ตรงกับลักษณะ = <b>ยกมือเสนอ</b> (กาได้รอบละ 1 ช่อง)</li>
+            <li>ไม่มีกลุ่มไหน<b>ค้าน</b>ภายใน 10 วินาที ได้กา</li>
+            <li>มีคนค้าน ให้เหตุผลฝ่ายละ 15 วินาที กรรมการตัดสิน: ฝ่ายเสนอชนะได้กา ฝ่ายค้านชนะได้ +1 คะแนน</li>
+            <li>บิงโกที่ 1 +10 · ที่ 2 +5 · ที่ 3 +3 · ช่องที่กาได้ช่องละ 1 คะแนน</li>
           </ol>
         </div>
         <div class="card"><h2>ลักษณะที่ออกแล้ว</h2><div class="history" id="p-history"></div></div>
@@ -141,9 +158,14 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
         <div class="ticket"><div><p class="round" id="h-round"></p><p class="trait" id="h-trait">กดสุ่มลักษณะเพื่อเริ่มรอบแรก</p></div></div>
         <button class="btn primary big" id="h-draw">สุ่มลักษณะ</button>
         <p class="muted" id="h-remaining" style="text-align:center"></p>
+        <div id="h-timer" class="debate-timer hidden"><span id="h-timer-label"></span><b id="h-timer-num">15</b></div>
         <div class="card">
-          <h2>คำขอกา (ยกมือถาม) <span class="pill" id="h-req-count">0</span></h2>
-          <div class="list" id="h-requests"><p class="muted">ยังไม่มีคำขอ</p></div>
+          <h2>ข้อเสนอ / การค้าน <span class="pill" id="h-req-count">0</span></h2>
+          <div class="list" id="h-requests"><p class="muted">ยังไม่มีข้อเสนอ</p></div>
+        </div>
+        <div class="card">
+          <h2>ผลล่าสุด</h2>
+          <div class="list" id="h-recent"><p class="muted">-</p></div>
         </div>
       </div>
       <div>
@@ -158,11 +180,11 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
           </div>
         </div>
         <div class="card">
-          <h2>กลุ่มในห้อง <span class="pill" id="h-player-count">0</span></h2>
-          <table><thead><tr><th>กลุ่ม</th><th>กา</th><th>แถว</th><th></th></tr></thead><tbody id="h-players"></tbody></table>
+          <h2>อันดับคะแนน <span class="pill" id="h-player-count">0</span></h2>
+          <table><thead><tr><th>กลุ่ม</th><th>ช่อง</th><th>ค้าน</th><th>บิงโก</th><th>รวม</th></tr></thead><tbody id="h-players"></tbody></table>
         </div>
         <div class="card"><h2>ลักษณะที่ออกแล้ว</h2><div class="history" id="h-history"></div></div>
-        <button class="btn small" id="h-reset">เริ่มเกมใหม่ (ล้างรอบและรอยกา)</button>
+        <button class="btn small" id="h-reset">เริ่มเกมใหม่ (ล้างรอบ รอยกา และคะแนน)</button>
       </div>
     </div>
   </section>
@@ -191,10 +213,28 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
   }
   function show(id) { ['landing', 'join', 'player', 'host'].forEach(function (v) { $('view-' + v).classList.toggle('hidden', v !== id); }); }
   function poll(fn, ms) {
-    var t = null;
-    var tick = function () { if (!document.hidden) fn(); t = setTimeout(tick, ms); };
+    var tick = function () { if (!document.hidden) fn(); setTimeout(tick, ms); };
     tick();
     document.addEventListener('visibilitychange', function () { if (!document.hidden) fn(); });
+  }
+  // นับถอยหลังจาก remainingMs ที่ได้ตอนดึงข้อมูล (อัปเดตทุก 0.25 วิ ระหว่างรอรอบ poll ถัดไป)
+  var countdowns = [];
+  setInterval(function () {
+    countdowns.forEach(function (c) {
+      var el = document.getElementById(c.id);
+      if (el) el.textContent = Math.max(0, Math.ceil((c.end - Date.now()) / 1000));
+    });
+  }, 250);
+  function countdownSpan(id, remainingMs) {
+    countdowns.push({ id: id, end: Date.now() + remainingMs });
+    return '<b class="cd" id="' + id + '">' + Math.ceil(remainingMs / 1000) + '</b>';
+  }
+  function history(el, drawn) {
+    el.innerHTML = drawn.slice().reverse().map(function (t, k) { return '<span>' + (drawn.length - k) + '. ' + esc(t) + '</span>'; }).join('');
+  }
+  function bingoBanner(el, bingos) {
+    el.classList.toggle('hidden', !bingos.length);
+    el.textContent = bingos.map(function (b) { return 'ที่ ' + b.order + ' ' + b.name + (b.bonus ? ' (+' + b.bonus + ')' : ''); }).join(' · ') + (bingos.length ? ' บิงโก!' : '');
   }
 
   // ---------- หน้าแรก ----------
@@ -207,7 +247,6 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     $('join-code').onkeydown = function (e) { if (e.key === 'Enter') $('join-go').click(); };
     $('create-go').onclick = function () {
       var btn = $('create-go'); btn.disabled = true;
-      // ใช้รายการลักษณะที่แก้ไว้ในหน้าเกมปกติบนเครื่องนี้ (ถ้ามี) ไม่งั้นใช้ค่าเริ่มต้น
       var saved = store.get('trait-bingo-v2');
       var traits = saved && Array.isArray(saved.traits) && saved.traits.length >= 3 ? saved.traits : window.BINGO_DATA.traits;
       call('POST', '', { size: Number($('create-size').value), traits: traits, names: window.BINGO_DATA.names })
@@ -235,59 +274,92 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     }
     show('player');
     var headers = { 'x-player-id': creds.playerId, 'x-player-token': creds.playerToken };
-    var state = null, lastDecisionAt = 0;
-    function render() {
-      var s = state;
+    var lastDecisionAt = 0;
+    function setStatus(text, kind) { var el = $('p-status'); el.textContent = text; el.className = 'status ' + (kind || ''); }
+    function render(s) {
+      countdowns = [];
       $('p-name').textContent = s.name;
       $('p-room').textContent = s.code;
-      $('p-marked').textContent = s.marked.length;
+      $('p-total').textContent = s.score.total;
+      $('p-cells').textContent = s.score.cells;
+      $('p-obj').textContent = s.score.objections;
+      $('p-bonus').textContent = s.score.bonus;
       $('p-lines').textContent = s.lines;
       $('p-round').textContent = s.round ? 'รอบที่ ' + s.round : '';
       $('p-trait').textContent = s.current || 'รอพิธีกรสุ่มลักษณะ';
       var board = $('p-board');
       board.style.setProperty('--n', s.size);
       var marked = {}; s.marked.forEach(function (i) { marked[i] = 1; });
-      var pending = s.request && s.request.status === 'pending' ? s.request.cell : -1;
-      var doneThisRound = s.request && s.request.status === 'approved';
+      var mine = s.myRequest;
+      var pendingCell = mine ? mine.cell : -1;
       board.innerHTML = s.board.map(function (name, i) {
-        var cls = 'cell' + (marked[i] ? ' marked' : '') + (i === pending ? ' pending' : '');
-        var disabled = marked[i] || pending >= 0 || doneThisRound || !s.round;
+        var cls = 'cell' + (marked[i] ? ' marked' : '') + (i === pendingCell ? ' pending' : '');
+        var disabled = marked[i] || mine || s.markedThisRound || !s.round;
         return '<button class="' + cls + '" data-i="' + i + '"' + (disabled ? ' disabled' : '') + '><span>' + esc(name) + '</span></button>';
       }).join('');
       board.querySelectorAll('.cell').forEach(function (b) {
         b.onclick = function () {
           var i = Number(b.dataset.i);
-          if (!confirm('ยกมือถามพิธีกร: "' + s.board[i] + '" ตรงกับ "' + s.current + '" ใช่ไหม?')) return;
+          if (!confirm('ยกมือเสนอ: "' + s.board[i] + '" ตรงกับ "' + s.current + '"?\nถ้าไม่มีกลุ่มไหนค้านภายใน 10 วินาที ได้กา')) return;
           call('POST', '/' + code + '/request', { cell: i }, headers).then(refresh).catch(function (e) { setStatus(e.message, 'bad'); });
         };
       });
-      var st = $('p-status');
+      // สถานะข้อเสนอของกลุ่มตัวเอง
+      var alertBox = $('p-alert');
+      alertBox.classList.add('hidden');
       if (!s.round) setStatus('รอพิธีกรสุ่มลักษณะรอบแรก', '');
-      else if (pending >= 0) setStatus('ยกมือถามแล้ว รอพิธีกรตัดสิน: "' + s.board[pending] + '"', '');
-      else if (doneThisRound) setStatus('รอบนี้กาแล้ว รอลักษณะถัดไป', 'ok');
+      else if (mine && mine.status === 'proposed') setStatus('', '');
+      else if (s.markedThisRound) setStatus('รอบนี้กาแล้ว รอลักษณะถัดไป', 'ok');
       else setStatus('เลือกชื่อที่ตรงกับลักษณะนี้ (ถ้าไม่มี รอรอบถัดไป)', '');
+      if (mine && mine.status === 'proposed') {
+        alertBox.className = 'alert';
+        alertBox.innerHTML = 'เสนอ "' + esc(mine.cellName) + '" แล้ว · ไม่มีใครค้านใน ' + countdownSpan('cd-mine', mine.remainingMs) + ' วิ ได้กา';
+      } else if (mine && mine.status === 'disputed') {
+        alertBox.className = 'alert hot';
+        alertBox.innerHTML = '<b>' + esc(mine.objectorName) + '</b> ค้าน "' + esc(mine.cellName) + '"! เตรียมให้เหตุผล 15 วินาที แล้วรอกรรมการตัดสิน';
+      }
       if (s.lastDecision && s.lastDecision.decidedAt > lastDecisionAt) {
-        if (lastDecisionAt) setStatus(s.lastDecision.status === 'approved' ? 'ผ่าน! กา "' + s.board[s.lastDecision.cell] + '" แล้ว' : 'ไม่ผ่าน: "' + s.board[s.lastDecision.cell] + '" ไม่ตรงกับ "' + s.lastDecision.trait + '"', s.lastDecision.status === 'approved' ? 'ok' : 'bad');
+        if (lastDecisionAt) {
+          var d = s.lastDecision, iAmProposer = d.playerId === s.playerId;
+          var msg = d.status === 'approved'
+            ? (iAmProposer ? 'ได้กา "' + d.cellName + '" แล้ว!' : 'ค้านไม่ผ่าน ' + d.playerName + ' ได้กา "' + d.cellName + '"')
+            : (iAmProposer ? (d.objectorName ? 'แพ้การค้าน ' + d.objectorName + ' ได้ +1 คะแนน' : 'ข้อเสนอ "' + d.cellName + '" ไม่ผ่าน') : 'ค้านสำเร็จ! ได้ +1 คะแนน');
+          setStatus(msg, (d.status === 'approved') === iAmProposer ? 'ok' : 'bad');
+        }
         lastDecisionAt = s.lastDecision.decidedAt;
       }
-      void st;
+      // ข้อเสนอของกลุ่มอื่น: ค้านได้ภายใน 10 วิ
+      $('p-others').innerHTML = s.others.length ? s.others.map(function (r) {
+        if (r.status === 'proposed') {
+          return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" = "' + esc(r.trait) + '" · เหลือ ' + countdownSpan('cd-' + r.id, r.remainingMs) + ' วิ</span><button class="btn small primary" data-object="' + r.id + '">ค้าน</button></div>';
+        }
+        return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" · <b>' + esc(r.objectorName) + '</b> ค้าน · รอกรรมการตัดสิน</span></div>';
+      }).join('') : '<p class="muted">ยังไม่มี</p>';
+      $('p-others').querySelectorAll('[data-object]').forEach(function (b) {
+        b.onclick = function () {
+          b.disabled = true;
+          call('POST', '/' + code + '/requests/' + b.dataset.object + '/object', {}, headers)
+            .then(function () { setStatus('ค้านแล้ว! เตรียมให้เหตุผล 15 วินาที', 'bad'); refresh(); })
+            .catch(function (e) { alert(e.message); refresh(); });
+        };
+      });
+      $('p-board-rank').innerHTML = s.leaderboard.map(function (p, i) {
+        return '<tr' + (p.me ? ' class="me"' : '') + '><td>' + (i + 1) + '. ' + esc(p.name) + '</td><td style="text-align:right"><b>' + p.total + '</b></td></tr>';
+      }).join('');
       $('p-bingo').disabled = !s.lines || !!s.bingoAt;
       $('p-bingo').textContent = s.bingoAt ? 'บิงโกแล้ว!' : 'บิงโก!';
-      $('p-history').innerHTML = s.drawn.slice().reverse().map(function (t, k) { return '<span>' + (s.drawn.length - k) + '. ' + esc(t) + '</span>'; }).join('');
-      var banner = $('p-bingo-banner');
-      banner.classList.toggle('hidden', !s.bingos.length);
-      banner.textContent = s.bingos.map(function (b) { return 'อันดับ ' + b.order + ' ' + b.name; }).join(' · ') + (s.bingos.length ? ' บิงโก!' : '');
+      history($('p-history'), s.drawn);
+      bingoBanner($('p-bingo-banner'), s.bingos);
     }
-    function setStatus(text, kind) { var el = $('p-status'); el.textContent = text; el.className = 'status ' + (kind || ''); }
     function refresh() {
-      return call('GET', '/' + code + '/player', null, headers).then(function (s) { state = s; render(); }).catch(function (e) {
+      return call('GET', '/' + code + '/player', null, headers).then(render).catch(function (e) {
         if (e.status === 403 || e.status === 404) { localStorage.removeItem('bingo-player-' + code); alert(e.message); location.href = location.pathname; }
       });
     }
     $('p-bingo').onclick = function () {
-      call('POST', '/' + code + '/bingo', {}, headers).then(function (r) { alert('บิงโก! อันดับที่ ' + r.order + ' รอกรรมการตรวจการ์ด'); refresh(); }).catch(function (e) { alert(e.message); });
+      call('POST', '/' + code + '/bingo', {}, headers).then(function (r) { alert('บิงโก! ที่ ' + r.order + (r.bonus ? ' ได้ +' + r.bonus + ' คะแนน' : '') + ' รอกรรมการตรวจการ์ด'); refresh(); }).catch(function (e) { alert(e.message); });
     };
-    poll(refresh, 2000);
+    poll(refresh, 1500);
   }
 
   // ---------- พิธีกร ----------
@@ -296,35 +368,61 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
     if (!hostToken) { alert('เครื่องนี้ไม่ใช่พิธีกรของห้องนี้'); location.href = location.pathname; return; }
     show('host');
     var headers = { 'x-host-token': hostToken };
-    var joinUrl = location.origin + '/game/online/?room=' + code;
     $('h-code').textContent = code;
     $('h-url').textContent = location.host + '/game/online';
     $('h-qr').src = (window.PTN_API_URL ? window.PTN_API_URL(API + '/' + code + '/qr') : API + '/' + code + '/qr') + '?origin=' + encodeURIComponent(location.origin);
-    void joinUrl;
     var seenBingos = 0;
+    // นาฬิกาให้เหตุผลฝ่ายละ 15 วินาที
+    var debateTimer = null;
+    function startDebate(label) {
+      clearInterval(debateTimer);
+      var end = Date.now() + 15000;
+      $('h-timer').classList.remove('hidden', 'done');
+      $('h-timer-label').textContent = label + ' ';
+      var tick = function () {
+        var left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+        $('h-timer-num').textContent = left;
+        if (!left) { clearInterval(debateTimer); $('h-timer').classList.add('done'); }
+      };
+      tick();
+      debateTimer = setInterval(tick, 200);
+    }
+    function decide(id, approve) {
+      call('POST', '/' + code + '/requests/' + id, { approve: approve }, headers).then(function () {
+        clearInterval(debateTimer); $('h-timer').classList.add('hidden'); refresh();
+      }).catch(function (e) { alert(e.message); refresh(); });
+    }
     function render(s) {
+      countdowns = [];
       $('h-round').textContent = s.round ? 'รอบที่ ' + s.round : '';
       $('h-trait').textContent = s.current || 'กดสุ่มลักษณะเพื่อเริ่มรอบแรก';
       $('h-remaining').textContent = s.remaining ? 'เหลืออีก ' + s.remaining + ' ลักษณะ' : 'ออกครบทุกลักษณะแล้ว สุ่มต่อจะสับใหม่';
-      $('h-req-count').textContent = s.requests.length;
-      $('h-requests').innerHTML = s.requests.length ? s.requests.map(function (r) {
-        return '<div class="req"><span>' + esc(r.playerName) + ': <b>' + esc(r.cellName) + '</b> ตรงกับ "' + esc(r.trait) + '"?</span><span class="row"><button class="btn small ok" data-ok="' + r.id + '">ผ่าน</button><button class="btn small" data-no="' + r.id + '">ไม่ผ่าน</button></span></div>';
-      }).join('') : '<p class="muted">ยังไม่มีคำขอ</p>';
-      $('h-requests').querySelectorAll('[data-ok],[data-no]').forEach(function (b) {
-        b.onclick = function () {
-          b.disabled = true;
-          call('POST', '/' + code + '/requests/' + (b.dataset.ok || b.dataset.no), { approve: !!b.dataset.ok }, headers).then(refresh).catch(function (e) { alert(e.message); refresh(); });
-        };
-      });
+      $('h-req-count').textContent = s.active.length;
+      $('h-requests').innerHTML = s.active.length ? s.active.map(function (r) {
+        if (r.status === 'proposed') {
+          return '<div class="req"><span><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" = "' + esc(r.trait) + '" · ไม่มีใครค้านใน ' + countdownSpan('h-cd-' + r.id, r.remainingMs) + ' วิ ได้กา</span>'
+            + '<span class="row"><button class="btn small" data-reject="' + r.id + '">ตีตก</button></span></div>';
+        }
+        return '<div class="req hot"><div style="width:100%"><b>' + esc(r.playerName) + '</b> เสนอ "' + esc(r.cellName) + '" = "' + esc(r.trait) + '" · <b>' + esc(r.objectorName) + '</b> ค้าน</div>'
+          + '<div class="row"><button class="btn small" data-timer="ฝ่ายเสนอ (' + esc(r.playerName) + ')">จับเวลาฝ่ายเสนอ 15 วิ</button><button class="btn small" data-timer="ฝ่ายค้าน (' + esc(r.objectorName) + ')">จับเวลาฝ่ายค้าน 15 วิ</button></div>'
+          + '<div class="row"><button class="btn small ok" data-approve="' + r.id + '">ฝ่ายเสนอชนะ (ได้กา)</button><button class="btn small primary" data-reject="' + r.id + '">ฝ่ายค้านชนะ (+1)</button></div></div>';
+      }).join('') : '<p class="muted">ยังไม่มีข้อเสนอ</p>';
+      $('h-requests').querySelectorAll('[data-approve]').forEach(function (b) { b.onclick = function () { b.disabled = true; decide(b.dataset.approve, true); }; });
+      $('h-requests').querySelectorAll('[data-reject]').forEach(function (b) { b.onclick = function () { b.disabled = true; decide(b.dataset.reject, false); }; });
+      $('h-requests').querySelectorAll('[data-timer]').forEach(function (b) { b.onclick = function () { startDebate(b.dataset.timer); }; });
+      $('h-recent').innerHTML = s.recent.length ? s.recent.map(function (r) {
+        var text = r.status === 'approved'
+          ? esc(r.playerName) + ' ได้กา "' + esc(r.cellName) + '"' + (r.resolution === 'auto' ? ' (ไม่มีคนค้าน)' : r.objectorName ? ' (ชนะการค้านของ ' + esc(r.objectorName) + ')' : '')
+          : (r.objectorName ? esc(r.objectorName) + ' ค้านสำเร็จ +1 (' + esc(r.playerName) + ' เสนอ "' + esc(r.cellName) + '")' : esc(r.playerName) + ' ถูกตีตก "' + esc(r.cellName) + '"');
+        return '<div class="muted">' + text + '</div>';
+      }).join('') : '<p class="muted">-</p>';
       $('h-player-count').textContent = s.players.length;
-      $('h-players').innerHTML = s.players.map(function (p) {
-        return '<tr><td>' + esc(p.name) + (p.online ? '' : ' <span class="muted">(ออฟไลน์)</span>') + '</td><td>' + p.markedCount + '</td><td>' + p.lines + '</td><td>' + (p.bingoAt ? '<span class="pill on">บิงโก</span>' : '') + '</td></tr>';
-      }).join('') || '<tr><td colspan="4" class="muted">ยังไม่มีกลุ่มเข้าห้อง ให้สแกน QR หรือใส่รหัสห้อง</td></tr>';
-      $('h-history').innerHTML = s.drawn.slice().reverse().map(function (t, k) { return '<span>' + (s.drawn.length - k) + '. ' + esc(t) + '</span>'; }).join('');
-      var banner = $('h-bingo-banner');
-      banner.classList.toggle('hidden', !s.bingos.length);
-      banner.textContent = s.bingos.map(function (b) { return 'อันดับ ' + b.order + ' ' + b.name + ' (รอบที่ ' + b.round + ')'; }).join(' · ') + (s.bingos.length ? ' บิงโก!' : '');
-      if (s.bingos.length > seenBingos && seenBingos) banner.scrollIntoView({ behavior: 'smooth' });
+      $('h-players').innerHTML = s.players.map(function (p, i) {
+        return '<tr><td>' + (i + 1) + '. ' + esc(p.name) + (p.online ? '' : ' <span class="muted">(ออฟไลน์)</span>') + (p.bingoAt ? ' <span class="pill on">บิงโก</span>' : '') + '</td><td>' + p.score.cells + '</td><td>' + p.score.objections + '</td><td>' + p.score.bonus + '</td><td><b>' + p.score.total + '</b></td></tr>';
+      }).join('') || '<tr><td colspan="5" class="muted">ยังไม่มีกลุ่มเข้าห้อง ให้สแกน QR หรือใส่รหัสห้อง</td></tr>';
+      history($('h-history'), s.drawn);
+      bingoBanner($('h-bingo-banner'), s.bingos);
+      if (s.bingos.length > seenBingos && seenBingos) $('h-bingo-banner').scrollIntoView({ behavior: 'smooth' });
       seenBingos = s.bingos.length;
     }
     function refresh() { return call('GET', '/' + code + '/host', null, headers).then(render).catch(function (e) { if (e.status === 404 || e.status === 403) { alert(e.message); location.href = location.pathname; } }); }
@@ -333,10 +431,10 @@ td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
       call('POST', '/' + code + '/draw', {}, headers).then(refresh).catch(function (e) { alert(e.message); }).then(function () { btn.disabled = false; });
     };
     $('h-reset').onclick = function () {
-      if (!confirm('เริ่มเกมใหม่? ลักษณะที่ออกแล้วและรอยกาของทุกกลุ่มจะถูกล้าง (กลุ่มยังอยู่ในห้อง การ์ดเดิม)')) return;
+      if (!confirm('เริ่มเกมใหม่? ลักษณะที่ออกแล้ว รอยกา และคะแนนของทุกกลุ่มจะถูกล้าง (กลุ่มยังอยู่ในห้อง การ์ดเดิม)')) return;
       call('POST', '/' + code + '/reset', {}, headers).then(refresh).catch(function (e) { alert(e.message); });
     };
-    poll(refresh, 1500);
+    poll(refresh, 1000);
   }
 
   var room = (params.get('room') || '').toUpperCase();

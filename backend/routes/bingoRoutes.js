@@ -12,6 +12,7 @@ router.get('/rooms/:code/qr', c.roomQr);
 router.post('/rooms/:code/join', c.joinRoom);
 router.get('/rooms/:code/player', c.playerState);
 router.post('/rooms/:code/request', c.requestMark);
+router.post('/rooms/:code/requests/:requestId/object', c.objectRequest);
 router.post('/rooms/:code/bingo', c.claimBingo);
 
 module.exports = router;

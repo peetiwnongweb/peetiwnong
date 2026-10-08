@@ -275,6 +275,9 @@ function requestMark(req, res) {
   if (player.marked.has(cell)) return res.status(400).json({ error: 'ช่องนี้กาไปแล้ว' });
   const thisRound = room.requests.filter((r) => r.playerId === player.id && r.round === room.round);
   if (thisRound.some((r) => ACTIVE.includes(r.status))) return res.status(409).json({ error: 'รอผลข้อเสนอเดิมก่อน' });
+  // ทั้งห้องเสนอได้ทีละข้อ ให้ทุกกลุ่มมีเวลาดูและค้านทัน
+  const open = room.requests.find((r) => ACTIVE.includes(r.status));
+  if (open) return res.status(409).json({ error: `รอข้อเสนอของ ${open.playerName} จบก่อน` });
   if (thisRound.some((r) => r.status === 'approved')) return res.status(409).json({ error: 'รอบนี้กาไปแล้ว 1 ช่อง รอลักษณะถัดไป' });
   const t = now();
   room.requests.push({

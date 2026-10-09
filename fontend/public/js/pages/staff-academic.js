@@ -3071,11 +3071,20 @@ function renderOralExamHistory(subjectId, history) {
         const attemptsHtml = session.attempts.length > 0 ? `
             <div class="oral-exam-queue-list">
                 ${session.attempts.map((a) => `
-                <div class="oral-exam-queue-row oral-exam-queue-row--${a.status.toLowerCase()}">
+                <div class="oral-exam-queue-row oral-exam-history-row oral-exam-queue-row--${a.status.toLowerCase()}" data-attempt-id="${a.id}">
                     <span class="oral-exam-queue-code">${a.code}</span>
                     <span class="oral-exam-queue-name">${a.fullName}${a.nickname ? ` (${a.nickname})` : ''}</span>
                     <span class="oral-exam-queue-attempt">ครั้งที่ ${a.attemptNumber}</span>
-                    <span class="oral-exam-queue-status">${ORAL_EXAM_STATUS_LABEL[a.status] || a.status}</span>
+                    <span class="oral-exam-queue-status">${ORAL_EXAM_STATUS_LABEL[a.status] || a.status}${a.status === 'PASSED' && a.awardedScore != null ? ` · ${a.awardedScore} คะแนน` : ''}</span>
+                    ${a.status === 'PENDING' ? '' : `<button type="button" class="oral-exam-history-edit-btn" data-edit-attempt="${a.id}">แก้ไข</button>
+                    <div class="oral-exam-history-edit hidden">
+                        <span>แก้ผลครั้งที่ ${a.attemptNumber} เป็น</span>
+                        ${a.status === 'PASSED'
+                            ? `<button type="button" class="oral-exam-history-edit-choice fail" data-session-id="${session.id}" data-attempt-id="${a.id}" data-result="FAILED">ไม่ผ่าน</button>`
+                            : `<button type="button" class="oral-exam-history-edit-choice pass" data-session-id="${session.id}" data-attempt-id="${a.id}" data-result="PASSED">ผ่าน</button>`}
+                        <button type="button" class="oral-exam-history-edit-choice delete" data-session-id="${session.id}" data-attempt-id="${a.id}" data-result="DELETE">ลบครั้งนี้</button>
+                        <button type="button" class="oral-exam-history-edit-cancel" data-edit-attempt="${a.id}">ยกเลิก</button>
+                    </div>`}
                 </div>`).join('')}
             </div>` : '<p class="oral-exam-history-empty-note">ไม่มีใครสแกนเข้าคิวในรอบนี้</p>';
 
@@ -3097,6 +3106,41 @@ function renderOralExamHistory(subjectId, history) {
     list.querySelectorAll('.oral-exam-history-delete-btn').forEach((btn) => {
         btn.addEventListener('click', () => handleOralExamHistoryDeleteClick(subjectId, Number(btn.dataset.sessionId)));
     });
+    // แก้ผลรายคน (เผื่อบันทึกผิด): ปุ่ม "แก้ไข" เปิดตัวเลือกใต้แถว
+    list.querySelectorAll('[data-edit-attempt]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            btn.closest('.oral-exam-history-row')?.querySelector('.oral-exam-history-edit')?.classList.toggle('hidden');
+        });
+    });
+    list.querySelectorAll('.oral-exam-history-edit-choice').forEach((btn) => {
+        btn.addEventListener('click', () => handleOralExamAttemptEdit(subjectId, Number(btn.dataset.sessionId), Number(btn.dataset.attemptId), btn.dataset.result, btn));
+    });
+}
+
+async function handleOralExamAttemptEdit(subjectId, sessionId, attemptId, result, btn) {
+    const name = btn.closest('.oral-exam-history-row')?.querySelector('.oral-exam-queue-name')?.textContent || '';
+    const isDelete = result === 'DELETE';
+    const confirmed = await showConfirm(
+        isDelete
+            ? `ลบผลสอบครั้งนี้ของ "${name}"? เลขครั้งที่ของครั้งหลัง ๆ จะเลื่อนลง 1 และคะแนนอธิบายจะคิดใหม่`
+            : `แก้ผลของ "${name}" เป็น "${result === 'PASSED' ? 'ผ่าน' : 'ไม่ผ่าน'}"? คะแนนอธิบายในตารางคะแนนจะคิดใหม่ตามผลนี้`,
+        { title: isDelete ? 'ยืนยันการลบผลสอบ' : 'ยืนยันการแก้ผลสอบ', confirmText: isDelete ? 'ลบ' : 'แก้ผล' }
+    );
+    if (!confirmed) return;
+
+    fetch(`/api/oral-exam-sessions/${sessionId}/attempts/${attemptId}`, isDelete
+        ? { method: 'DELETE' }
+        : { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ result }) })
+        .then(async (res) => {
+            if (!res.ok && res.status !== 204) throw new Error((await res.json().catch(() => ({}))).error || `HTTP ${res.status}`);
+            loadOralExamHistory(subjectId);
+            if (selectedScoreCourseId) loadScoreRoster();
+            showActivitiesToast(isDelete ? 'ลบผลสอบแล้ว' : 'แก้ผลสอบแล้ว', true);
+        })
+        .catch((error) => {
+            console.error(error);
+            showActivitiesToast(error.message || 'แก้ผลสอบไม่สำเร็จ', false);
+        });
 }
 
 async function handleOralExamHistoryDeleteClick(subjectId, sessionId) {

@@ -2372,3 +2372,39 @@
 .beta-badge { display: inline-block; margin-left: 0.25rem; padding: 0.05rem 0.4rem; border-radius: 999px; background: #f59e0b; color: #fff; font-size: 0.65em; font-weight: 700; vertical-align: middle; line-height: 1.4; }
 
 .ach-batch-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; }
+
+/* แก้ผลสอบอธิบายรายคนในประวัติรอบสอบ (เผื่อบันทึกผิด) */
+.oral-exam-history-row {
+  flex-wrap: wrap;
+  opacity: 1;
+}
+.oral-exam-history-edit-btn,
+.oral-exam-history-edit-cancel,
+.oral-exam-history-edit-choice {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--slate-300, #cbd5e1);
+  background: #fff;
+  color: var(--slate-700, #334155);
+  cursor: pointer;
+}
+.oral-exam-history-edit-btn:hover,
+.oral-exam-history-edit-cancel:hover { background: var(--slate-100, #f1f5f9); }
+.oral-exam-history-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--slate-200, #e2e8f0);
+  font-size: 0.85rem;
+}
+.oral-exam-history-edit.hidden { display: none; }
+.oral-exam-history-edit-choice.pass { background: #ecfdf5; color: #059669; border-color: #6ee7b7; }
+.oral-exam-history-edit-choice.fail { background: #fff1f2; color: #be123c; border-color: #fda4af; }
+.oral-exam-history-edit-choice.delete { background: #fff; color: #b91c1c; border-color: #fca5a5; }

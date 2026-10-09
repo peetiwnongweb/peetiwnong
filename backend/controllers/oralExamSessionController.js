@@ -912,10 +912,109 @@ async function getMyExamHistory(req, res) {
   res.json({ history });
 }
 
+// คิดคะแนนอธิบายของวิชานี้ใหม่จากแถวที่ผ่าน (ใช้หลังแก้ผล/ลบครั้งที่ประเมินแล้ว) - คะแนนตามเลขครั้งที่ และคะแนนในตารางคะแนน = ครั้งที่ผ่าน (ไม่มีครั้งที่ผ่าน = ว่าง)
+async function resyncExplanationScore(tx, participantProfileId, subjectId, explanationMaxScore, bands) {
+  const passed = await tx.oralExamAttempt.findMany({ where: { participantProfileId, subjectId, status: 'PASSED' }, orderBy: { attemptNumber: 'asc' } });
+  let score = null;
+  for (const a of passed) {
+    score = Math.round((resolveAttemptScorePercent(a.attemptNumber, bands) / 100) * explanationMaxScore);
+    if (a.awardedScore !== score) await tx.oralExamAttempt.update({ where: { id: a.id }, data: { awardedScore: score } });
+  }
+  await tx.participantSubjectScore.upsert({
+    where: { participantProfileId_subjectId: { participantProfileId, subjectId } },
+    create: { participantProfileId, subjectId, explanationScore: score },
+    update: { explanationScore: score },
+  });
+}
+
+async function findAttemptForEdit(req, res) {
+  const sessionId = Number(req.params.sessionId);
+  const attemptId = Number(req.params.attemptId);
+  const prisma = await getPrisma();
+  const session = await prisma.oralExamSession.findUnique({
+    where: { id: sessionId },
+    include: { subject: { include: { instructors: { select: { userId: true } } } } },
+  });
+  if (!session) { res.status(404).json({ error: 'ไม่พบรอบสอบนี้' }); return {}; }
+  if (!canManageSubjectExam(req.session.user, session.subject)) { res.status(403).json({ error: 'ไม่มีสิทธิ์จัดการรอบสอบนี้' }); return {}; }
+  const attempt = await prisma.oralExamAttempt.findUnique({
+    where: { id: attemptId },
+    include: { participantProfile: { select: { prefix: true, firstName: true, lastName: true, nickname: true } } },
+  });
+  if (!attempt || attempt.sessionId !== sessionId) { res.status(404).json({ error: 'ไม่พบผู้เข้าสอบคนนี้ในรอบสอบนี้' }); return {}; }
+  return { prisma, session, attempt };
+}
+
+// แก้ผลที่ประเมินไปแล้ว (เผื่อกดผิด/บันทึกผิด) body: { result: 'PASSED'|'FAILED' }
+// เปลี่ยนเป็น "ผ่าน" ได้เฉพาะครั้งล่าสุดของวิชานั้น (ถ้ามีครั้งถัดไปแล้ว ต้องลบครั้งหลังก่อน ไม่งั้นจะมีสอบต่อหลังผ่าน)
+async function updateAttemptResult(req, res) {
+  const result = req.body.result;
+  if (!['PASSED', 'FAILED'].includes(result)) return res.status(400).json({ error: 'ต้องระบุผลเป็นผ่านหรือไม่ผ่าน' });
+  const { prisma, session, attempt } = await findAttemptForEdit(req, res);
+  if (!attempt) return;
+  if (attempt.status === 'PENDING') return res.status(409).json({ error: 'คนนี้ยังรอประเมิน ให้กดผ่าน/ไม่ผ่านในรอบสอบแทน' });
+  if (attempt.status === result) return res.json({ ok: true });
+
+  if (result === 'PASSED') {
+    const later = await prisma.oralExamAttempt.findFirst({
+      where: { participantProfileId: attempt.participantProfileId, subjectId: attempt.subjectId, attemptNumber: { gt: attempt.attemptNumber } },
+      orderBy: { attemptNumber: 'asc' },
+    });
+    if (later) return res.status(409).json({ error: `เปลี่ยนเป็นผ่านไม่ได้ เพราะมีสอบครั้งที่ ${later.attemptNumber} ต่อจากครั้งนี้แล้ว ให้ลบครั้งที่ ${later.attemptNumber} ขึ้นไปก่อน` });
+  }
+
+  const bands = await ensureOralExamScoreBands(prisma);
+  await prisma.$transaction(async (tx) => {
+    await tx.oralExamAttempt.update({
+      where: { id: attempt.id },
+      data: { status: result, awardedScore: null, evaluatedAt: new Date(), evaluatedByUserId: req.session.user.id },
+    });
+    await resyncExplanationScore(tx, attempt.participantProfileId, attempt.subjectId, session.subject.explanationMaxScore, bands);
+  });
+
+  await logActivity({
+    actorEmail: req.session.user.email,
+    actorRole: req.session.user.role,
+    action: 'UPDATE',
+    entityType: 'ORAL_EXAM_ATTEMPT',
+    entityId: attempt.id,
+    summary: `แก้ผลสอบอธิบายวิชา "${session.subject.name}" ของ "${toFullName(attempt.participantProfile)}" ครั้งที่ ${attempt.attemptNumber} จาก${attempt.status === 'PASSED' ? 'ผ่าน' : 'ไม่ผ่าน'}เป็น${result === 'PASSED' ? 'ผ่าน' : 'ไม่ผ่าน'}`,
+  });
+  res.json({ ok: true });
+}
+
 // พี่ค่ายนำน้องค่ายออกจากคิวสอบ (ปุ่มกากบาทในรายชื่อผู้เข้าสอบ) เช่นเช็คอินผิดวิชา/ไม่มาสอบ - น้องค่ายออกจากคิวเองไม่ได้แล้ว
-// ลบได้เฉพาะแถวที่ยังรอประเมิน (PENDING) เท่านั้น แถวที่ประเมินแล้วเป็นประวัติคะแนน/ตัวนับ "ครั้งที่" ห้ามลบ
-// ลบแล้วนับเป็นเหมือนไม่เคยเช็คอินเลย น้องค่ายเช็คอินใหม่ได้ถ้ารอบยังเปิดรับอยู่
+// แถวที่ยังรอประเมิน (PENDING) ลบแล้วนับเป็นเหมือนไม่เคยเช็คอินเลย น้องค่ายเช็คอินใหม่ได้ถ้ารอบยังเปิดรับอยู่
+// แถวที่ประเมินแล้ว (ลบจากประวัติ เผื่อบันทึกผิดคน) - เลื่อนเลขครั้งที่ของครั้งหลัง ๆ ลง 1 แล้วคิดคะแนนอธิบายใหม่
 async function removeAttempt(req, res) {
+  const evaluated = await findAttemptForEdit(req, res);
+  if (!evaluated.attempt) return;
+  if (evaluated.attempt.status !== 'PENDING') {
+    const { prisma, session, attempt } = evaluated;
+    const bands = await ensureOralExamScoreBands(prisma);
+    const hadPass = attempt.status === 'PASSED' || (await prisma.oralExamAttempt.count({ where: { participantProfileId: attempt.participantProfileId, subjectId: attempt.subjectId, status: 'PASSED' } })) > 0;
+    await prisma.$transaction(async (tx) => {
+      await tx.oralExamAttempt.delete({ where: { id: attempt.id } });
+      await tx.oralExamAttempt.updateMany({
+        where: { participantProfileId: attempt.participantProfileId, subjectId: attempt.subjectId, attemptNumber: { gt: attempt.attemptNumber } },
+        data: { attemptNumber: { decrement: 1 } },
+      });
+      if (hadPass) await resyncExplanationScore(tx, attempt.participantProfileId, attempt.subjectId, session.subject.explanationMaxScore, bands);
+    });
+    await logActivity({
+      actorEmail: req.session.user.email,
+      actorRole: req.session.user.role,
+      action: 'DELETE',
+      entityType: 'ORAL_EXAM_ATTEMPT',
+      entityId: attempt.id,
+      summary: `ลบผลสอบอธิบายวิชา "${session.subject.name}" ของ "${toFullName(attempt.participantProfile)}" ครั้งที่ ${attempt.attemptNumber} (${attempt.status === 'PASSED' ? 'ผ่าน' : 'ไม่ผ่าน'})`,
+    });
+    return res.status(204).end();
+  }
+  return removePendingAttempt(req, res);
+}
+
+async function removePendingAttempt(req, res) {
   const sessionId = Number(req.params.sessionId);
   const attemptId = Number(req.params.attemptId);
   const prisma = await getPrisma();
@@ -967,4 +1066,5 @@ module.exports = {
   checkIn,
   getMyExamHistory,
   removeAttempt,
+  updateAttemptResult,
 };

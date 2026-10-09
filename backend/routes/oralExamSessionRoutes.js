@@ -10,6 +10,7 @@ const {
   checkIn,
   getMyExamHistory,
   removeAttempt,
+  updateAttemptResult,
   getManualRoster,
   recordManualResults,
   listSheetParticipants,
@@ -44,7 +45,8 @@ router.post('/', requireStaffAccess, openSession); // เช็คสิทธ�
 router.post('/:sessionId/start', requireStaffAccess, startSession);
 router.post('/:sessionId/evaluate', requireStaffAccess, evaluateAttempts);
 router.post('/:sessionId/close', requireStaffAccess, closeSession);
-router.delete('/:sessionId/attempts/:attemptId', requireStaffAccess, removeAttempt); // พี่ค่ายนำน้องค่ายออกจากคิว (เฉพาะที่ยังรอประเมิน)
+router.delete('/:sessionId/attempts/:attemptId', requireStaffAccess, removeAttempt); // ลบได้ทั้งคนที่รอประเมิน (นำออกจากคิว) และครั้งที่ประเมินแล้ว (ลบจากประวัติ เผื่อบันทึกผิด)
+router.patch('/:sessionId/attempts/:attemptId', requireStaffAccess, updateAttemptResult); // แก้ผลผ่าน/ไม่ผ่านที่ประเมินไปแล้ว
 router.delete('/:sessionId', requireStaffAccess, deleteSession); // ลบประวัติรอบสอบที่ปิดแล้ว (เช็คสิทธิ์รายวิชา + สถานะ CLOSED ในคอนโทรลเลอร์)
 
 module.exports = router;

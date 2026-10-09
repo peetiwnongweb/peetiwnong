@@ -619,7 +619,7 @@ async function buildSheet(prisma, participantProfileId) {
     select: {
       id: true, prefix: true, firstName: true, lastName: true, nickname: true, campGenerationNo: true, courseFormatId: true,
       courseFormat: { select: { name: true } },
-      oralExamAttempts: { orderBy: { attemptNumber: 'asc' }, select: { subjectId: true, attemptNumber: true, status: true, awardedScore: true, session: { select: { token: true, isManual: true } } } },
+      oralExamAttempts: { orderBy: { attemptNumber: 'asc' }, select: { id: true, sessionId: true, subjectId: true, attemptNumber: true, status: true, awardedScore: true, session: { select: { token: true, isManual: true } } } },
     },
   });
   if (!profile || !profile.courseFormatId) return null;
@@ -637,6 +637,8 @@ async function buildSheet(prisma, participantProfileId) {
         name: s.name,
         explanationMaxScore: s.explanationMaxScore,
         attempts: profile.oralExamAttempts.filter((a) => a.subjectId === s.id).map((a) => ({
+          id: a.id,
+          sessionId: a.sessionId,
           attemptNumber: a.attemptNumber,
           status: a.status,
           awardedScore: a.awardedScore,

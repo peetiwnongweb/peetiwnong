@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>บอมโค้ด ค่ายพี่ติวน้อง</title>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600&family=Mitr:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="/js/config.js?v=20261002-1"></script>
+<style>
+:root{
+  --bg:#E8ECFF; --surface:#FFFFFF; --ink:#1E1B4B; --muted:#57568C; --line:#C6CBF3;
+  --edge:#1E1B4B; --sun:#FFC72C; --sun-ink:#33250A; --pink:#D81B66; --pink-ink:#FFFFFF;
+  --ok:#0B7C68; --bad:#DC2626; --soft:#FFF3C9;
+  --bomb:#17152E; --bomb-ink:#F2F1FF; --led:#FF3B3B;
+  --ui:"Mitr","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+  --hand:"Mali","Mitr","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#141235; --surface:#221F55; --ink:#F2F1FF; --muted:#ABAADB; --line:#3D3A86; --edge:#07061C; --pink:#FF5F9A; --pink-ink:#2A0716; --ok:#3AD6B8; --bad:#FF6B6B; --soft:#3A3470; --bomb:#0B0A1F; }
+}
+:root[data-theme="dark"]{ --bg:#141235; --surface:#221F55; --ink:#F2F1FF; --muted:#ABAADB; --line:#3D3A86; --edge:#07061C; --pink:#FF5F9A; --pink-ink:#2A0716; --ok:#3AD6B8; --bad:#FF6B6B; --soft:#3A3470; --bomb:#0B0A1F; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);line-height:1.5}
+.page{max-width:1200px;margin:0 auto;padding:18px 16px 48px}
+h1{font-size:clamp(1.8rem,6vw,2.8rem);margin:0 0 4px;line-height:1.15}
+h2{font-size:1.1rem;font-weight:500;margin:0 0 10px}
+.muted{color:var(--muted)}
+.hidden{display:none !important}
+.card{background:var(--surface);border:3px solid var(--edge);border-radius:18px;box-shadow:5px 5px 0 var(--edge);padding:16px;margin-bottom:18px}
+.btn{font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:3px solid var(--edge);border-radius:14px;padding:10px 16px;cursor:pointer;box-shadow:3px 3px 0 var(--edge);text-decoration:none;display:inline-block;touch-action:manipulation}
+.btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--pink);color:var(--pink-ink)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.sun{background:var(--sun);color:var(--sun-ink)}
+.btn.big{font-size:1.3rem;width:100%;padding:14px}
+.btn.small{padding:5px 11px;font-size:.92rem;box-shadow:2px 2px 0 var(--edge);border-radius:10px}
+input,select,textarea{font:inherit;font-size:16px;padding:9px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:90px;resize:vertical}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.92rem;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.list{display:grid;gap:10px}
+.grid2{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.grid2{grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr)}}
+.code-big{font-size:2.4rem;font-weight:600;letter-spacing:.15em}
+.qr{width:150px;height:150px;background:#fff;border-radius:12px;padding:6px}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+tr.me td{font-weight:600;color:var(--pink)}
+.pill{display:inline-block;padding:1px 10px;border-radius:999px;background:var(--bg);font-size:.85rem;white-space:nowrap}
+.pill.ok{background:var(--ok);color:#fff}
+.pill.bad{background:var(--bad);color:#fff}
+
+/* ระเบิด */
+.bomb{background:var(--bomb);color:var(--bomb-ink);border:3px solid var(--edge);border-radius:22px;box-shadow:6px 6px 0 var(--edge);padding:18px;margin-bottom:16px;position:relative}
+.bomb-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.bomb-head .rt{font-size:1.05rem;opacity:.85}
+.timer{font-family:var(--mono);font-weight:700;font-size:clamp(2.6rem,9vw,4.6rem);line-height:1;color:var(--led);background:#000;border:3px solid #333;border-radius:14px;padding:6px 18px;letter-spacing:.06em;text-shadow:0 0 12px rgba(255,59,59,.7)}
+.timer.urgent{animation:blink 1s steps(2,start) infinite}
+.timer.off{color:#555;text-shadow:none}
+@keyframes blink{to{visibility:hidden}}
+.q-text{font-family:var(--hand);font-size:clamp(1.25rem,3vw,2rem);line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.q-img{display:block;max-width:100%;max-height:52vh;margin:12px auto 0;border-radius:12px;background:#fff}
+.answer-reveal{margin-top:14px;background:var(--sun);color:var(--sun-ink);border-radius:14px;padding:10px 14px;text-align:center;font-size:1.2rem}
+.answer-reveal b{font-family:var(--mono);font-size:2.2rem;letter-spacing:.2em;display:block;line-height:1.2}
+.wait{text-align:center;padding:36px 12px;font-size:1.3rem}
+.wait .ico{font-size:3.4rem;display:block}
+
+/* ช่องใส่รหัส */
+.pad-card{background:var(--surface);border:3px solid var(--edge);border-radius:22px;box-shadow:6px 6px 0 var(--edge);padding:16px}
+.slots{display:flex;justify-content:center;gap:10px;margin:4px 0 12px}
+.slot{width:clamp(52px,12vw,74px);height:clamp(64px,14vw,90px);display:grid;place-items:center;border:3px solid var(--edge);border-radius:14px;background:#000;color:#3BFF8A;font-family:var(--mono);font-weight:700;font-size:clamp(2rem,6vw,3rem);text-shadow:0 0 10px rgba(59,255,138,.6)}
+.slot.cur{outline:3px solid var(--sun);outline-offset:2px}
+.slots.shake{animation:shake .4s}
+.slots.wrong .slot{color:var(--led);text-shadow:0 0 10px rgba(255,59,59,.7)}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.key{font:inherit;font-size:clamp(1.6rem,4vw,2.1rem);font-weight:600;padding:12px 0;border:3px solid var(--edge);border-radius:16px;background:var(--bg);color:var(--ink);box-shadow:3px 3px 0 var(--edge);cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.key:active:not(:disabled){transform:translate(3px,3px);box-shadow:none}
+.key.go{background:var(--ok);color:#fff;font-size:1.3rem}
+.key.del{font-size:1.2rem}
+.key:disabled{opacity:.4}
+.text-entry{font-family:var(--mono);font-size:2rem;text-align:center;letter-spacing:.3em;text-transform:uppercase;margin-bottom:10px}
+.lives{text-align:center;margin:10px 0 0;font-size:1.05rem}
+.msg{text-align:center;min-height:1.6em;font-weight:600;margin:8px 0 0}
+.msg.bad{color:var(--bad)} .msg.ok{color:var(--ok)}
+.tries{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.tries span{font-family:var(--mono);font-weight:600;padding:2px 10px;border-radius:999px;border:2px solid var(--line)}
+.tries span.no{text-decoration:line-through;color:var(--bad)}
+.tries span.yes{background:var(--ok);color:#fff;border-color:var(--ok)}
+.result{border:3px solid var(--edge);border-radius:22px;box-shadow:6px 6px 0 var(--edge);padding:26px 16px;text-align:center}
+.result .ico{font-size:4rem;line-height:1;display:block}
+.result h2{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:600;margin:8px 0 4px}
+.result p{margin:0;font-size:1.15rem}
+.result.ok{background:var(--ok);color:#fff}
+.result.bad{background:var(--bad);color:#fff}
+.boom{animation:boom .6s ease-out}
+@keyframes boom{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+.score-big{font-size:2.4rem;font-weight:600;line-height:1.1}
+.play-grid{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.play-grid{grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);align-items:start}}
+
+/* คลังคำถาม */
+.q-item{border:2px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px}
+.q-item .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.q-item .no{font-weight:600;font-size:1.1rem}
+.q-item .fields{display:grid;gap:8px;grid-template-columns:minmax(0,1fr) 150px 130px}
+@media (max-width:700px){.q-item .fields{grid-template-columns:1fr 1fr}.q-item .fields .wide{grid-column:1/-1}}
+.q-thumb{max-height:110px;max-width:220px;border-radius:8px;border:2px solid var(--line);display:block}
+.warn{color:var(--bad);font-size:.85rem}
+#host-display:fullscreen{background:var(--bg);padding:20px;overflow:auto}
+#host-display:fullscreen .q-img{max-height:60vh}
+</style>
+</head>
+<body>
+<div class="page">
+  <header style="margin-bottom:16px">
+    <h1>บอมโค้ด <span style="color:var(--pink)">💣</span></h1>
+    <p class="muted" style="margin:0">ทุกกลุ่มได้คำถามเดียวกัน ถอดรหัสแล้วใส่ผ่าน iPad ก่อนระเบิดหมดเวลา · <a href="/game/" style="color:inherit">รวมเกม</a></p>
+  </header>
+
+  <!-- หน้าแรก -->
+  <section id="view-landing" class="grid2 hidden">
+    <div class="card">
+      <h2>เข้าร่วมเล่น (กลุ่ม / iPad)</h2>
+      <div class="list">
+        <input id="join-code" placeholder="รหัสห้อง เช่น AB3KX" autocomplete="off" style="text-transform:uppercase">
+        <button class="btn primary big" id="join-go">เข้าห้อง</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>พิธีกร</h2>
+      <div class="list">
+        <a class="btn big" href="?bank=1" style="text-align:center">เตรียมคำถาม (<span id="land-qcount">0</span> ข้อ)</a>
+        <button class="btn sun big" id="create-go">สร้างห้องเล่น</button>
+        <p class="muted" style="margin:0;font-size:.9rem">คำถามเก็บในเบราว์เซอร์ของเครื่องนี้ ให้เตรียมคำถามและเปิดห้องด้วยเครื่องเดียวกัน (ย้ายเครื่องได้ด้วยปุ่มนำออก/นำเข้าไฟล์ในหน้าเตรียมคำถาม)</p>
+      </div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <h2>กติกา</h2>
+      <ol style="margin:0;padding-left:1.3rem">
+        <li>แต่ละรอบทุกกลุ่มได้<b>คำถามเดียวกัน</b> คำตอบคือ<b>รหัส 4 ตัว</b> ถอดรหัสแล้วกดใส่บน iPad</li>
+        <li>ปลดได้ก่อนได้คะแนนมากกว่า: ลำดับที่ 1 <b>+10</b> · ที่ 2 <b>+8</b> · ที่ 3 <b>+6</b> · ที่ 4 <b>+4</b> · ลำดับต่อจากนั้น <b>+2</b></li>
+        <li>ใส่ผิดครบจำนวนครั้งที่พิธีกรกำหนด หรือ<b>หมดเวลา</b> = ระเบิด ไม่ได้คะแนนรอบนั้น</li>
+        <li>รอบจบแล้วเฉลยขึ้นทุกจอ คะแนนสะสมทุกรอบ</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- คลังคำถาม -->
+  <section id="view-bank" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">เตรียมคำถาม <span class="muted" id="bank-count"></span></h2>
+        <div class="row">
+          <button class="btn small" id="bank-export">นำออกไฟล์</button>
+          <label class="btn small" for="bank-import" style="cursor:pointer">นำเข้าไฟล์</label>
+          <input type="file" id="bank-import" accept=".json,application/json" hidden>
+          <a class="btn small" href="./">กลับ</a>
+        </div>
+      </div>
+      <p class="muted" style="margin:8px 0 0;font-size:.9rem">บันทึกอัตโนมัติในเครื่องนี้ · รหัสคำตอบปกติ 4 ตัว (ตัวเลขล้วน iPad จะขึ้นแป้นตัวเลข ถ้ามีตัวอักษรจะขึ้นช่องพิมพ์) · ใส่รูปประกอบได้ เช่น รูปโจทย์ กราฟ สูตร</p>
+    </div>
+    <div class="list" id="bank-list"></div>
+    <div class="row" style="justify-content:center;margin-top:16px">
+      <button class="btn primary" id="bank-add">+ เพิ่มคำถาม</button>
+    </div>
+  </section>
+
+  <!-- กลุ่ม: ใส่ชื่อ -->
+  <section id="view-join" class="hidden">
+    <div class="card" style="max-width:480px;margin:0 auto">
+      <h2>เข้าห้อง <span id="join-room-code" class="code-big" style="font-size:1.4rem"></span></h2>
+      <div class="list">
+        <input id="join-name" placeholder="ชื่อกลุ่ม เช่น กลุ่ม 3" maxlength="30" autocomplete="off">
+        <button class="btn primary big" id="join-submit">เข้าเล่น</button>
+        <p class="msg bad" id="join-error"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- กลุ่ม: เล่น -->
+  <section id="view-player" class="hidden">
+    <div class="row" style="justify-content:space-between;margin-bottom:12px">
+      <div><b id="p-name" style="font-size:1.3rem"></b> <span class="muted">· ห้อง <span id="p-room"></span></span></div>
+      <div><span class="pill" id="p-rank"></span> <b id="p-total" style="font-size:1.3rem">0</b> คะแนน</div>
+    </div>
+    <div class="play-grid">
+      <div>
+        <div class="bomb" id="p-bomb"></div>
+      </div>
+      <div>
+        <div id="p-pad" class="pad-card hidden">
+          <div class="slots" id="p-slots"></div>
+          <input class="text-entry hidden" id="p-text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <div class="keypad" id="p-keypad"></div>
+          <p class="lives" id="p-lives"></p>
+          <p class="msg" id="p-msg"></p>
+          <div class="tries" id="p-tries"></div>
+        </div>
+        <div id="p-result" class="hidden"></div>
+        <div class="card" style="margin-top:18px"><h2>อันดับคะแนน</h2><table><tbody id="p-board"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- พิธีกร -->
+  <section id="view-host" class="hidden">
+    <div class="grid2">
+      <div>
+        <div id="host-display">
+          <div class="bomb" id="h-bomb"></div>
+        </div>
+        <div class="card">
+          <div id="h-idle">
+            <h2>เริ่มรอบใหม่</h2>
+            <div class="list">
+              <label class="f">คำถาม
+                <select id="h-question"></select>
+              </label>
+              <div class="row" style="align-items:flex-end">
+                <label class="f" style="flex:1;min-width:130px">เวลา (วินาที)
+                  <input type="number" id="h-time" min="15" max="1800" step="15" value="180">
+                </label>
+                <label class="f" style="flex:1;min-width:150px">ใส่ผิดได้ต่อกลุ่ม
+                  <select id="h-attempts">
+                    <option value="1">1 ครั้ง</option><option value="2">2 ครั้ง</option><option value="3" selected>3 ครั้ง</option><option value="5">5 ครั้ง</option><option value="0">ไม่จำกัด</option>
+                  </select>
+                </label>
+              </div>
+              <button class="btn primary big" id="h-start">เริ่มรอบ (จุดระเบิด)</button>
+              <p class="muted" style="margin:0;font-size:.9rem" id="h-bank-note"></p>
+            </div>
+          </div>
+          <div id="h-running" class="hidden">
+            <h2>รอบที่กำลังเล่น</h2>
+            <div class="row">
+              <button class="btn" id="h-plus">+30 วินาที</button>
+              <button class="btn" id="h-minus">−30 วินาที</button>
+              <button class="btn primary" id="h-end">จบรอบ + เฉลย</button>
+            </div>
+            <p style="margin:12px 0 0">เฉลย: <b id="h-answer" style="font-family:var(--mono);letter-spacing:.15em">••••</b> <button class="btn small" id="h-answer-toggle">แสดง</button> <span class="muted" style="font-size:.88rem">(ระวังจอที่ฉายอยู่)</span></p>
+          </div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn small" id="h-full">จอคำถามเต็มจอ</button>
+            <a class="btn small" href="?bank=1" target="_blank" rel="noopener">แก้ไขคำถาม</a>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="row" style="justify-content:space-between;align-items:flex-start">
+            <div>
+              <p class="muted" style="margin:0">รหัสห้อง</p>
+              <div class="code-big" id="h-code"></div>
+              <p class="muted" style="margin:0;font-size:.9rem">เข้า <b id="h-url"></b></p>
+            </div>
+            <img class="qr" id="h-qr" alt="QR เข้าห้อง">
+          </div>
+        </div>
+        <div class="card">
+          <h2>กลุ่ม <span class="pill" id="h-count">0</span></h2>
+          <table><thead><tr><th>กลุ่ม</th><th>รอบนี้</th><th style="text-align:right">รวม</th><th></th></tr></thead><tbody id="h-players"></tbody></table>
+        </div>
+        <div class="card"><h2>รอบที่เล่นแล้ว</h2><div class="list" id="h-history"><p class="muted" style="margin:0">-</p></div></div>
+        <button class="btn small" id="h-reset">เริ่มเกมใหม่ (ล้างรอบและคะแนน)</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var API = '/api/bomb/rooms';
+  var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var store = {
+    get: function (k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} },
+  };
+  var apiUrl = function (path) { return window.PTN_API_URL ? window.PTN_API_URL(API + path) : API + path; };
+
+  function call(method, path, body, headers) {
+    var opts = { method: method, headers: Object.assign({ 'Content-Type': 'application/json' }, headers || {}), ptnSilent: true };
+    if (body) opts.body = JSON.stringify(body);
+    return fetch(API + path, opts).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) { var err = new Error(data.error || ('HTTP ' + res.status)); err.status = res.status; throw err; }
+        return data;
+      });
+    });
+  }
+  function show(id) { ['landing', 'bank', 'join', 'player', 'host'].forEach(function (v) { $('view-' + v).classList.toggle('hidden', v !== id); }); }
+  function poll(fn, ms) {
+    var tick = function () { if (!document.hidden) fn(); setTimeout(tick, ms); };
+    tick();
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) fn(); });
+  }
+  function mmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+
+  // นาฬิกาถอยหลัง: อัปเดตจาก remainingMs ทุกครั้งที่ดึงข้อมูล แล้วนับต่อในเครื่องทุก 0.2 วิ
+  var clock = { end: 0, running: false };
+  setInterval(function () {
+    document.querySelectorAll('.js-timer').forEach(function (el) {
+      var left = clock.running ? clock.end - Date.now() : 0;
+      el.textContent = mmss(left);
+      el.classList.toggle('urgent', clock.running && left <= 10000);
+      el.classList.toggle('off', !clock.running);
+    });
+  }, 200);
+
+  // เสียง (iPad เล่นเสียงได้หลังแตะจอครั้งแรก)
+  var audio = null;
+  document.addEventListener('pointerdown', function unlock() {
+    try { var Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx && !audio) audio = new Ctx(); if (audio && audio.resume) audio.resume(); } catch (e) {}
+    document.removeEventListener('pointerdown', unlock);
+  });
+  function tone(freqs, dur, type) {
+    try {
+      if (!audio) return;
+      freqs.forEach(function (f, i) {
+        var o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime + i * dur;
+        o.type = type || 'sine'; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
+        g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.95);
+        o.start(t); o.stop(t + dur);
+      });
+    } catch (e) {}
+  }
+  var sfx = {
+    key: function () { tone([1200], 0.05, 'square'); },
+    wrong: function () { tone([220, 160], 0.18, 'sawtooth'); },
+    ok: function () { tone([660, 880, 1320], 0.14); },
+    boom: function () { tone([120, 80, 50], 0.25, 'sawtooth'); },
+    start: function () { tone([880, 880], 0.12, 'square'); },
+  };
+
+  // ---------- คลังคำถาม (IndexedDB เก็บรูปได้) ----------
+  var idb = null;
+  function dbOpen() {
+    return new Promise(function (res) {
+      try {
+        var r = indexedDB.open('ptn-bomb-game', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
+        r.onsuccess = function () { idb = r.result; res(); };
+        r.onerror = function () { res(); };
+      } catch (e) { res(); }
+    });
+  }
+  function dbGet(k) {
+    return new Promise(function (res) {
+      if (!idb) return res(null);
+      try { var q = idb.transaction('kv').objectStore('kv').get(k); q.onsuccess = function () { res(q.result || null); }; q.onerror = function () { res(null); }; } catch (e) { res(null); }
+    });
+  }
+  function dbSet(k, v) { if (!idb) return; try { idb.transaction('kv', 'readwrite').objectStore('kv').put(v, k); } catch (e) {} }
+  var bank = [];
+  function loadBank() {
+    return dbGet('bank').then(function (b) {
+      bank = Array.isArray(b) ? b : [
+        { id: 'ex1', title: 'ตัวอย่าง · เชาวน์คณิต', text: 'รหัสคือผลลัพธ์ของ\n12 × 12 + 1000', image: null, answer: '1144', time: 120 },
+        { id: 'ex2', title: 'ตัวอย่าง · เคมี', text: 'เลขอะตอมของ O, Na, C, H\nเรียงต่อกันแล้วเอาหลักหน่วยของแต่ละตัว', image: null, answer: '8161', time: 180 },
+      ];
+      return bank;
+    });
+  }
+  var saveTimer = null;
+  function saveBank() { clearTimeout(saveTimer); saveTimer = setTimeout(function () { dbSet('bank', bank); }, 250); }
+  var thumbUrls = {};
+  function imgUrl(q) { if (!q.image) return ''; if (!thumbUrls[q.id]) thumbUrls[q.id] = URL.createObjectURL(q.image); return thumbUrls[q.id]; }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function shrinkImage(file) {
+    return new Promise(function (res, rej) {
+      var u = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));
+        var w = Math.max(1, Math.round(im.naturalWidth * k)), h = Math.max(1, Math.round(im.naturalHeight * k));
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); ctx.drawImage(im, 0, 0, w, h);
+        URL.revokeObjectURL(u);
+        c.toBlob(function (b) { res(b || file); }, 'image/jpeg', 0.85);
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('เปิดรูปไม่ได้')); };
+      im.src = u;
+    });
+  }
+
+  function bankView() {
+    show('bank');
+    var list = $('bank-list');
+    function render() {
+      $('bank-count').textContent = '(' + bank.length + ' ข้อ)';
+      if (!bank.length) { list.innerHTML = '<div class="card muted" style="text-align:center">ยังไม่มีคำถาม กด "+ เพิ่มคำถาม"</div>'; return; }
+      list.innerHTML = bank.map(function (q, i) {
+        var ans = String(q.answer || '').replace(/\s+/g, '');
+        return '<div class="card q-item" data-i="' + i + '" style="margin:0">'
+          + '<div class="top"><span class="no">ข้อ ' + (i + 1) + '</span><span class="row" style="gap:6px">'
+          + '<button class="btn small" data-a="up"' + (i ? '' : ' disabled') + '>↑</button>'
+          + '<button class="btn small" data-a="down"' + (i < bank.length - 1 ? '' : ' disabled') + '>↓</button>'
+          + '<button class="btn small" data-a="del">ลบ</button></span></div>'
+          + '<div class="fields"><label class="f wide">ชื่อด่าน / หมวด (ไม่ใส่ก็ได้)<input data-f="title" value="' + esc(q.title) + '" maxlength="80"></label>'
+          + '<label class="f">รหัสคำตอบ<input data-f="answer" value="' + esc(q.answer) + '" maxlength="12" placeholder="เช่น 4721" style="font-family:var(--mono);letter-spacing:.15em;text-transform:uppercase"></label>'
+          + '<label class="f">เวลา (วินาที)<input data-f="time" type="number" min="15" max="1800" step="15" value="' + (q.time || 180) + '"></label></div>'
+          + '<label class="f">คำถาม<textarea data-f="text" rows="3">' + esc(q.text) + '</textarea></label>'
+          + (ans && ans.length !== 4 ? '<span class="warn">รหัสนี้มี ' + ans.length + ' ตัว (ปกติ 4 ตัว) ใช้ได้ iPad จะขึ้นช่องตามจำนวนตัว</span>' : '')
+          + (!ans ? '<span class="warn">ยังไม่ได้ใส่รหัสคำตอบ</span>' : '')
+          + '<div class="row">' + (q.image ? '<img class="q-thumb" src="' + imgUrl(q) + '" alt="">' : '')
+          + '<label class="btn small" style="cursor:pointer">' + (q.image ? 'เปลี่ยนรูป' : '+ รูปประกอบ') + '<input type="file" accept="image/*" data-img hidden></label>'
+          + (q.image ? '<button class="btn small" data-a="noimg">ลบรูป</button>' : '') + '</div></div>';
+      }).join('');
+    }
+    list.oninput = function (e) {
+      var item = e.target.closest('.q-item'), f = e.target.dataset.f;
+      if (!item || !f) return;
+      var q = bank[+item.dataset.i];
+      q[f] = f === 'time' ? Number(e.target.value) || 180 : e.target.value;
+      saveBank();
+    };
+    list.addEventListener('change', function (e) {
+      if (e.target.dataset.f === 'answer') render();
+      if (e.target.dataset.img == null) return;
+      var file = e.target.files && e.target.files[0], q = bank[+e.target.closest('.q-item').dataset.i];
+      if (!file) return;
+      shrinkImage(file).then(function (blob) {
+        if (thumbUrls[q.id]) { URL.revokeObjectURL(thumbUrls[q.id]); delete thumbUrls[q.id]; }
+        q.image = blob; saveBank(); render();
+      }).catch(function (err) { alert(err.message); });
+    });
+    list.onclick = function (e) {
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      var i = +b.closest('.q-item').dataset.i;
+      if (b.dataset.a === 'up' && i > 0) bank.splice(i - 1, 0, bank.splice(i, 1)[0]);
+      else if (b.dataset.a === 'down' && i < bank.length - 1) bank.splice(i + 1, 0, bank.splice(i, 1)[0]);
+      else if (b.dataset.a === 'del') { if (!confirm('ลบข้อ ' + (i + 1) + '?')) return; bank.splice(i, 1); }
+      else if (b.dataset.a === 'noimg') { bank[i].image = null; }
+      saveBank(); render();
+    };
+    $('bank-add').onclick = function () {
+      bank.push({ id: uid(), title: '', text: '', image: null, answer: '', time: 180 });
+      saveBank(); render();
+      var tas = list.querySelectorAll('textarea'); tas[tas.length - 1].focus();
+    };
+    // นำออก/นำเข้า: ไฟล์ JSON (รูปแปลงเป็น data URL) ใช้ย้ายคำถามไปอีกเครื่อง
+    $('bank-export').onclick = function () {
+      Promise.all(bank.map(function (q) {
+        if (!q.image) return Object.assign({}, q, { image: null });
+        return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res(Object.assign({}, q, { image: r.result })); }; r.readAsDataURL(q.image); });
+      })).then(function (out) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([JSON.stringify({ game: 'ptn-bomb', questions: out })], { type: 'application/json' }));
+        a.download = 'บอมโค้ด-คำถาม.json';
+        a.click();
+      });
+    };
+    $('bank-import').onchange = function (e) {
+      var file = e.target.files && e.target.files[0]; e.target.value = '';
+      if (!file) return;
+      file.text().then(function (txt) {
+        var data = JSON.parse(txt), qs = Array.isArray(data) ? data : data.questions;
+        if (!Array.isArray(qs)) throw new Error('ไฟล์ไม่ถูกต้อง');
+        return Promise.all(qs.map(function (q) {
+          var item = { id: uid(), title: String(q.title || ''), text: String(q.text || ''), answer: String(q.answer || ''), time: Number(q.time) || 180, image: null };
+          if (typeof q.image !== 'string' || q.image.indexOf('data:image/') !== 0) return item;
+          return fetch(q.image).then(function (r) { return r.blob(); }).then(function (b) { item.image = b; return item; });
+        }));
+      }).then(function (items) {
+        var replace = bank.length && confirm('นำเข้า ' + items.length + ' ข้อ\nกด OK = แทนที่คำถามเดิมทั้งหมด\nกด Cancel = ต่อท้ายคำถามเดิม');
+        bank = replace ? items : bank.concat(items);
+        saveBank(); render();
+      }).catch(function (err) { alert('นำเข้าไม่สำเร็จ: ' + err.message); });
+    };
+    render();
+  }
+
+  // ---------- หน้าแรก ----------
+  function landing() {
+    show('landing');
+    $('land-qcount').textContent = bank.length;
+    $('join-go').onclick = function () {
+      var code = $('join-code').value.trim().toUpperCase();
+      if (code) location.href = '?room=' + encodeURIComponent(code);
+    };
+    $('join-code').onkeydown = function (e) { if (e.key === 'Enter') $('join-go').click(); };
+    $('create-go').onclick = function () {
+      var btn = $('create-go'); btn.disabled = true;
+      call('POST', '', {})
+        .then(function (r) { store.set('bomb-host-' + r.code, r.hostToken); location.href = '?host=' + r.code; })
+        .catch(function (e) { alert(e.message); btn.disabled = false; });
+    };
+  }
+
+  // หน้าจอระเบิด/คำถาม ใช้ทั้งพิธีกรและกลุ่ม
+  function bombHtml(code, r, opts) {
+    if (!r) return '<div class="wait"><span class="ico">💣</span>' + (opts.host ? 'เลือกคำถามแล้วกด "เริ่มรอบ"' : 'รอพิธีกรเริ่มรอบ') + '</div>';
+    var ended = r.status === 'ended';
+    return '<div class="bomb-head"><span class="rt">รอบที่ ' + r.no + (r.title ? ' · ' + esc(r.title) : '') + (opts.host ? ' · ปลดได้แล้ว ' + r.solvedCount + '/' + opts.players + ' กลุ่ม' : '') + '</span>'
+      + '<span class="timer js-timer">' + mmss(r.remainingMs) + '</span></div>'
+      + (r.text ? '<p class="q-text">' + esc(r.text) + '</p>' : '')
+      + (r.imageId ? '<img class="q-img" src="' + apiUrl('/' + code + '/images/' + r.imageId) + '" alt="รูปประกอบคำถาม">' : '')
+      + (ended ? '<div class="answer-reveal">' + (r.endReason === 'timeout' ? 'หมดเวลา! ' : 'จบรอบ ') + 'เฉลยรหัส<b>' + esc(r.answer) + '</b></div>' : '');
+  }
+  function syncClock(r) {
+    clock.running = !!r && r.status === 'running';
+    clock.end = Date.now() + (r ? r.remainingMs : 0);
+  }
+
+  // ---------- กลุ่ม (iPad) ----------
+  function player(code) {
+    var creds = store.get('bomb-player-' + code);
+    if (!creds) {
+      show('join');
+      $('join-room-code').textContent = code;
+      $('join-submit').onclick = function () {
+        var name = $('join-name').value.trim();
+        if (!name) { $('join-error').textContent = 'กรุณาใส่ชื่อกลุ่ม'; return; }
+        $('join-submit').disabled = true;
+        call('POST', '/' + code + '/join', { name: name })
+          .then(function (r) { store.set('bomb-player-' + code, r); player(code); })
+          .catch(function (e) { $('join-error').textContent = e.message; $('join-submit').disabled = false; });
+      };
+      $('join-name').onkeydown = function (e) { if (e.key === 'Enter') $('join-submit').click(); };
+      return;
+    }
+    show('player');
+    var headers = { 'x-player-id': creds.playerId, 'x-player-token': creds.playerToken };
+    var state = null, entry = '', roundKey = '', bombKey = '', lastStatus = '', sending = false;
+
+    // แป้นตัวเลข
+    var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'go'];
+    $('p-keypad').innerHTML = keys.map(function (k) {
+      if (k === 'del') return '<button class="key del" data-k="del">ลบ</button>';
+      if (k === 'go') return '<button class="key go" data-k="go">ส่งรหัส</button>';
+      return '<button class="key" data-k="' + k + '">' + k + '</button>';
+    }).join('');
+    $('p-keypad').onclick = function (e) { var b = e.target.closest('[data-k]'); if (b && !b.disabled) press(b.dataset.k); };
+    $('p-text').oninput = function () { entry = this.value.replace(/\s+/g, '').toUpperCase().slice(0, len()); this.value = entry; drawSlots(); };
+    $('p-text').onkeydown = function (e) { if (e.key === 'Enter') press('go'); };
+    document.addEventListener('keydown', function (e) {
+      if (!state || !state.round || !state.round.numeric || document.activeElement === $('p-text')) return;
+      if (/^[0-9]$/.test(e.key)) press(e.key);
+      else if (e.key === 'Backspace') press('del');
+      else if (e.key === 'Enter') press('go');
+    });
+    function len() { return state && state.round ? state.round.codeLength : 4; }
+    function canType() { return state && state.round && state.round.status === 'running' && state.me && state.me.status === 'playing' && !sending; }
+    function press(k) {
+      if (!canType()) return;
+      if (k === 'del') entry = entry.slice(0, -1);
+      else if (k === 'go') return submit();
+      else if (entry.length < len()) entry += k;
+      sfx.key();
+      $('p-slots').classList.remove('wrong');
+      drawSlots();
+    }
+    function drawSlots() {
+      var n = len(), html = '';
+      for (var i = 0; i < n; i++) html += '<div class="slot' + (i === entry.length ? ' cur' : '') + '">' + esc(entry[i] || '') + '</div>';
+      $('p-slots').innerHTML = html;
+    }
+    function setMsg(t, kind) { $('p-msg').textContent = t; $('p-msg').className = 'msg ' + (kind || ''); }
+    function shake() { var s = $('p-slots'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+    function submit() {
+      if (entry.length !== len()) { shake(); setMsg('ใส่ให้ครบ ' + len() + ' ตัวก่อน', 'bad'); return; }
+      sending = true;
+      call('POST', '/' + code + '/guess', { code: entry }, headers).then(function (r) {
+        if (r.ok) { sfx.ok(); setMsg('', ''); }
+        else {
+          sfx.wrong(); $('p-slots').classList.add('wrong'); shake();
+          setMsg(r.status === 'exploded' ? '' : 'รหัสผิด! (' + entry + ')', 'bad');
+          entry = ''; setTimeout(drawSlots, 700);
+        }
+      }).catch(function (e) { setMsg(e.message, 'bad'); }).then(function () { sending = false; refresh(); });
+    }
+
+    function render(s) {
+      state = s;
+      var r = s.round, me = s.me;
+      $('p-name').textContent = s.name;
+      $('p-room').textContent = s.code;
+      $('p-total').textContent = s.total;
+      $('p-rank').textContent = 'อันดับ ' + s.rank;
+      syncClock(r);
+      // รอบใหม่ = ล้างช่องรหัส
+      var key = r ? r.no + '-' + r.status : 'none';
+      if (r && roundKey.split('-')[0] !== String(r.no)) { entry = ''; setMsg('', ''); if (roundKey) sfx.start(); }
+      roundKey = key;
+      // วาดคำถามใหม่เฉพาะตอนเปลี่ยน (รูปไม่กะพริบ)
+      if (key !== bombKey) { $('p-bomb').innerHTML = bombHtml(code, r, {}); bombKey = key; }
+      var st = me ? me.status : '';
+      var playing = r && r.status === 'running' && st === 'playing';
+      $('p-pad').classList.toggle('hidden', !playing);
+      if (playing) {
+        $('p-text').classList.toggle('hidden', r.numeric);
+        $('p-keypad').classList.toggle('hidden', !r.numeric);
+        $('p-keypad').querySelectorAll('.key').forEach(function (b) { b.disabled = sending; });
+        if (!r.numeric) { $('p-text').maxLength = r.codeLength; if ($('p-text').value !== entry) $('p-text').value = entry; }
+        drawSlots();
+        var left = r.maxAttempts ? r.maxAttempts - me.wrong : null;
+        $('p-lives').innerHTML = left == null ? 'ใส่ผิดได้ไม่จำกัด' : 'ใส่ผิดได้อีก <b>' + left + '</b> ครั้ง ' + '❤️'.repeat(left) + '<span style="opacity:.25">' + '🤍'.repeat(me.wrong) + '</span>';
+        $('p-tries').innerHTML = me.tries.map(function (t) { return '<span class="' + (t.ok ? 'yes' : 'no') + '">' + esc(t.code) + '</span>'; }).join('');
+      }
+      // ผลรอบ
+      var res = $('p-result'), html = '';
+      if (r && st === 'solved') html = '<div class="result ok"><span class="ico">✂️</span><h2>ปลดระเบิดสำเร็จ!</h2><p>ลำดับที่ ' + me.order + ' · <b>+' + me.points + ' คะแนน</b> · ใช้เวลา ' + mmss(me.solvedMs) + '</p></div>';
+      else if (r && st === 'exploded') html = '<div class="result bad"><span class="ico">💥</span><h2>ตูม! ระเบิดแล้ว</h2><p>ใส่รหัสผิดครบ ' + r.maxAttempts + ' ครั้ง รอรอบถัดไป</p></div>';
+      else if (r && r.status === 'ended') html = '<div class="result bad"><span class="ico">💥</span><h2>' + (r.endReason === 'timeout' ? 'หมดเวลา! ระเบิด' : 'จบรอบ') + '</h2><p>เฉลยรหัส <b style="font-family:var(--mono);letter-spacing:.15em">' + esc(r.answer) + '</b></p></div>';
+      var resKey = (r ? r.no : '') + st + (r ? r.status : '');
+      if (res.dataset.key !== resKey) {
+        res.innerHTML = html; res.dataset.key = resKey;
+        res.classList.toggle('hidden', !html);
+        if (html) res.firstChild.classList.add('boom');
+        var now = st || (r && r.status === 'ended' ? 'ended' : '');
+        if (lastStatus && now !== lastStatus) { if (st === 'solved') sfx.ok(); else if (st === 'exploded' || now === 'ended' || st === 'timeout') sfx.boom(); }
+        lastStatus = now;
+      }
+      $('p-board').innerHTML = s.leaderboard.map(function (p, i) {
+        return '<tr' + (p.me ? ' class="me"' : '') + '><td>' + (i + 1) + '. ' + esc(p.name) + '</td><td style="text-align:right"><b>' + p.total + '</b></td></tr>';
+      }).join('');
+    }
+    function refresh() {
+      return call('GET', '/' + code + '/player', null, headers).then(render).catch(function (e) {
+        if (e.status === 403 || e.status === 404) { store.del('bomb-player-' + code); alert(e.message); location.href = location.pathname; }
+      });
+    }
+    poll(refresh, 1000);
+  }
+
+  // ---------- พิธีกร ----------
+  function host(code) {
+    var hostToken = store.get('bomb-host-' + code);
+    if (!hostToken) { alert('เครื่องนี้ไม่ใช่พิธีกรของห้องนี้'); location.href = location.pathname; return; }
+    show('host');
+    var headers = { 'x-host-token': hostToken };
+    var usedKey = 'bomb-used-' + code;
+    var used = store.get(usedKey) || [];
+    var uploaded = {};   // คำถาม id -> imageId ที่อัปโหลดเข้าห้องนี้แล้ว
+    var showAnswer = false, bombKey = '', last = null;
+    $('h-code').textContent = code;
+    $('h-url').textContent = location.host + '/game/bomb';
+    $('h-qr').src = apiUrl('/' + code + '/qr') + '?origin=' + encodeURIComponent(location.origin);
+
+    function fillQuestions() {
+      var sel = $('h-question'), prev = sel.value;
+      var playable = bank.filter(function (q) { return String(q.answer || '').trim() && (String(q.text || '').trim() || q.image); });
+      sel.innerHTML = playable.map(function (q) {
+        var i = bank.indexOf(q);
+        var label = 'ข้อ ' + (i + 1) + (q.title ? ' · ' + q.title : '') + ' — ' + String(q.text || '(รูป)').replace(/\s+/g, ' ').slice(0, 40);
+        return '<option value="' + esc(q.id) + '">' + (used.indexOf(q.id) >= 0 ? '✓ ' : '') + esc(label) + '</option>';
+      }).join('');
+      var next = playable.find(function (q) { return used.indexOf(q.id) < 0; });
+      sel.value = prev && playable.some(function (q) { return q.id === prev; }) && used.indexOf(prev) < 0 ? prev : (next ? next.id : (playable[0] ? playable[0].id : ''));
+      $('h-start').disabled = !playable.length;
+      $('h-bank-note').textContent = playable.length ? 'มีคำถาม ' + playable.length + ' ข้อ · เล่นไปแล้ว ' + used.filter(function (id) { return playable.some(function (q) { return q.id === id; }); }).length + ' ข้อ (✓)' : 'ยังไม่มีคำถามที่ใส่รหัสคำตอบ กด "แก้ไขคำถาม"';
+      syncTime();
+    }
+    function syncTime() { var q = bank.find(function (x) { return x.id === $('h-question').value; }); if (q) $('h-time').value = q.time || 180; }
+    $('h-question').onchange = syncTime;
+    // แก้คำถามในแท็บอื่นแล้วกลับมา โหลดคลังใหม่
+    window.addEventListener('focus', function () { loadBank().then(fillQuestions); });
+    fillQuestions();
+
+    $('h-start').onclick = function () {
+      var q = bank.find(function (x) { return x.id === $('h-question').value; });
+      if (!q) return;
+      var btn = $('h-start'); btn.disabled = true;
+      var img = !q.image ? Promise.resolve(null) : uploaded[q.id] ? Promise.resolve(uploaded[q.id]) :
+        fetch(API + '/' + code + '/images', { method: 'POST', headers: Object.assign({ 'Content-Type': q.image.type || 'image/jpeg' }, headers), body: q.image, ptnSilent: true })
+          .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error(d.error || 'อัปโหลดรูปไม่สำเร็จ'); uploaded[q.id] = d.imageId; return d.imageId; }); });
+      img.then(function (imageId) {
+        return call('POST', '/' + code + '/start', { title: q.title, text: q.text, imageId: imageId, answer: q.answer, timeLimit: Number($('h-time').value) || 180, maxAttempts: Number($('h-attempts').value) }, headers);
+      }).then(function () {
+        if (used.indexOf(q.id) < 0) { used.push(q.id); store.set(usedKey, used); }
+        showAnswer = false; sfx.start(); return refresh();
+      }).catch(function (e) { alert(e.message); }).then(function () { btn.disabled = false; fillQuestions(); });
+    };
+    $('h-end').onclick = function () { if (confirm('จบรอบนี้และเฉลยเลย?')) call('POST', '/' + code + '/end', {}, headers).then(refresh).catch(function (e) { alert(e.message); }); };
+    $('h-plus').onclick = function () { call('POST', '/' + code + '/time', { seconds: 30 }, headers).then(refresh).catch(function (e) { alert(e.message); }); };
+    $('h-minus').onclick = function () { call('POST', '/' + code + '/time', { seconds: -30 }, headers).then(refresh).catch(function (e) { alert(e.message); }); };
+    $('h-answer-toggle').onclick = function () { showAnswer = !showAnswer; if (last) render(last); };
+    $('h-full').onclick = function () {
+      var el = $('host-display');
+      if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+    };
+    $('h-reset').onclick = function () {
+      if (!confirm('เริ่มเกมใหม่? รอบที่เล่นแล้วและคะแนนทุกกลุ่มจะถูกล้าง (กลุ่มยังอยู่ในห้อง)')) return;
+      call('POST', '/' + code + '/reset', {}, headers).then(function () { used = []; store.set(usedKey, used); fillQuestions(); refresh(); }).catch(function (e) { alert(e.message); });
+    };
+    $('h-players').onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.adj) call('POST', '/' + code + '/players/' + b.dataset.adj + '/adjust', { delta: Number(b.dataset.d) }, headers).then(refresh);
+      else if (b.dataset.kick && confirm('เอากลุ่ม "' + b.dataset.name + '" ออกจากห้อง?')) call('DELETE', '/' + code + '/players/' + b.dataset.kick, null, headers).then(refresh);
+    };
+
+    function statusCell(p, r) {
+      if (!r) return '<span class="muted">-</span>';
+      if (p.status === 'solved') return '<span class="pill ok">ที่ ' + p.order + ' +' + p.points + '</span> <span class="muted" style="font-size:.85rem">' + mmss(p.solvedMs) + '</span>';
+      if (p.status === 'exploded') return '<span class="pill bad">💥 ผิดครบ</span>';
+      if (p.status === 'timeout') return '<span class="pill bad">💥 หมดเวลา</span>';
+      return '<span class="pill">กำลังถอด' + (p.wrong ? ' · ผิด ' + p.wrong + (r.maxAttempts ? '/' + r.maxAttempts : '') : '') + '</span>';
+    }
+    function render(s) {
+      last = s;
+      var r = s.round, running = r && r.status === 'running';
+      syncClock(r);
+      var key = r ? r.no + '-' + r.status + '-' + r.solvedCount + '-' + s.players.length : 'none';
+      if (key !== bombKey) { $('h-bomb').innerHTML = bombHtml(code, r, { host: true, players: s.players.length }); bombKey = key; }
+      $('h-idle').classList.toggle('hidden', !!running);
+      $('h-running').classList.toggle('hidden', !running);
+      $('h-answer').textContent = showAnswer && s.answer ? s.answer : '••••';
+      $('h-answer-toggle').textContent = showAnswer ? 'ซ่อน' : 'แสดง';
+      $('h-count').textContent = s.players.length;
+      $('h-players').innerHTML = s.players.map(function (p, i) {
+        var tries = p.tries && p.tries.length ? '<div class="muted" style="font-size:.82rem;font-family:var(--mono)">' + p.tries.map(function (t) { return t.ok ? '<b style="color:var(--ok)">' + esc(t.code) + '</b>' : '<s>' + esc(t.code) + '</s>'; }).join(' ') + '</div>' : '';
+        return '<tr><td>' + (i + 1) + '. ' + esc(p.name) + (p.online ? '' : ' <span class="muted" style="font-size:.82rem">(ออฟไลน์)</span>') + tries + '</td>'
+          + '<td>' + statusCell(p, r) + '</td>'
+          + '<td style="text-align:right"><b style="font-size:1.15rem">' + p.total + '</b>' + (p.adjust ? '<div class="muted" style="font-size:.78rem">ปรับ ' + (p.adjust > 0 ? '+' : '') + p.adjust + '</div>' : '') + '</td>'
+          + '<td style="white-space:nowrap;text-align:right"><button class="btn small" data-adj="' + p.id + '" data-d="-1" title="ลบ 1 คะแนน">−1</button> <button class="btn small" data-adj="' + p.id + '" data-d="1" title="เพิ่ม 1 คะแนน">+1</button> <button class="btn small" data-kick="' + p.id + '" data-name="' + esc(p.name) + '" title="เอาออกจากห้อง">✕</button></td></tr>';
+      }).join('') || '<tr><td colspan="4" class="muted">ยังไม่มีกลุ่มเข้าห้อง ให้สแกน QR หรือใส่รหัสห้อง</td></tr>';
+      $('h-history').innerHTML = s.history.length ? s.history.slice().reverse().map(function (h) {
+        return '<div>รอบที่ ' + h.no + (h.title ? ' · ' + esc(h.title) : '') + ' · เฉลย <b style="font-family:var(--mono)">' + esc(h.answer) + '</b> · ปลดได้ ' + h.solved + ' กลุ่ม</div>';
+      }).join('') : '<p class="muted" style="margin:0">-</p>';
+    }
+    function refresh() { return call('GET', '/' + code + '/host', null, headers).then(render).catch(function (e) { if (e.status === 404 || e.status === 403) { alert(e.message); location.href = location.pathname; } }); }
+    poll(refresh, 1000);
+  }
+
+  dbOpen().then(loadBank).then(function () {
+    var room = (params.get('room') || '').toUpperCase();
+    var hostCode = (params.get('host') || '').toUpperCase();
+    if (params.get('bank')) bankView();
+    else if (hostCode) host(hostCode);
+    else if (room) player(room);
+    else landing();
+  });
+})();
+</script>
+</body>
+</html>

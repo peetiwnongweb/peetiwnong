@@ -2386,6 +2386,7 @@ let manualSheetPeople = [];
 let manualSheetSubjectCount = 0;
 let manualSheet = null;            // ใบที่เปิดอยู่ (จาก /api/oral-exam-sessions/sheet/:id)
 const manualSheetDraft = new Map(); // subjectId -> ['FAILED', ..., 'PASSED'?] ผลครั้งใหม่ที่ยังไม่บันทึก
+let manualSheetEditing = null;      // { subjectId, attemptId } ช่องที่บันทึกแล้วที่กำลังเปิดแถบแก้ไข
 
 function escapeSheetText(v) {
     return String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -2450,6 +2451,7 @@ function renderManualSheetPeople() {
 function closeManualSheet() {
     manualSheet = null;
     manualSheetDraft.clear();
+    manualSheetEditing = null;
     const wrap = document.getElementById('manual-exam-sheet');
     if (wrap) { wrap.classList.add('hidden'); wrap.innerHTML = ''; }
 }
@@ -2464,6 +2466,7 @@ async function openManualSheet(participantId) {
         .then((sheet) => {
             manualSheet = sheet;
             manualSheetDraft.clear();
+            manualSheetEditing = null;
             renderManualSheet();
             renderManualSheetPeople();
             document.getElementById('manual-exam-sheet').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2513,7 +2516,12 @@ function renderManualSheet() {
             if (a) {
                 const cls = a.status === 'PASSED' ? 'pass' : a.status === 'FAILED' ? 'fail' : 'pending';
                 const mark = a.status === 'PASSED' ? '✓' : a.status === 'FAILED' ? '✗' : '…';
-                return '<td class="manual-sheet-cell is-saved ' + cls + '" title="บันทึกแล้ว (' + (SOURCE[a.source] || a.source) + ')">' + mark + '<small>' + (SOURCE[a.source] || '') + '</small></td>';
+                // ช่องที่บันทึกแล้ว (ยกเว้นคิว QR ที่รอประเมิน) กดเพื่อแก้ผล/ลบ เผื่อบันทึกผิด
+                if (a.status !== 'PENDING') {
+                    const editing = manualSheetEditing && manualSheetEditing.attemptId === a.id;
+                    return '<td class="manual-sheet-cell is-saved is-editable ' + cls + (editing ? ' is-editing' : '') + '"><button type="button" data-edit-subject="' + s.id + '" data-edit-attempt="' + a.id + '" title="บันทึกแล้ว (' + (SOURCE[a.source] || a.source) + ') กดเพื่อแก้ไข">' + mark + '<small>' + (SOURCE[a.source] || '') + '</small></button></td>';
+                }
+                return '<td class="manual-sheet-cell is-saved ' + cls + '" title="รอประเมินในระบบ QR">' + mark + '<small>' + (SOURCE[a.source] || '') + '</small></td>';
             }
             const j = i - saved.length;
             if (locked || j < 0) return '<td class="manual-sheet-cell is-off"></td>';
@@ -2535,7 +2543,8 @@ function renderManualSheet() {
         + '<p class="manual-exam-code">' + escapeSheetText(manualSheet.code) + ' · คอร์ส' + escapeSheetText(manualSheet.course || '') + '</p></div>'
         + '<button type="button" class="btn-outline" id="manual-sheet-close">ปิดใบ</button></div>'
         + '<div class="manual-sheet-table-wrap"><table class="manual-sheet-table"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>'
-        + '<p class="manual-sheet-legend">✓ ผ่าน · ✗ ไม่ผ่าน · ตัวเล็กใต้เครื่องหมาย = ที่มา (QR / กระดาษ / ใบ) · ช่องสีเทา = บันทึกแล้วหรือผ่านแล้ว แก้ไม่ได้</p>'
+        + manualSheetEditPanelHtml()
+        + '<p class="manual-sheet-legend">✓ ผ่าน · ✗ ไม่ผ่าน · ตัวเล็กใต้เครื่องหมาย = ที่มา (QR / กระดาษ / ใบ) · กดช่องที่บันทึกแล้วเพื่อแก้ผลหรือลบ (เผื่อบันทึกผิด)</p>'
         + '<div class="form-actions">'
         + (idx > 0 ? '<button type="button" class="btn-outline" id="manual-sheet-prev">คนก่อนหน้า</button>' : '')
         + (idx >= 0 && idx < manualSheetPeople.length - 1 ? '<button type="button" class="btn-outline" id="manual-sheet-next">คนถัดไป</button>' : '')
@@ -2543,6 +2552,12 @@ function renderManualSheet() {
     wrap.classList.remove('hidden');
     wrap.querySelectorAll('.manual-sheet-cell.is-input button').forEach((b) => b.addEventListener('click', () => handleSheetCellClick(Number(b.dataset.subject), Number(b.dataset.j))));
     wrap.querySelectorAll('.manual-sheet-clear').forEach((b) => b.addEventListener('click', () => clearManualSheetSubject(Number(b.dataset.subject))));
+    wrap.querySelectorAll('[data-edit-attempt]').forEach((b) => b.addEventListener('click', () => {
+        const attemptId = Number(b.dataset.editAttempt);
+        manualSheetEditing = manualSheetEditing && manualSheetEditing.attemptId === attemptId ? null : { subjectId: Number(b.dataset.editSubject), attemptId };
+        renderManualSheet();
+    }));
+    wrap.querySelectorAll('[data-sheet-edit]').forEach((b) => b.addEventListener('click', () => applyManualSheetEdit(b.dataset.sheetEdit)));
     wrap.querySelector('#manual-sheet-close').addEventListener('click', async () => {
         if (manualSheetDraft.size && !(await showConfirm('มีผลที่กรอกไว้แต่ยังไม่บันทึก ต้องการปิดใบใช่หรือไม่?', { title: 'ยังไม่ได้บันทึก', confirmText: 'ปิดใบ' }))) return;
         closeManualSheet();
@@ -2551,6 +2566,64 @@ function renderManualSheet() {
     wrap.querySelector('#manual-sheet-save').addEventListener('click', saveManualSheet);
     wrap.querySelector('#manual-sheet-prev')?.addEventListener('click', () => openManualSheet(manualSheetPeople[idx - 1].id));
     wrap.querySelector('#manual-sheet-next')?.addEventListener('click', () => openManualSheet(manualSheetPeople[idx + 1].id));
+}
+
+// แถบแก้ไขช่องที่บันทึกแล้ว (ใต้ตาราง) - เปลี่ยนผ่าน/ไม่ผ่าน หรือลบครั้งนั้น ใช้ endpoint เดียวกับแก้ในประวัติรอบสอบ
+function findManualSheetEditing() {
+    if (!manualSheet || !manualSheetEditing) return null;
+    const subject = manualSheet.subjects.find((s) => s.id === manualSheetEditing.subjectId);
+    const attempt = subject?.attempts.find((a) => a.id === manualSheetEditing.attemptId);
+    return attempt && attempt.status !== 'PENDING' ? { subject, attempt } : null;
+}
+
+function manualSheetEditPanelHtml() {
+    const found = findManualSheetEditing();
+    if (!found) return '';
+    const { subject, attempt } = found;
+    const isLast = !subject.attempts.some((a) => a.attemptNumber > attempt.attemptNumber);
+    const toggle = attempt.status === 'PASSED'
+        ? '<button type="button" class="manual-sheet-edit-btn fail" data-sheet-edit="FAILED">เปลี่ยนเป็นไม่ผ่าน</button>'
+        : isLast
+            ? '<button type="button" class="manual-sheet-edit-btn pass" data-sheet-edit="PASSED">เปลี่ยนเป็นผ่าน</button>'
+            : '<span class="manual-sheet-edit-note">เปลี่ยนเป็นผ่านได้เฉพาะครั้งล่าสุด (ลบครั้งหลังก่อน)</span>';
+    return '<div class="manual-sheet-edit-panel">'
+        + '<span><b>' + escapeSheetText(subject.name) + '</b> ครั้งที่ ' + attempt.attemptNumber + ' · บันทึกไว้ว่า <b>' + (attempt.status === 'PASSED' ? 'ผ่าน' : 'ไม่ผ่าน') + '</b></span>'
+        + toggle
+        + '<button type="button" class="manual-sheet-edit-btn delete" data-sheet-edit="DELETE">ลบครั้งนี้</button>'
+        + '<button type="button" class="manual-sheet-edit-btn" data-sheet-edit="CANCEL">ยกเลิก</button>'
+        + '</div>';
+}
+
+async function applyManualSheetEdit(action) {
+    const found = findManualSheetEditing();
+    if (action === 'CANCEL' || !found) { manualSheetEditing = null; renderManualSheet(); return; }
+    const { subject, attempt } = found;
+    const isDelete = action === 'DELETE';
+    if (isDelete && !(await showConfirm('ลบผลวิชา "' + subject.name + '" ครั้งที่ ' + attempt.attemptNumber + ' ของ ' + manualSheet.fullName + '? เลขครั้งที่ของครั้งหลัง ๆ จะเลื่อนลง 1 และคะแนนอธิบายจะคิดใหม่', { title: 'ยืนยันการลบผลสอบ', confirmText: 'ลบ' }))) return;
+    const participantId = manualSheet.id;
+    fetch('/api/oral-exam-sessions/' + attempt.sessionId + '/attempts/' + attempt.id, isDelete
+        ? { method: 'DELETE' }
+        : { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ result: action }) })
+        .then(async (res) => {
+            if (!res.ok && res.status !== 204) throw new Error((await res.json().catch(() => ({}))).error || 'HTTP ' + res.status);
+            return fetch('/api/oral-exam-sessions/sheet/' + participantId).then((r) => r.json());
+        })
+        .then((sheet) => {
+            if (!manualSheet || manualSheet.id !== participantId) return;
+            manualSheet = sheet;
+            manualSheetEditing = null;
+            manualSheetDraft.delete(subject.id); // ผลที่กรอกค้างไว้ของวิชานี้อาจไม่ต่อกับของที่แก้แล้ว
+            refreshManualSheetPerson(sheet);
+            renderManualSheet();
+            renderManualSheetPeople();
+            if (currentOralExamSubjectId) loadOralExamHistory(currentOralExamSubjectId);
+            if (selectedScoreCourseId) loadScoreRoster();
+            showActivitiesToast(isDelete ? 'ลบผลสอบแล้ว' : 'แก้ผลวิชา "' + subject.name + '" แล้ว', true);
+        })
+        .catch((error) => {
+            console.error(error);
+            showActivitiesToast(error.message || 'แก้ผลไม่สำเร็จ', false);
+        });
 }
 
 function refreshManualSheetPerson(sheet) {
@@ -3290,6 +3363,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 renderMySubjectList();
             }
             loadCourseFormats().then(() => {
+                renderManualExamSelects(); // ช่องคอร์สของการ์ดบันทึกผลจากใบรายคน - รายชื่อคอร์สมักโหลดเสร็จหลังรายวิชา เติมซ้ำให้ครบ
                 loadScoreRoster();
                 loadSchedule();
                 renderSubjectList();
